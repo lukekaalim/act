@@ -1,0 +1,21 @@
+{
+  "name": "@lukekaalim/act",
+  "version": "1.0.0",
+  "description": "React-like UI library",
+  "main": "main.js",
+  "author": "Luke Kaalim",
+  "license": "MIT",
+  "workspaces": [
+    "example"
+  ],
+  "exports": {
+    ".": "./main.js",
+    "./html": {
+      "import": "./html.js"
+    }
+  },
+  "dependencies": {
+    "nanoid": "^3.1.20"
+  },
+  "devDependencies": {}
+}

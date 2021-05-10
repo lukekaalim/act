@@ -1,0 +1,22 @@
+{
+  "name": "@lukekaalim/act-example",
+  "version": "1.0.0",
+  "description": "Test project for ACT",
+  "main": "cli.js",
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "dev:build": "esbuild src/main.js --bundle --sourcemap --outfile=public/bundle.js --conditions=development --watch",
+    "dev:serve": "serve public -p 5999",
+    "dev": "npx concurrently npm:dev:*"
+  },
+  "dependencies": {
+    "@lukekaalim/act": "^1.0.0",
+    "preact": "^10.5.13"
+  },
+  "devDependencies": {
+    "esbuild": "^0.11.20",
+    "serve": "^11.3.2"
+  }
+}
