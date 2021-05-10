@@ -57,9 +57,8 @@ const Terms = () => [
 
 const Diagram = () => [
   h(SVG, { height: 100, width: 100 }, [
-    h(Circle, { position: { x: 50, y: 50 }, radius: 25, fill: 'red' }, [
-      h(Text, { position: { x: 50, y: 50 } }, 'Hello There!')
-    ])
+    h(Circle, { position: { x: 50, y: 50 }, radius: 25, fill: 'red' }),
+    h(Text, { position: { x: 50, y: 50 } }, 'Hello There!')
   ]),
 ];
 

@@ -21,5 +21,5 @@ export const Circle/*: Component<{| position: Vector2, radius: number, fill: str
 };
 
 export const Text/*: Component<{| position: Vector2 |}>*/ = ({ position }, children) => {
-  return h('svg:text', { x: position.x, y: position.y }, children);
+  return h('svg:text', { x: position.x + 'px', y: position.y + 'px' }, children);
 };
