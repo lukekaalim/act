@@ -99,7 +99,6 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
       (style/*: Object*/)[rule] = typeof value === 'string' || typeof value === 'number' ? value : '';
   };
   const setEventListenerProp = (domNode, eventName, oldValue, newValue) => {
-    console.log(eventName, oldValue, newValue, oldValue === newValue);
     if (typeof oldValue === 'function')
       domNode.removeEventListener(eventName, ((oldValue/*: any*/)/*: EventListener*/));
     if (typeof newValue === 'function')
@@ -140,7 +139,6 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
         domNode.textContent = typeof newValue === 'string' ? newValue : '';
     } else if (domNode instanceof SVGElement) {
       const currentValue = (domNode/*: Object*/)[prop];
-      console.log(prop, currentValue);
       if (prop.startsWith('on'))
         setEventListenerProp(domNode, prop.slice(2).toLowerCase(), oldValue, newValue);
       else if (prop === 'style')
@@ -184,26 +182,44 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
       rootElement.appendChild(domNode);
   };
   const onUpdated = (event) => {
-    const { commit, diff: { last } } = event;
-    const { node } = commit;
+    const { commit, diff: { last, created } } = event;
+    const { node, childCommits } = commit;
     const { props } = node;
 
+    const root = graph.getRoot();
     const id = getStateId(commit.statePath);
     const domNode = domNodes.get(id);
-    if (!domNode)
-      return;
+    const childIds = resolveFragments(childCommits.map(c => getStateId(c.statePath)));
+    const newChildIds = resolveFragments(created.map(diff => getStateId(diff[0].statePath)));
+    const newChildNodes = newChildIds.map(id => domNodes.get(id)).filter(Boolean);
 
-    const lastObjectProps = last && typeof last.node.props === 'object' ? last.node.props : null;
-    const objectProps = typeof props === 'object' ? props : null;
+    if (!domNode) {
+      if (root.id === commit.id)
+        rootElement.append(...newChildNodes);
+      return fragments.set(id, childIds);
+    }
+    
+    for (const newChild of newChildNodes)
+      domNode.appendChild(newChild)
 
-    const propEntries = [
-      ...(objectProps ? entries(objectProps).filter(([p, v]) => lastObjectProps ? lastObjectProps[p] !== v : true) : []),
-      ...(lastProps && lastProps && typeof lastProps === 'object' ? entries(lastProps).map(([p, v]) => [p, null]) : []),
-      ...(props && typeof props === 'object' ? entries(props) : []),
-    ];
-
-    for (const [prop, value] of propEntries)
-      setProp(domNode, prop, null, value);
+    const lastProps = last && last.node.props;
+    if ((props && typeof props === 'object') && (!lastProps || typeof lastProps !== 'object'))
+      for (const [prop, nextValue] of entries(props))
+        setProp(domNode, prop, null, nextValue);
+    else if ((!props || typeof props !== 'object') && (lastProps && typeof lastProps === 'object'))
+      for (const [prop, lastValue] of entries(lastProps))
+        setProp(domNode, prop, lastValue, null);
+    else if ((props && typeof props === 'object') && (lastProps && typeof lastProps === 'object')) {
+      const propNames = [...new Set([
+        ...Object.keys(props),
+        ...Object.keys(lastProps)
+      ])];
+      const propEntries = propNames
+        .map(name => [name, { last: lastProps[name], next: props[name] }])
+        .filter(([name, { next, last }]) => next !== last);
+      for (const [prop, { next, last }] of propEntries)
+        setProp(domNode, prop, last, next);
+    }
   };
   const onRemoved = (event) => {
     const { commit } = event;
@@ -217,9 +233,7 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
     if (parentDomNode)
       parentDomNode.removeChild(domNode)
   };
-  const getNodeName = type => typeof type === 'function' ? type.name : type;
   const onEvent = (event) => {
-    //console.log(event.type, getNodeName(event.commit.node.type))
     switch (event.type) {
       case 'created':
         return onCreated(event);
@@ -231,10 +245,8 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
   };
   graph.listen(events => {
     try {
-      console.log(events);
       for (const event of events)
         onEvent(event);
-      console.log('root', getNodeName(graph.getRoot().node.type));
     } catch (error) {
       console.error(error);
     }
