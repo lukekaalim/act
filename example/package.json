@@ -9,13 +9,14 @@
   "scripts": {
     "dev:build": "esbuild src/main.js --bundle --sourcemap --outfile=public/bundle.js --conditions=development --watch",
     "dev:serve": "serve public -p 5999",
-    "dev": "npx concurrently npm:dev:*"
+    "dev": "concurrently npm:dev:*"
   },
   "dependencies": {
     "@lukekaalim/act": "^1.0.0",
     "preact": "^10.5.13"
   },
   "devDependencies": {
+    "concurrently": "^6.1.0",
     "esbuild": "^0.11.20",
     "serve": "^11.3.2"
   }

@@ -45,7 +45,7 @@ export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange
           h('button', { style: { 'flex-grow': 1 }, disabled: index === slideIndex, onclick: onButtonPress(slideIndex)}, slideIndex.toString()))
     ]),
     h('div', {}, [
-      h('input', { onchange: onRangeChange, type: 'range', style: { width: '100%' }, min: 0, max: count - 1, step: 1, value: index })
+      h('input', { onInput: onRangeChange, type: 'range', style: { width: '100%' }, min: 0, max: count - 1, step: 1, value: index })
     ]),
     h('div', {}, [
       h('button', { disabled: index === 0, onclick: onPreviousPress }, 'Previous Slide'),
