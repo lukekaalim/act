@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { Component } from '@lukekaalim/act'; */
+/*:: import type { Component, StateHooks } from '@lukekaalim/act'; */
 import { h } from '@lukekaalim/act/html';
 import { createContext } from '../../context';
 
@@ -16,7 +16,33 @@ const buttonStyle = {
   flexGrow: 1
 };
 
-export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange, count, index, visible = true }, [], { useEffect }) => {
+/*::
+export type UseSlideState = (active: boolean, states: number) => number; 
+*/
+
+export const loadUseSlideState = ({ useState, useEffect }/*: StateHooks*/)/*: UseSlideState*/ => (active, max) => {
+  const [slideState, setSlideState] = useState(0);
+  useEffect(() => {
+    const keydownListener = (e) => {
+      if (!active)
+        return;
+      switch (e.keyCode) {
+        case 40:
+        case 83:
+          return setSlideState(Math.min(max, slideState + 1))
+        case 38:
+        case 87:
+          return setSlideState(Math.max(0, slideState - 1))
+      }
+    };
+    window.addEventListener('keydown', keydownListener);
+    return () => window.removeEventListener('keydown', keydownListener);
+  }, [active, max, slideState])
+
+  return slideState;
+};
+
+export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange, count, index, visible = true }, [], { useEffect, useHooks }) => {
   const onRangeChange = (e) => {
     onIndexChange(e.currentTarget.valueAsNumber);
   };
@@ -62,8 +88,6 @@ export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange
     ]),
   ])
 };
-
-const slideContext = createContext
 
 const slideStyle = {
   width: '1024px',

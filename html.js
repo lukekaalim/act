@@ -104,6 +104,12 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
     if (typeof newValue === 'function')
       domNode.addEventListener(eventName, ((newValue/*: any*/)/*: EventListener*/));
   };
+  const setSVGListProp = (svg, list, oldValue, newValue) => {
+    console.log(svg);
+    const newLength = svg.createSVGLength();
+    setSVGLengthProp(newLength, oldValue, newValue);
+    list.initialize(newLength)
+  };
   const setSVGLengthProp = (length, oldValue, newValue) => {
     if (Array.isArray(newValue)) {
       const [value = 0, unit = 0] = newValue;
@@ -125,7 +131,9 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
   };
   
   const setProp = (domNode, prop, oldValue, newValue) => {
-    if (domNode instanceof HTMLElement) {
+    if (prop === 'onDOMRef')
+      return;
+    else if (domNode instanceof HTMLElement) {
       if (prop.startsWith('on'))
         setEventListenerProp(domNode, prop.slice(2).toLowerCase(), oldValue, newValue);
       else if (prop === 'style')
@@ -145,8 +153,6 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
         setStylesProp(domNode.style, oldValue, newValue);
       else if (currentValue instanceof SVGAnimatedLength)
         setSVGLengthProp((currentValue/*: SVGAnimatedLength*/).baseVal, oldValue, newValue);
-      else if (currentValue instanceof SVGLength)
-        setSVGLengthProp((currentValue/*: SVGLength*/), oldValue, newValue);
       else
         setAttributeProp(domNode, prop, oldValue, newValue);
     }
@@ -161,6 +167,10 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
     const id = getStateId(commit.statePath);
 
     const domNode = createNodeForCommit(commit);
+
+    if (typeof props === 'object' && props && typeof props.onDOMRef === 'function')
+      (props.onDOMRef/*: Function*/)(domNode);
+
     const childIds = resolveFragments(childCommits.map(c => getStateId(c.statePath)));
     if (!domNode) {
       if (root.id === commit.id)
@@ -223,9 +233,15 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
   };
   const onRemoved = (event) => {
     const { commit } = event;
+    const { node } = commit;
+    const { props } = node;
 
     const id = getStateId(commit.statePath);
     const domNode = domNodes.get(id);
+
+    if (typeof props === 'object' && props && typeof props.onDOMRef === 'function')
+      (props.onDOMRef/*: Function*/)(null);
+
     if (!domNode)
       return;
     

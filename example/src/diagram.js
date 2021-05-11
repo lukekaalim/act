@@ -1,29 +1,87 @@
 // @flow strict
-/*:: import type { Component } from '@lukekaalim/act'; */
+/*:: import type { Component, Context } from '@lukekaalim/act'; */
 import { h } from '@lukekaalim/act/html';
-
-const svgDefaultProps = {
-  version: "1.1",
-  baseProfile: "full",
-  xmlns: "http://www.w3.org/2000/svg"
-};
-
-export const SVG/*: Component<{| width: number, height: number |}>*/ = ({ width, height }, children) => {
-  return h('svg:svg', { ...svgDefaultProps, width, height }, children);
-};
+import { createContext } from '@lukekaalim/act';
 
 /*::
 export type Vector2 = {| x: number, y: number |};
 */
+/*::
+export type Box = {|
+  position: Vector2,
+  size: Vector2
+|};
+*/
 
-export const Circle/*: Component<{| position: Vector2, radius: number, fill: string |}>*/ = ({ fill, position, radius }, children) => {
-  return h('svg:circle', { cx: position.x, cy: position.y, r: radius, fill }, children);
+export const rootSVGNodeContext/*: Context<?SVGSVGElement>*/ = createContext(null);
+
+export const DiagramRoot/*: Component<{| size: Vector2 |}>*/ = ({ size }, children, { useState }) => {
+  return h('svg:svg', { width: size.x, height: size.y }, children);
 };
 
-export const Text/*: Component<{| position: Vector2 |}>*/ = ({ position }, children) => {
-  return h('svg:text', { x: position.x + 'px', y: position.y + 'px' }, children);
+/*::
+export type DiagramVertexProps = {|
+  position: Vector2,
+  label: string,
+  charSize?: Vector2,
+  fontFamily?: string
+|};
+*/
+
+export const DiagramVertex/*: Component<DiagramVertexProps>*/ = ({
+  position,
+  label,
+  charSize = { x: 16, y: 26 },
+  fontFamily = 'monospace'
+}) => {
+  const charWidth = charSize.x;
+  const charHeight = charSize.y;
+
+  const rectHeight = charHeight + 20;
+  const rectWidth = (label.length * charWidth) + 20;
+
+  const rectProps = {
+    width: rectWidth,
+    height: rectHeight,
+    x: position.x - (rectWidth/2),
+    y: position.y - (rectHeight/2),
+    rx: 8,
+    stroke: 'black',
+    fill: 'white',
+    'stroke-width': '2px',
+    style: { boxShadow: '0 0 10px 10px black'}
+  };
+  const textProps = {
+    'font-size': `${charHeight}px`,
+    x: `${position.x - (rectWidth/2) + 10}px`,
+    y: `${position.y + (charHeight/4)}px`,
+    textLength: `${rectWidth - 20}px`,
+    'font-family': fontFamily,
+    lengthAdjust: "spacingAndGlyphs"
+  };
+  return [
+    h('svg:rect', rectProps),
+    h('svg:text', textProps, label),
+    // h('svg:circle', { cx: position.x, cy: position.y, fill: 'red', r: 5 }), // just for marking the origin
+  ];
 };
 
-export const Rect/*: Component<{| position: Vector2 |}>*/ = ({ position }, children) => {
-  return h('svg:rect', { width: position.x + 'px', height: position.y + 'px' }, children);
+/*::
+export type DiagramEdgeProps = {|
+  start: Vector2,
+  end: Vector2
+|};
+*/
+
+const createPoint = (vector) => [vector.x, vector.y].join(',');
+
+export const DiagramEdge/*: Component<DiagramEdgeProps>*/ = ({ start, end }) => {
+  const polyLineProps = {
+    stroke: 'black',
+    'stroke-width': '2px',
+    points: [createPoint(start), createPoint(end)].join(' '),
+  };
+  return [
+    h('svg:polyline', polyLineProps)
+  ]
 };

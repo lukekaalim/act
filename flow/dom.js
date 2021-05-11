@@ -4,6 +4,7 @@
 
 declare class SVGElement extends Element {
   +style: CSSStyleDeclaration,
+  ownerSVGElement: SVGSVGElement,
 }
 declare class SVGAnimatedLength {
   +baseVal: SVGLength;
@@ -44,15 +45,30 @@ declare class SVGLength {
   newValueSpecifiedUnits(unitType: SVGLengthUnit, valueInSpecifiedUnits: number): void;
 
   static SVG_LENGTHTYPE_UNKNOWN: SVG_LENGTHTYPE_UNKNOWN;
-  static SVG_LENGTHTYPE_NUMBER: SVG_LENGTHTYPE_NUMBER;
   static SVG_LENGTHTYPE_PERCENTAGE: SVG_LENGTHTYPE_PERCENTAGE;
   static SVG_LENGTHTYPE_EMS: SVG_LENGTHTYPE_EMS;
   static SVG_LENGTHTYPE_EXS: SVG_LENGTHTYPE_EXS;
+  static SVG_LENGTHTYPE_NUMBER: SVG_LENGTHTYPE_NUMBER;
   static SVG_LENGTHTYPE_PX: SVG_LENGTHTYPE_PX;
   static SVG_LENGTHTYPE_CM: SVG_LENGTHTYPE_CM;
   static SVG_LENGTHTYPE_MM: SVG_LENGTHTYPE_MM;
   static SVG_LENGTHTYPE_IN: SVG_LENGTHTYPE_IN;
   static SVG_LENGTHTYPE_PT: SVG_LENGTHTYPE_PT;
   static SVG_LENGTHTYPE_PC: SVG_LENGTHTYPE_PC;
+}
+
+declare class SVGLengthList {
+  [number]: SVGLength;
+  clear(): void;
+  initialize(initialItem: SVGLength): void;
+  appendItem(length: SVGLength): void;
+}
+declare class SVGAnimatedLengthList {
+  baseVal: SVGLengthList;
+  animVal: SVGLengthList;
+}
+
+declare class SVGSVGElement {
+  createSVGLength(): SVGLength
 }
 */
