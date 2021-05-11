@@ -23,3 +23,7 @@ export const Circle/*: Component<{| position: Vector2, radius: number, fill: str
 export const Text/*: Component<{| position: Vector2 |}>*/ = ({ position }, children) => {
   return h('svg:text', { x: position.x + 'px', y: position.y + 'px' }, children);
 };
+
+export const Rect/*: Component<{| position: Vector2 |}>*/ = ({ position }, children) => {
+  return h('svg:rect', { width: position.x + 'px', height: position.y + 'px' }, children);
+};

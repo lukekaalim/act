@@ -1,16 +1,22 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 import { h } from '@lukekaalim/act/html';
+import { createContext } from '../../context';
 
 /*::
 export type SlideControlsProps = {|
+  visible?: boolean,
   count: number,
   index: number,
   onIndexChange: number => mixed
 |};
 */
 
-export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange, count, index }, [], { useEffect }) => {
+const buttonStyle = {
+  flexGrow: 1
+};
+
+export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange, count, index, visible = true }, [], { useEffect }) => {
   const onRangeChange = (e) => {
     onIndexChange(e.currentTarget.valueAsNumber);
   };
@@ -38,11 +44,14 @@ export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange
     return () => window.removeEventListener('keydown', keydownListener);
   }, [index])
 
+  if (!visible)
+    return null;
+  
   return h('section', { className: 'slide-controls' }, [
     h('div', { className: 'slide-controls-list', style: { display: 'flex' } }, [
       Array.from({ length: count })
         .map((_, slideIndex) =>
-          h('button', { style: { 'flex-grow': 1 }, disabled: index === slideIndex, onclick: onButtonPress(slideIndex)}, slideIndex.toString()))
+          h('button', { style: buttonStyle, disabled: index === slideIndex, onclick: onButtonPress(slideIndex) }, slideIndex.toString()))
     ]),
     h('div', {}, [
       h('input', { onInput: onRangeChange, type: 'range', style: { width: '100%' }, min: 0, max: count - 1, step: 1, value: index })
@@ -54,14 +63,16 @@ export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange
   ])
 };
 
+const slideContext = createContext
+
 const slideStyle = {
-  width: '512px',
-  height: '512px',
+  width: '1024px',
+  height: 'calc(512px + 256px)',
   'box-sizing': 'border-box',
   'background-color': '#d6d6f4',
   display: 'flex',
   'flex-direction': 'column',
-  padding: '16px'
+  padding: '64px'
 };
 export const Slide/*: Component<null>*/ = (_, children) => {
   return h('section', { style: slideStyle }, children);
@@ -74,4 +85,13 @@ const titleSlideStyle = {
 }
 export const TitleSlide/*: Component<null>*/ = (_, children) => {
   return h('section', { style: titleSlideStyle }, children);
+};
+
+const borderlessSlideStyle = {
+  ...slideStyle,
+  padding: 0,
+};
+
+export const BorderlessSlide /*: Component<null>*/ = (_, children) => {
+  return h('section', { style: borderlessSlideStyle }, children);
 };
