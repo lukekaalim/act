@@ -6,7 +6,8 @@
   "author": "Luke Kaalim",
   "license": "MIT",
   "workspaces": [
-    "example"
+    "example",
+    "."
   ],
   "exports": {
     ".": "./main.js",
