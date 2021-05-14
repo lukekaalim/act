@@ -19,6 +19,6 @@ const codeBlock = {
 
 export const CodeBlock/*: Component<mixed>*/ = (_, code) => {
   return h('section', { style: codeBlockContainer }, [
-    h('p', { style: codeBlock }, code),
+    h('code', { style: codeBlock }, code),
   ]);
 };

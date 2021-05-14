@@ -105,7 +105,6 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
       domNode.addEventListener(eventName, ((newValue/*: any*/)/*: EventListener*/));
   };
   const setSVGListProp = (svg, list, oldValue, newValue) => {
-    console.log(svg);
     const newLength = svg.createSVGLength();
     setSVGLengthProp(newLength, oldValue, newValue);
     list.initialize(newLength)
@@ -192,7 +191,8 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
       rootElement.appendChild(domNode);
   };
   const onUpdated = (event) => {
-    const { commit, diff: { last, created } } = event;
+    const { commit, diff } = event;
+    const { last, created, updated } = diff;
     const { node, childCommits } = commit;
     const { props } = node;
 
@@ -200,7 +200,20 @@ const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) =>
     const id = getStateId(commit.statePath);
     const domNode = domNodes.get(id);
     const childIds = resolveFragments(childCommits.map(c => getStateId(c.statePath)));
-    const newChildIds = resolveFragments(created.map(diff => getStateId(diff[0].statePath)));
+
+    const getCommitsToCreate = (diff)/*: Commit[]*/ => {
+      return [
+        ...diff.created
+          .map(([commit]) => commit),
+        ...diff.updated
+          .filter(([commit]) => !domNodes.get(getStateId(commit.statePath)))
+          .map(([commit, diff]) => getCommitsToCreate(diff))
+          .flat(1)
+      ];
+    };
+    const commits = getCommitsToCreate(diff);
+
+    const newChildIds = resolveFragments(commits.map(commit => getStateId(commit.statePath)));
     const newChildNodes = newChildIds.map(id => domNodes.get(id)).filter(Boolean);
 
     if (!domNode) {

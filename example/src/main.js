@@ -5,7 +5,7 @@ import { Intro } from './intro';
 const main = () => {
   const { body } = document;
   if (body)
-    render(h(Intro, {}), body);
+    render(h(Intro), body);
 };
 
 main();

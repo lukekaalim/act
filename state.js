@@ -19,6 +19,8 @@ const { setupUseContext, loadUseContext, teardownUseContext } = require('./state
 export type StateID = string;
 export type StatePath = StateID[]
 
+export type HookLoader<T> = (hooks: StateHooks) => T
+
 export type StateHooks = {
   useState: UseState,
   useEffect: UseEffect,
@@ -26,7 +28,7 @@ export type StateHooks = {
   useMemo: <T>(calculator: () => T, deps: mixed[]) => T,
   useGraph: () => Graph,
   useStatePath: () => StatePath,
-  useHooks: <T>(hookLoader: (hooks: StateHooks) => T) => T,
+  useHooks: <T>(hookLoader: HookLoader<T>) => T,
 };
 
 export type CommitState = {

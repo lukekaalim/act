@@ -24,6 +24,8 @@ export const loadUseSlideState = ({ useState, useEffect }/*: StateHooks*/)/*: Us
   const [slideState, setSlideState] = useState(0);
   useEffect(() => {
     const keydownListener = (e) => {
+      if (document.activeElement instanceof HTMLInputElement)
+        return;
       if (!active)
         return;
       switch (e.keyCode) {
@@ -57,6 +59,10 @@ export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange
   }
   useEffect(() => {
     const keydownListener = (e) => {
+      if (document.activeElement instanceof HTMLInputElement)
+        return;
+      if (document.activeElement instanceof HTMLTextAreaElement)
+        return;
       switch (e.keyCode) {
         case 65:
         case 37:
@@ -118,4 +124,69 @@ const borderlessSlideStyle = {
 
 export const BorderlessSlide /*: Component<null>*/ = (_, children) => {
   return h('section', { style: borderlessSlideStyle }, children);
+};
+
+const slideShowItemDefaultType = {
+  transition: 'opacity 0.5s, transform 0.5s'
+};
+
+const presenterStyle = {
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  width: '100vw',
+  perspective: '100vw',
+};
+const sliderDefaultStyle = {
+  display: 'flex',
+  listStyle: 'none',
+  width: '1024px',
+  margin: 0,
+  padding: 0,
+  flexDirection: 'row',
+  transition: 'transform 0.5s',
+  transformStyle: 'preserve-3d'
+};
+
+/*::
+export type SlideType =
+  | 'plain'
+  | 'title'
+  | 'borderless'
+export type SlideShowProps = {|
+  slides: [SlideType, Component<{ active: boolean }>][],
+  index: number,
+|};
+*/
+
+const getSlideComponent = slideType => {
+  switch (slideType) {
+    case 'plain':
+      return Slide;
+    case 'title':
+      return TitleSlide;
+    case 'borderless':
+      return BorderlessSlide;
+  }
+}
+
+export const SlideShow/*: Component<SlideShowProps>*/ = ({ slides, index }) => {
+  const transform = `translate3d(-${index * 1024}px, 0px, 0px)`;
+  const sliderStyle = { ...sliderDefaultStyle, transform };
+
+  return h('section', { style: presenterStyle }, h('ul', { style: sliderStyle }, slides.map(([type, slide], slideIndex) => {
+    const distance = index - slideIndex;
+    const absDistance = Math.abs(distance);
+    const distanceUnit = distance/absDistance;
+    const clampedDistance = Math.min(absDistance, 2);
+    
+    const transform = `scale(${1 - (clampedDistance * 0.1)}) rotateY(${-(distanceUnit * clampedDistance) * 20}deg) translateZ(${-clampedDistance * 200}px)`;
+    const opacity = Math.max(1 - (clampedDistance * 0.4), 0);
+    const style = { ...slideShowItemDefaultType, opacity, transform, zIndex: slideIndex === index ? 1 : 0 }
+
+    const slideComponent = getSlideComponent(type);
+
+    return h('li', { style }, h(slideComponent, null, h(slide, { active: index === slideIndex })));
+  })))
 };

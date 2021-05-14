@@ -18,6 +18,7 @@ export type Node =
   | NormalNode
   | string
   | null
+  | false
   | $ReadOnlyArray<Node>
 */
 
@@ -41,7 +42,7 @@ const normalizeNode = (node/*: Node*/)/*: NormalNode[]*/ => {
   if (Array.isArray(node)) {
     return node.map(normalizeNode).flat(1);
   }
-  if (node === null)
+  if (!node)
     return [];
   if (typeof node === 'string')
     return [createNode(nodeStringSymbol, { content: node })];
@@ -79,8 +80,11 @@ const nodesEqual = (node/*: NormalNode*/, lastNode/*: NormalNode*/)/*: boolean*/
     return false;
   if (!propsEqual(node.props, lastNode.props))
     return false;
+  if (node.children.length !== lastNode.children.length)
+    return false;
   if (!node.children.every((child, index) =>
-    lastNode.children[index] && nodesEqual(child, lastNode.children[index])))
+    lastNode.children[index] && nodesEqual(child, lastNode.children[index])
+  ))
     return false;
   return true;
 };
