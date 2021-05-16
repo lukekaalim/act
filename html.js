@@ -13,7 +13,6 @@ const namespaces = {
 
 const htmlGraph = (initialNode/*: NormalNode*/, rootElement/*: HTMLElement*/) => {
   const graph = createGraph(initialNode, (cb) => setTimeout(cb, 0));
-  let oldChildren = [];
   const elementFromNode = node => {
     const { type } = node; 
     switch (typeof type) {
