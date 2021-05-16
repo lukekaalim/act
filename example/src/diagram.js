@@ -61,7 +61,7 @@ export const DiagramRoot/*: Component<{| size: Vector2 |}>*/ = ({ size }, childr
     height: size.y,
     onDOMRef: setSVG,
     viewBox: [-position.x, -position.y, size.x, size.y].join(' '),
-    style: { userSelect: 'none' }
+    style: { userSelect: 'none', flexGrow: 1 }
   };
   
   return h('svg:svg', svgProps, children);
@@ -72,13 +72,19 @@ export type DiagramVertexProps = {|
   position: Vector2,
   label: string,
   charSize?: Vector2,
-  fontFamily?: string
+  fontFamily?: string,
+  textColor?: string,
+  backgroundColor?: string,
+  borderColor?: string
 |};
 */
 
 export const DiagramVertex/*: Component<DiagramVertexProps>*/ = ({
   position,
   label,
+  textColor = 'black',
+  backgroundColor = 'white',
+  borderColor = 'black',
   charSize = { x: 16, y: 26 },
   fontFamily = 'monospace'
 }) => {
@@ -94,16 +100,16 @@ export const DiagramVertex/*: Component<DiagramVertexProps>*/ = ({
     x: position.x - (rectWidth/2),
     y: position.y - (rectHeight/2),
     rx: 8,
-    stroke: 'black',
-    fill: 'white',
-    'stroke-width': '2px',
-    style: { boxShadow: '0 0 10px 10px black'}
+    stroke: borderColor,
+    fill: backgroundColor,
+    'stroke-width': '2px'
   };
   const textProps = {
     'font-size': `${charHeight}px`,
     x: `${position.x - (rectWidth/2) + 10}px`,
     y: `${position.y + (charHeight/4)}px`,
     textLength: `${rectWidth - 20}px`,
+    fill: textColor,
     'font-family': fontFamily,
     lengthAdjust: "spacingAndGlyphs"
   };
@@ -142,7 +148,7 @@ const getTreeWeight = tree =>
 
 /*::
 export type TreeNode = {|
-  content: string,
+  content: string | { text: string, color: string },
   leaves: TreeNode[],
 |};
 
@@ -170,6 +176,8 @@ export const TreeDiagram/*: Component<TreeDiagramProps>*/ = ({ tree, position, o
         h(TreeDiagram, { tree: leaf, position: leafPosition, offset }),
       ];
     }),
-    h(DiagramVertex, { position, label: tree.content }),
+    typeof tree.content === 'string' ?
+      h(DiagramVertex, { position, label: tree.content }) :
+      h(DiagramVertex, { position, label: tree.content.text, backgroundColor: tree.content.color })
   ];
 };

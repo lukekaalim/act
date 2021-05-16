@@ -4,7 +4,7 @@
 import { h } from '@lukekaalim/act/html';
 import { DiagramRoot, TreeDiagram } from './diagram.js';
 import { SlideControls, SlideShow, loadUseSlideState, BorderlessSlide } from './slides.js';
-import { CodeBlock } from './code.js';
+import { CodeBlock, EditableCodeBlock } from './code.js';
 
 const FromScratchTitle = () => [
   h('h2', {}, 'React from Scratch!'),
@@ -107,6 +107,31 @@ const HowToUse = ({ active }, __, { useState, useHooks }) => {
   ]
 };
 
+const ReactAndTheDOM = () => {
+  return [
+    h('h2', {}, `React and the DOM`),
+    h('p', {}, [
+      `The elements that we create have a "type", which is the name of the `,
+      h('strong', {}, `DOM Node`),
+      ` they represent`
+    ]),
+    h('p', {}, `DOM Nodes may have an internal state, have special attributes
+    that govern interactivity or appearance, and have semantic meaning
+    in the document.`),
+    h('p', {}, `DOM Nodes are also hierarchical; They can sometimes have
+    children of varying types nested inside them.`),
+    h('form', { width: '50%', onSubmit: e => e.preventDefault() }, [
+      h('button', { style: { background: 'initial' } }, 'A Button'),
+      h('input', { type: 'text' }),
+      h('input', { type: 'date' }),
+      h('input', { type: 'time' }),
+      h('h2', {}, 'Heading'),
+      h('p', {}, 'Paragraph text'),
+      h('pre', {}, 'Preformatted text'),
+    ]),
+  ]
+}
+
 const reactTerms = [
   ['Element',
     `An element represents a DOM Node to be part of the document. It has a type,
@@ -143,7 +168,7 @@ const Terms = ({ activeTermIndex, terms }) => {
 
 export const FirstTerms/*: Component<{ active: boolean }>*/ = ({ active }, __, { useHooks }) => {
   const useSlideState = useHooks(loadUseSlideState);
-  const state = useSlideState(active, reactTerms.length + 1);
+  const state = useSlideState(active, reactTerms.length);
 
   return [
     h('h2', {}, 'Basic React Terms'),
@@ -171,6 +196,35 @@ const JSXUnderTheHood = (_, __) => {
   ];
 };
 
+const graphTerms = [
+  ['Tree',
+    `A type of Graph, which is composed of a root Node,
+    which itself has Child nodes that are also trees.`],
+  ['Node', 
+    `A Node is an element of a tree. A node may have zero or more child
+    nodes. If a node has zero children, sometimes it is called a Leaf.`],
+  ['Vertices and Edges',
+    `Sometimes when talking about Graphs, the Terms Vertex and Edge are used.
+    A Vertex is just a Node, and an Edge is the connecting line between nodes.
+    In our case, every child node has a Edge to it's parent Vertex.`],
+  ['Digraph',
+    `A Digraph is a Graph with edges have a "direction". That is, they only point one way.
+    Our tree is a Digraph, in that only the parent has a reference to the child.`]
+]
+
+const AboutGraphs = ({ active }, __, { useHooks }) => {
+  const useSlideState = useHooks(loadUseSlideState);
+  const state = useSlideState(active, graphTerms.length);
+
+  return [
+    h('h2', {}, 'Graph Terms'),
+    h('p', {},
+      `Since any Element may have zero or more children, you can represent
+      an Element as a Tree, which is a type of Graph.`),
+    h(Terms, { activeTermIndex: state - 1, terms: graphTerms })
+  ]
+};
+
 const RenameElements = () => {
   return [
     h('h2', {}, 'Term clarification'),
@@ -180,7 +234,7 @@ const RenameElements = () => {
       h('code', { style: inlineCodeStyle }, 'h()'),
       ` instead of `,
       h('code', { style: inlineCodeStyle }, 'React.createElement()'),
-      `.`
+      ` as it's more concise.`
     ]),
     h('p', {},
       [`And we'll be renaming `, h('strong', {}, `"elements"`), ` to `, h('strong', {}, `"node"`), ` for
@@ -189,70 +243,327 @@ const RenameElements = () => {
   ];
 };
 
-const NodesAsGraphs = () => {
-  const diagramSize = { x: 1024, y: (512 + 256) / 2 };
-  const tree = {
-    content: '<body>',
-    leaves: [
-      {
-        content: '<header>',
-        leaves: [
-          {
-            content: '<h1>',
-            leaves: [
-              {
-                content: 'Hello Luke',
-                leaves: []
-              },
-            ]
-          },
-        ]
-      },
-      {
-        content: '<p>',
-        leaves: [
-          {
-            content: 'Other Content',
-            leaves: []
-          }
-        ]
-      }
-    ]
-  };
+const initialGraphCode = 
+`h('body', {}, [
+  h('header', {}, h('h1', {}, 'Hello')),
+  h('p', {}, 'World'),
+])`;
+const pragma = (content, _, leaves) => {
+  if (Array.isArray(leaves))
+    return { content, leaves };
+  else if (!leaves)
+    return { content, leaves: [] };
+  else if (typeof leaves === 'string')
+    return { content, leaves: [{ content: `"${leaves}"`, leaves: [] }] };
+  else if (typeof leaves === 'object')
+    return { content, leaves: [leaves] };
+  else
+    throw new Error('Unexpected child value');
+};
+const isValidTree = (tree) => {
+  const isValidContent = typeof tree.content === 'string';
+  const isValidLeaves = Array.isArray(tree.leaves) && tree.leaves.every(isValidTree);
+
+  return isValidContent && isValidLeaves;
+};
+
+const getTreeNodeFromExpression = (treeExpression/*: string*/)/*: ?TreeNode*/ => {
+  try {
+    const codeFunction = new Function('h', `return ${treeExpression}`);
+    return ((codeFunction/*: Function*/)/*: (h: typeof pragma) => TreeNode*/)(pragma);
+  } catch (error) {
+    return null;
+  }
+};
+
+const initialTree = getTreeNodeFromExpression(initialGraphCode) || { content: 'bad code', leaves: [] };
+
+const NodesAsGraphs = (_, __, { useState }) => {
+  const diagramSize = { x: 1024, y: 324 };
+  const [tree, setTree] = useState/*:: <TreeNode>*/(initialTree);
+  const onTextInput = newExpression => {
+    const newTree = getTreeNodeFromExpression(newExpression)
+    if (newTree && isValidTree(newTree) && newTree)
+      setTree(newTree)
+  }
   return [
-    h('div', { style: { padding: '64px' } }, [
-      h('h2', {}, 'Nodes represented by Graphs'),
-      h('p', {}, ['Nodes can be represented as an ', h('em', {}, `Tree Graph`), '.']),
-      h('p', {}, [`Nodes may have children, which themselves may have more children`]),
+    h('div', { style: { padding: '64px 64px 0 64px' } }, [
+      h('h2', {}, 'Component + Props == Tree'),
+      h('p', {}, 'A component renders an element, which may have more elements itself as children.'),
+      h(EditableCodeBlock, { text: initialGraphCode, onTextInput }, )
     ]),
-    h('div', { style: { flexGrow: 1 } }),
     h(DiagramRoot, { size: diagramSize }, [
-      h(TreeDiagram, { position: { x: diagramSize.x/2, y: diagramSize.y - 64 }, tree, offset: { x: 512, y: 64 } })
+      h(TreeDiagram, { position: { x: diagramSize.x/2, y: diagramSize.y - 64 }, tree, offset: { x: 256, y: 64 } })
     ])
   ];
 };
 
-// lincoln
-// weight - branches + 1;
+const BuildingElementDataStructure = ({ active }, __, { useHooks }) => {
+  const useSlideState = useHooks(loadUseSlideState);
+  const state = useSlideState(active, 2);
+  return [
+    h('h2', {}, 'Building Element Data Structure'),
+    h('p', {},
+      `We\'ve invoked the createElement function, but if we were
+      to build it ourselves, what would it look like?`),
+    
+    state === 0 && [
+      h('h4', { style: { margin: 0 } }, 'Type Declaration'),
+      h('p', {}, 'We need to encode the \'type\' of node it will be, any props it has, and it\'s children (which should also be nodes).'),
+      h(CodeBlock, {}, [
+        `type `,
+        h('strong', {}, 'Element'),
+        ` = {\n  type: string,\n  props: { [string]: mixed },\n  children: string | Element[]\n}`
+      ])
+    ],
+    state === 1 && [
+      h('h4', { style: { margin: 0 } }, 'Constructor'),
+      h('p', {}, 'Props and Children should be optional, so you can call them with only the type, which is mandatory.'),
+      h(CodeBlock, {}, [
+        `const `,
+        h('strong', {}, 'createElement'),
+        ` = (\n  type: string,\n  props: { [string]: mixed } = {},\n  children: string | Element[] = []\n): Element => ({\n  type,\n  props,\n  children\n})`
+      ]),
+    ],
+    state === 2 && [
+      h('h4', { style: { margin: 0 } }, 'Example Invocation'),
+      h('p', {},
+        `...`),
+      h(CodeBlock, {}, [
+        `const `,
+        h('strong', {}, 'element'),
+        ` = `,
+        h('strong', {}, 'createElement'), `(\n  'button',\n  { onClick: myOnClick },\n  'Press this button!'\n)`
+      ]),
+    ],
+  ]
+};
 
-const commitToTree = (commit, length)/*: TreeNode*/ => ({
-  content: typeof commit.node.type === 'function' ? commit.node.type.name : commit.node.type.toString(),
-  leaves: length > 0 ? commit.childCommits.map(commit => commitToTree(commit, length - 1)) : [],
+const rendererCode =
+`const createDOMElement = (node: Element): HTMLElement => {
+
+  const element = document.createElement(node.type);
+
+  for (const [prop, value] of Object.entries(node.props))
+    element[prop] = value;
+
+  if (typeof node.children === 'string') {
+    const child = document.createTextNode(node.children);
+    
+    element.appendChild(child);
+  } else {
+    const childElements = node
+      .children
+      .map(createDOMElement)
+    
+    for (const childElement of childElements)
+      element.appendChild(childElement);
+  }
+
+  return element;
+}`;
+
+const SoWeHaveATree = () => {
+  return [
+    h('h2', {}, 'So we have a Tree'),
+    h('p', {}, 'Now what?'),
+    h('p', {}, 'We\'ll, we can "walk" that tree, visiting each node, and create a DOM element that represents it.'),
+    h('p', {}, 'Lets write a recursive function that can create a DOM node of the right type for each traversal.'),
+  ]
+}
+
+const SimpleRenderer = () => {
+  return [
+    h(CodeBlock, {}, rendererCode)
+  ]
+}
+
+/*::
+export type ExampleNode = {
+  type: string,
+  props: { [string]: mixed },
+  children: ExampleNode[] | string,
+};
+*/
+
+const createDOMElement = (node/*: ExampleNode*/)/*: HTMLElement*/ => {
+  const element = document.createElement(node.type);
+  for (const [prop, value] of Object.entries(node.props))
+    (element/*: Object*/)[prop] = value;
+  if (typeof node.children === 'string')
+    element.appendChild(document.createTextNode(node.children));
+  else
+    for (const childElement of node.children.map(createDOMElement))
+      element.appendChild(childElement);
+  return element;
+}
+
+const initialComponent = 
+`h('p', {}, 'hello!')`;
+
+const nodePragma = (type, props = {}, children = []) => ({
+  type,
+  props,
+  children,
 });
 
-const Diagram/*: Component<{ active: boolean }>*/ = (_, __, { useState }) => {
-  const [tree, setTree] = useState({ content: 'none', leaves: [] });
+const exampleNodeToTree = (node) => ({
+  content: node.type,
+  leaves: typeof node.children === 'string' ? [{ content: `"${node.children}"`, leaves: [] }] : node.children.map(exampleNodeToTree),
+})
 
-  const buttonHeight = 32;
-  const diagramHeight = 512 + 256 - buttonHeight;
-  const diagramWidth = 1024;
+const createExampleNodesFromExpression = (nodeExpression/*: string*/)/*: ExampleNode*/ => {
+  try {
+    const codeFunction = new Function('h', `return ${nodeExpression}`);
+    return ((codeFunction/*: Function*/)/*: (h: typeof nodePragma) => ExampleNode*/)(nodePragma);
+  } catch (error) {
+    return { type: 'pre', props: {}, children: 'error in code!' };
+  }
+};
 
-  const treePosition = { x: diagramWidth/2, y: diagramHeight - 64 };
+const initialExampleTree = exampleNodeToTree(createExampleNodesFromExpression(initialComponent));
+
+const rendererSectionStyle = {
+  border: '1px solid black',
+  height: '128px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflowY: 'scroll',
+  backgroundColor: 'white'
+};
+
+const SimpleRendererTest = (_, __, { useState }) => {
+  const diagramSize = { x: 1024 - 128, y: 209 };
+  const [expressionCode, setExpressionCode] = useState/*:: <string>*/(initialComponent);
+  const [rootElement, setElement] = useState/*:: <?HTMLElement>*/(null);
+  const [tree, setTree] = useState/*:: <TreeNode>*/(initialExampleTree);
+
+  const onRenderClick = () => {
+    if (!rootElement)
+      return;
+    if (rootElement.children[0])
+      rootElement.removeChild(rootElement.children[0]);
+    try {
+      const node = createExampleNodesFromExpression(expressionCode);
+      setTree(exampleNodeToTree(node));
+      const element = createDOMElement(node)
+      rootElement.appendChild(element);
+    } catch (error) {}
+  };
 
   return [
-    h(DiagramRoot, { size: { y: diagramHeight, x: diagramWidth } }, [
-      h(TreeDiagram, { position: treePosition, tree, offset: { x: 130, y: 75 } })
+    h('h2', {}, 'Try out the simple renderer!'),
+    h(EditableCodeBlock, { text: expressionCode, onTextChange: setExpressionCode }),
+    h('button', { onClick: onRenderClick, style: { fontSize: '24px', maring: '12px', width: '256px' } }, 'Render'),
+    h('section', { style: rendererSectionStyle, onDOMRef: setElement }),
+    h(DiagramRoot, { size: diagramSize }, [
+      h(TreeDiagram, { position: { x: diagramSize.x/2, y: diagramSize.y - 32 }, tree, offset: { x: 256, y: 64 } })
     ])
+  ]
+};
+
+const Downsides = ({ active }, _, { useHooks }) => {
+  const useSlideState = useHooks(loadUseSlideState);
+  const state = useSlideState(active, 2);
+  
+  return [
+    h('h2', {}, 'Downsides to Simple Renderer'),
+    h('p', {}, 'There are some downtimes to this super simple renderer, unfortunatley'),
+    h('ul', {}, [
+      h('details', { open: state > 0 }, [
+        h('summary', {}, h('h3', { style: { display: 'inline' } }, 'Performance')),
+        h('li', {}, 'As we generate a "new" tree each time, we need to remove all the previous nodes and "remount" a new tree.'),
+        h('li', {}, `This is inefficient, as inserting and removing DOM Elements is expensive. And we do this to every element, every re-render.`),
+      ]),
+      h('details', { open: state > 1 }, [
+        h('summary', {}, h('h3', { style: { display: 'inline' } }, 'State')),
+        h('li', {}, 'Deleting and Re-creating elements destroys their internal state.'),
+        h('li', {}, 'Text fields, checkboxes, forms, they\'ll all lose whatever internal data they were tracking.'),
+        h('li', {}, 'We cant build components that can keep state if we destroy it every change.'),
+      ]),
+    ]),
+  ]
+}
+
+const Reconciler = () => {
+  const diagramSize = { x: 512, y: 256 };
+
+  const oldTree = {
+    content: 'body',
+    leaves: [{
+      content: 'h1',
+      leaves: [{
+        content: '"my title"',
+        leaves: [],
+      }],
+    },{
+      content: 'p',
+      leaves: [{
+        content: '"my text"',
+        leaves: [],
+      }],
+    }],
+  };
+  const newTree = {
+    content: { text: 'body', color: 'yellow' },
+    leaves: [{
+      content: 'h1',
+      leaves: [{
+        content: '"my title"',
+        leaves: [],
+      }],
+    },{
+      content: { text: 'p', color: 'yellow' },
+      leaves: [{
+        content: { text: '"my new text!"', color: 'orange' },
+        leaves: [],
+      }],
+    }],
+  };
+
+  return [
+    h('div', { style: { padding: '64px 64px 0 64px' } }, [
+      h('h2', {}, 'Reconciler'),
+      h('p', {}, `We have to reconcile the "old tree" with the "new tree"
+        to figure out what specifically changed, and then update only the elements that changed.`),
+      h('p', {}, `In the diagram below, you can yellow nodes are marked as having a child
+      changed, and orange nodes being the ones that actually changed.`)
+    ]),
+    h('div', { style: { display: 'flex' } }, [
+      h('div', { style: { display: 'flex', flexGrow: 1, flexDirection: 'column' } }, [
+        h('h4', { style: { textAlign: 'center' } }, 'Old'),
+        h(DiagramRoot, { size: diagramSize }, [
+          h(TreeDiagram, { position: { x: diagramSize.x/2, y: diagramSize.y - 32 }, tree: oldTree, offset: { x: 256, y: 64 } })
+        ]),
+      ]),
+      h('div', { style: { display: 'flex', flexGrow: 1, flexDirection: 'column' } }, [
+        h('h4', { style: { textAlign: 'center' } }, 'New'),
+        h(DiagramRoot, { size: diagramSize }, [
+          h(TreeDiagram, { position: { x: diagramSize.x/2, y: diagramSize.y - 32 }, tree: newTree, offset: { x: 256, y: 64 } })
+        ])
+      ]),
+    ]),
+  ]
+}
+
+const StateList = ({ state, list }) => {
+
+};
+
+const reconcilerAlgorithmRequirementsList = [
+  `Types is the same`,
+  `Prop "key" is different`,
+  `Children`
+];
+
+const ReconcilerAlgorithmRequirements = () => {
+  return [
+    h('h2', {}, 'Reconciler Algorithm Requirements'),
+    h('p', {}, `To build a function that:`),
+    h('p', {}, `Find nodes that might be the same nodes as last time`),
+    h('p', {}, ``),
   ];
 };
 
@@ -292,15 +603,18 @@ export const Intro/*: Component<mixed>*/ = (_, __, { useState }) => {
     ['plain', WhatIsReact],
     ['plain', FirstTerms],
     ['plain', HowToUse],
+    ['plain', ReactAndTheDOM],
     ['plain', JSXUnderTheHood],
+    ['plain', AboutGraphs],
     ['plain', RenameElements],
     ['borderless', NodesAsGraphs],
-    ['title', () => h('h2', {}, 'The DOM')],
-    ['title', () => h('h2', {}, 'The Virtual Tree')],
-    ['plain', () => h('p', {}, 'The virtual tree is a representation of what we want the dom to look like')],
-    ['plain', () => h('p', {}, 'Leaf components are driven by inputs from lower components')],
-    ['title', () => h('h2', {}, 'Starting Simple')],
-    ['borderless', Diagram],
+    ['plain', BuildingElementDataStructure],
+    ['plain', SoWeHaveATree],
+    ['plain', SimpleRenderer],
+    ['plain', SimpleRendererTest],
+    ['plain', Downsides],
+    ['borderless', Reconciler],
+    ['plain', ReconcilerAlgorithmRequirements],
   ];
 
   return h('section', { style: { ...introStyle, backgroundColor: calculateBackgroundColor(index) } }, [

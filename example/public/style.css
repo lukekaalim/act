@@ -19,3 +19,9 @@ li {
 h1, h2 {
   margin: 0;
 }
+
+code::selection {
+  background-color: white;
+  color: black;
+  text-decoration: underline;
+}
