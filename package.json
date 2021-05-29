@@ -1,22 +1,13 @@
 {
-  "name": "@lukekaalim/act",
-  "version": "1.0.0",
-  "description": "React-like UI library",
-  "main": "main.js",
-  "author": "Luke Kaalim",
-  "license": "MIT",
+  "private": true,
   "workspaces": [
-    "example",
-    "."
-  ],
-  "exports": {
-    ".": "./main.js",
-    "./html": {
-      "import": "./html.js"
-    }
-  },
-  "dependencies": {
-    "nanoid": "^3.1.20"
-  },
-  "devDependencies": {}
+    "library",
+    "reconciler",
+    "renderers/html",
+    "renderers/svg",
+    "renderers/three",
+    "examples/edge",
+    "examples/web",
+    "examples/slides"
+  ]
 }

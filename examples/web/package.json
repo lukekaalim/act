@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "dev": "esbuild src/main.js --servedir=www --outdir=www/js --bundle --sourcemap"
+  },
+  "type": "module",
+  "dependencies": {
+    "@lukekaalim/act": "*",
+    "@lukekaalim/act-html": "*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.11.20"
+  }
+}

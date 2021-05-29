@@ -1,0 +1,12 @@
+{
+  "name": "@lukekaalim/act",
+  "version": "1.0.0",
+  "description": "Component library for @lukekaalim/act-reconciler",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "author": "luke kaalim",
+  "license": "MIT"
+}

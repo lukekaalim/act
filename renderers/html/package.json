@@ -1,0 +1,13 @@
+{
+  "name": "@lukekaalim/act-html",
+  "version": "0.1.0",
+  "dependencies": {
+    "@lukekaalim/act-reconciler": "^1.0.0"
+  },
+  "devDependencies": {
+    "@lukekaalim/act": "*"
+  },
+  "peerDependencies": {
+    "@lukekaalim/act": "*"
+  }
+}
