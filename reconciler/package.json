@@ -8,9 +8,9 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "@lukekaalim/act": "^1.0.0"
+    "@lukekaalim/act": "*"
   },
   "peerDependencies": {
-    "@lukekaalim/act": "^1.0.0"
+    "@lukekaalim/act": "^2.0.0"
   }
 }
