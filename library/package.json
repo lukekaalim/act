@@ -7,7 +7,7 @@
   "scripts": {
     "test": "cd ..; npm test",
     "postversion": "../scripts/postversion.sh",
-    "prepublish": "npm run test"
+    "preversion": "npm run test"
   },
   "author": "luke kaalim",
   "license": "MIT"
