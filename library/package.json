@@ -5,7 +5,9 @@
   "type": "module",
   "main": "main.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "postversion": "../scripts/postversion.sh",
+    "prepublish": "npm run test"
   },
   "author": "luke kaalim",
   "license": "MIT"
