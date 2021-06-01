@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { Element, Component, Props } from '@lukekaalim/act'; */
+/*:: import type { Element, FunctionComponent, Props } from '@lukekaalim/act'; */
 
 /*:: import type { Commit } from './commit2.js'; */
 /*:: import type { StateID, StatePath } from './state2.js'; */
@@ -14,7 +14,7 @@ import { loadHooks, teardownHooks } from './hooks.js';
 export type ComponentService = {|
   traverseComponent: (
     path: StatePath,
-    component: Component<Props>,
+    component: FunctionComponent<Props>,
     props: Props,
     children: $ReadOnlyArray<Element>
   ) => Element[],

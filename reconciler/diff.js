@@ -13,36 +13,6 @@ export type ElementDiff =
   | CreateDiff
 */
 
-export const calculateElementsDiffs = (prevEls/*: Element[]*/, nextEls/*: Element[]*/)/*: ElementDiff[]*/ => {
-  const nextByKey = new Map(nextEls.map(e => [e.props.key, e]));
-
-  const persisted/*: PersistDiff[]*/ = prevEls
-    .map((prev, i) => {
-      if (prev.props.key) {
-        const next = nextByKey.get(prev.props.key);
-        if (next && next.type === prev.type)
-          return { next, prev };
-        return null;
-      } else {
-        const next = nextEls[i];
-        if (next && !next.props.key && next.type === prev.type)
-          return { prev, next };
-        return null;
-      }
-    })
-    .filter(Boolean);
-  const persistedById = new Set(persisted.map(d => [d.next.id, d.prev.id]).flat(1))
-  
-  const removed = prevEls.filter(e => !persistedById.has(e.id)).map(prev => ({ prev, next: null }));
-  const created = nextEls.filter(e => !persistedById.has(e.id)).map(next => ({ prev: null, next }));
-
-  return [
-    ...removed,
-    ...created,
-    ...persisted,
-  ];
-};
-
 export const calculatePersisted = (
   prevEls/*: $ReadOnlyArray<Commit>*/,
   nextEls/*: $ReadOnlyArray<Element>*/

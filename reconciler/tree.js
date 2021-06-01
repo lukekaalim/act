@@ -3,7 +3,7 @@
 
 /*:: import type { StateID, ComponentState } from './state2.js'; */
 /*:: import type { ContextState } from './context.js'; */
-/*:: import type { CreateDiff, UpdateDiff } from './commit2.js'; */
+/*:: import type { CommitDiff } from './commit2.js'; */
 
 import { createCommitService, getStateId } from "./commit2.js";
 import { createComponentService } from "./component.js";
@@ -17,8 +17,7 @@ export type Tree = {|
 |};
 
 export type TreeOptions = {
-  onCreate?: CreateDiff => mixed,
-  onUpdate?: UpdateDiff => mixed,
+  onDiff?: CommitDiff => mixed,
   scheduleWork?: (() => void) => mixed,
 };
 */
@@ -28,8 +27,7 @@ export const createTree = (
   options/*: TreeOptions*/ = {}
 )/*: Tree*/ => {
   const {
-    onCreate,
-    onUpdate,
+    onDiff = (d) => {},
     scheduleWork = (s) => setTimeout(s, 0)
   } = options;
 
@@ -47,7 +45,7 @@ export const createTree = (
     for (const [stateId, newState] of work) {
       const updateDiff = commit.updateWithState(root, newState.path);
       root = updateDiff.next;
-      onUpdate && onUpdate(updateDiff);
+      onDiff(updateDiff);
     }
   };
 
@@ -64,6 +62,6 @@ export const createTree = (
   const createDiff = commit.create(element);
   
   let { next: root } = createDiff;
-  onCreate && onCreate(createDiff);
+  onDiff(createDiff);
   return tree;
 };

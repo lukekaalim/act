@@ -1,9 +1,9 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Vector2, TreeNode } from './diagram'; */
-import { h } from '@lukekaalim/act';
+import { h, useState } from '@lukekaalim/act';
 import { DiagramRoot, TreeDiagram } from './diagram.js';
-import { SlideControls, SlideShow, loadUseSlideState, BorderlessSlide } from './slides.js';
+import { SlideControls, SlideShow, useSlideState, BorderlessSlide } from './slides.js';
 import { CodeBlock, EditableCodeBlock } from './code.js';
 
 const FromScratchTitle = () => [
@@ -23,8 +23,7 @@ const Topic = () => [
     h('li', {}, 'Emitting diff events'),
   ]),
 ];
-const Why = ({ active }, __, { hooks }) => {
-  const useSlideState = loadUseSlideState(hooks);
+const Why = ({ active }) => {
   const state = useSlideState(active, 3)
   return [
     h('h2', {}, 'Why?'),
@@ -80,10 +79,9 @@ const propEntryStyle = {
   padding: '0 8px 0 8px'
 };
 
-const HowToUse = ({ active }, __, { useState, hooks }) => {
+const HowToUse = ({ active }) => {
   const [name, setName] = useState('luke');
-  const useSlide = loadUseSlideState(hooks);
-  const state = useSlide(active, 1);
+  const state = useSlideState(active, 1);
   return [
     state,
     h('h2', {}, 'How to use react'),
@@ -167,8 +165,7 @@ const Terms = ({ activeTermIndex, terms }) => {
   ));
 };
 
-export const FirstTerms/*: Component<{ active: boolean }>*/ = ({ active }, __, { hooks }) => {
-  const useSlideState = loadUseSlideState(hooks);
+export const FirstTerms/*: Component<{ active: boolean }>*/ = ({ active }) => {
   const state = useSlideState(active, reactTerms.length);
 
   return [
@@ -213,8 +210,7 @@ const graphTerms = [
     Our tree is a Digraph, in that only the parent has a reference to the child.`]
 ]
 
-const AboutGraphs = ({ active }, __, { hooks }) => {
-  const useSlideState = loadUseSlideState(hooks);
+const AboutGraphs = ({ active }) => {
   const state = useSlideState(active, graphTerms.length);
 
   return [
@@ -279,7 +275,7 @@ const getTreeNodeFromExpression = (treeExpression/*: string*/)/*: ?TreeNode*/ =>
 
 const initialTree = getTreeNodeFromExpression(initialGraphCode) || { content: 'bad code', leaves: [] };
 
-const NodesAsGraphs = (_, __, { useState }) => {
+const NodesAsGraphs = () => {
   const diagramSize = { x: 1024, y: 324 };
   const [tree, setTree] = useState/*:: <TreeNode>*/(initialTree);
   const onTextInput = newExpression => {
@@ -299,8 +295,7 @@ const NodesAsGraphs = (_, __, { useState }) => {
   ];
 };
 
-const BuildingElementDataStructure = ({ active }, __, { hooks }) => {
-  const useSlideState = loadUseSlideState(hooks);
+const BuildingElementDataStructure = ({ active }) => {
   const state = useSlideState(active, 2);
   return [
     h('h2', {}, 'Building Element Data Structure'),
@@ -435,7 +430,7 @@ const rendererSectionStyle = {
   backgroundColor: 'white'
 };
 
-const SimpleRendererTest = (_, __, { useState }) => {
+const SimpleRendererTest = () => {
   const diagramSize = { x: 1024 - 128, y: 209 };
   const [expressionCode, setExpressionCode] = useState/*:: <string>*/(initialComponent);
   const [rootElement, setElement] = useState/*:: <?HTMLElement>*/(null);
@@ -465,8 +460,7 @@ const SimpleRendererTest = (_, __, { useState }) => {
   ]
 };
 
-const Downsides = ({ active }, _, { hooks }) => {
-  const useSlideState = loadUseSlideState(hooks);
+const Downsides = ({ active }) => {
   const state = useSlideState(active, 2);
   
   return [
@@ -589,7 +583,7 @@ const calculateBackgroundColor = index => {
   }
 }
 
-export const Intro/*: Component<{}>*/ = (_, __, { useState }) => {
+export const Intro/*: Component<{}>*/ = () => {
   const [index, setIndex] = useState(storedIndex ? parseInt(storedIndex) : 0);
   const changeIndex = (newIndex) => {
     window.localStorage.setItem('slide_index', newIndex);

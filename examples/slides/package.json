@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@lukekaalim/act": "*",
-    "@lukekaalim/act-html": "*"
+    "@lukekaalim/act-dom": "*"
   },
   "devDependencies": {
     "esbuild": "^0.11.20"

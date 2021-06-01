@@ -1,5 +1,5 @@
 {
-  "name": "@lukekaalim/act-html",
+  "name": "@lukekaalim/act-svg",
   "version": "0.1.0",
   "dependencies": {
     "@lukekaalim/act-reconciler": "^1.0.0"

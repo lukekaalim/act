@@ -2,7 +2,7 @@
 
 /*::
 
-declare class SVGElement extends Element {
+declare interface SVGElement extends Element {
   +style: CSSStyleDeclaration,
   ownerSVGElement: SVGSVGElement,
 }

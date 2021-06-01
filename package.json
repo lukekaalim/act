@@ -3,8 +3,7 @@
   "workspaces": [
     "library",
     "reconciler",
-    "renderers/html",
-    "renderers/svg",
+    "renderers/dom",
     "renderers/three",
     "examples/edge",
     "examples/web",

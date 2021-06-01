@@ -10,21 +10,22 @@ export type ElementNode =
   | $ReadOnlyArray<ElementNode>
   | Element
 
+export type ElementType = string | Component<Props>;
+
 export opaque type ElementID: string = string;
 export type Element = {|
   id: ElementID,
-  type: string | Component<Props>,
+  type: ElementType,
   props: { +[string]: mixed },
   children: $ReadOnlyArray<Element>,
 |};
 */
 
-
 const defaultProps = {};
 const defaultChildren = [];
 
-export const createElement = /*:: <T: Props>*/(
-  type/*: string | Component<T>*/,
+export const createElement = /*:: <T: {}>*/(
+  type/*: Component<T>*/,
   props/*: T*/ = (defaultProps/*: any*/),
   children/*: ElementNode*/ = defaultChildren
 )/*: Element*/ => ({

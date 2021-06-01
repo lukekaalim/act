@@ -1,6 +1,6 @@
 // @flow strict
 import { h, useState, useEffect } from '@lukekaalim/act';
-import { render } from '@lukekaalim/act-html';
+import { render } from '@lukekaalim/act-dom';
 
 const randomColor = () => {
   const hue = Math.floor(Math.random() * 360);
@@ -81,7 +81,6 @@ const Entry = ({ children }) => {
 const Root = () => {
   const [keys, setKeys] = useState('0,1,2,3')
   const [activeTermIndex, setIndex] = useState/*:: <number>*/(0)
-  console.log('render', activeTermIndex);
   return [
     h('h1', {}, 'Hello!'),
     h('input', { onInput: e => setKeys(e.currentTarget.value), value: keys }),
@@ -90,14 +89,17 @@ const Root = () => {
     ]),
     h('button', { onClick: () => setIndex(i => i + 1) }, 'Increase Index'),
     h('button', { onClick: () => setIndex(i => i - 1) }, 'Decrease Index'),
-    h(FirstTerms, {})
+    h('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 300 100", stroke: "red", fill: "grey" }, [
+      h('circle', { cx: "150", cy: "50", r: "4" }),
+    ]),
+    h(FirstTerms)
   ];
 };
 
 const main = () => {
   const { body } = document;
   if (body)
-    render(h(FirstTerms), body);
+    render(h(Root), body);
 };
 
 main();

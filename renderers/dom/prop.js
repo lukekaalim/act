@@ -1,11 +1,11 @@
 // @flow strict
-/*:: import type { PropDiff, CommitDiff } from '@lukekaalim/act-reconciler'; */
+/*:: import type { PropDiff, CommitDiff, UpdateDiff, CreateDiff } from '@lukekaalim/act-reconciler'; */
 import { calculatePropsDiff } from '@lukekaalim/act-reconciler'
 
-const propBlacklist = new Set(['ref']);
+const propBlacklist = new Set(['ref', 'key', 'children']);
 
 export const setStylesProp = (
-  element/*: HTMLElement*/,
+  element/*: HTMLElement | SVGElement*/,
   { prev, next }/*: PropDiff*/
 ) => {
   const style = element.style;
@@ -21,7 +21,7 @@ export const setStylesProp = (
 };
 
 export const setEventListenerProp = (
-  element/*: HTMLElement*/,
+  element/*: Element*/,
   { key, prev, next }/*: PropDiff*/
 ) => {
   const event = key.slice(2).toLowerCase();
@@ -33,7 +33,7 @@ export const setEventListenerProp = (
 };
 
 export const setAttributeProp = (
-  element/*: HTMLElement*/,
+  element/*: Element*/,
   { key, prev, next }/*: PropDiff*/
 ) => {
   if (next === null && typeof prev === 'string')
@@ -43,14 +43,14 @@ export const setAttributeProp = (
 };
 
 export const setHTMLProp = (
-  element/*: HTMLElement*/,
+  element/*: HTMLElement | SVGElement*/,
   prop/*: PropDiff*/
 ) => {
   if (prop.key.startsWith('on'))
     setEventListenerProp(element, prop);
   else if (prop.key === 'style')
     setStylesProp(element, prop);
-  else if (prop.key in element && !propBlacklist.has(prop.key))
+  else if (prop.key in element && !propBlacklist.has(prop.key) && element instanceof HTMLElement)
     // literal property set
     (element/*: Object*/)[prop.key] = prop.next;
   else
@@ -58,29 +58,27 @@ export const setHTMLProp = (
 }
 
 export const setHTMLProps = (
-  element/*: HTMLElement*/,
-  { prev, next }/*: CommitDiff*/
+  element/*: HTMLElement | SVGElement*/,
+  diff/*: UpdateDiff | CreateDiff*/
 ) => {
-  const propDiffs = calculatePropsDiff(prev ? prev.element.props : {}, next ? next.element.props : {})
+  const propDiffs = calculatePropsDiff(diff.prev ? diff.prev.element.props : {}, diff.next.element.props)
   for (const [_, propDiff] of propDiffs)
     setHTMLProp(element, propDiff);
 };
 
 export const setTextProps = (
   element/*: Text*/,
-  { prev, next }/*: CommitDiff*/
+  diff/*: UpdateDiff | CreateDiff*/
 ) => {
-  if (!next)
-    return;
-  const { content } = next.element.props;
+  const { content } = diff.next.element.props;
   element.textContent = typeof content === 'string' ? content : '';
 };
 
 export const setProps = (
   element/*: ?Node*/,
-  diff/*: CommitDiff*/
+  diff/*: UpdateDiff | CreateDiff*/
 ) => {
-  if (element instanceof HTMLElement)
+  if (element instanceof HTMLElement || element instanceof SVGElement)
     setHTMLProps(element, diff);
   if (element instanceof Text)
     setTextProps(element, diff);

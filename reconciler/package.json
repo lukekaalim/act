@@ -6,9 +6,11 @@
   "type": "module",
   "author": "Luke Kaalim",
   "license": "MIT",
-  "dependencies": {
-    "nanoid": "^3.1.20",
+  "dependencies": {},
+  "devDependencies": {
     "@lukekaalim/act": "^1.0.0"
   },
-  "devDependencies": {}
+  "peerDependencies": {
+    "@lukekaalim/act": "^1.0.0"
+  }
 }

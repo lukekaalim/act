@@ -1,6 +1,6 @@
 // @flow strict
-/*:: import type { Component, ComponentHooks } from '@lukekaalim/act'; */
-import { h, createContext } from '@lukekaalim/act';
+/*:: import type { Component } from '@lukekaalim/act'; */
+import { h, useState, useEffect } from '@lukekaalim/act';
 
 /*::
 export type SlideControlsProps = {|
@@ -19,7 +19,7 @@ const buttonStyle = {
 export type UseSlideState = (active: boolean, states: number) => number; 
 */
 
-export const loadUseSlideState = ({ useState, useEffect }/*: ComponentHooks*/)/*: UseSlideState*/ => (active, max) => {
+export const useSlideState/*: UseSlideState*/ = (active, max) => {
   const [slideState, setSlideState] = useState(0);
   useEffect(() => {
     const keydownListener = (e) => {
@@ -38,12 +38,12 @@ export const loadUseSlideState = ({ useState, useEffect }/*: ComponentHooks*/)/*
     };
     window.addEventListener('keydown', keydownListener);
     return () => window.removeEventListener('keydown', keydownListener);
-  }, [active, max, slideState])
+  }, [active, max, slideState]);
 
   return slideState;
 };
 
-export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange, count, index, visible = true }, [], { useEffect }) => {
+export const SlideControls/*: Component<SlideControlsProps>*/ = ({ onIndexChange, count, index, visible = true }) => {
   const onRangeChange = (e) => {
     onIndexChange(e.currentTarget.valueAsNumber);
   };
@@ -103,7 +103,7 @@ const slideStyle = {
   'flex-direction': 'column',
   padding: '64px'
 };
-export const Slide/*: Component<{}>*/ = (_, children) => {
+export const Slide/*: Component<{}>*/ = ({ children }) => {
   return h('section', { style: slideStyle }, children);
 };
 
@@ -112,7 +112,7 @@ const titleSlideStyle = {
   'align-items': 'center',
   'justify-content': 'center',
 }
-export const TitleSlide/*: Component<{}>*/ = (_, children) => {
+export const TitleSlide/*: Component<{}>*/ = ({ children }) => {
   return h('section', { style: titleSlideStyle }, children);
 };
 
@@ -121,7 +121,7 @@ const borderlessSlideStyle = {
   padding: 0,
 };
 
-export const BorderlessSlide /*: Component<{}>*/ = (_, children) => {
+export const BorderlessSlide /*: Component<{}>*/ = ({ children }) => {
   return h('section', { style: borderlessSlideStyle }, children);
 };
 

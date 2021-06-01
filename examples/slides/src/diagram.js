@@ -1,6 +1,6 @@
 // @flow strict
-/*:: import type { Component, Context, ComponentHooks, SetValue } from '@lukekaalim/act'; */
-import { h, createContext } from '@lukekaalim/act';
+/*:: import type { Component, Context, ElementNode} from '@lukekaalim/act'; */
+import { h, createContext, useEffect, useState } from '@lukekaalim/act';
 
 /*::
 export type Vector2 = {| x: number, y: number |};
@@ -15,48 +15,44 @@ export type Box = {|
 export const rootSVGNodeContext/*: Context<?SVGSVGElement>*/ = createContext(null);
 
 /*::
-export type UseDrag = (ref: ?HTMLElement) => [Vector2, SetValue<Vector2>];
+export type UseDrag = (ref: ?HTMLElement) => [Vector2, (Vector2 | (Vector2 => Vector2)) => void];
 */
 
-const loadDragHooks = ({ useEffect, useState }/*: ComponentHooks*/)/*: { useDrag: UseDrag }*/ => {
-  const useDrag = (ref) => {
-    const [drag, setDrag] = useState/*:: <Vector2>*/({ x: 0, y: 0 });
+const useDrag/*: UseDrag*/ = (ref) => {
+  const [drag, setDrag] = useState/*:: <Vector2>*/({ x: 0, y: 0 });
 
-    useEffect(() => {
-      if (!ref)
-        return;
-      const onMouseDown = (e/*: PointerEvent*/) => {
-        ref.addEventListener('pointermove', onPointerMove);
-        if (e.currentTarget instanceof Element)
-          e.currentTarget.setPointerCapture(e.pointerId)
-      };
-      const onMouseUp = (e/*: PointerEvent*/) => {
-        ref.removeEventListener('pointermove', onPointerMove)
-        if (e.currentTarget instanceof Element)
-          e.currentTarget.releasePointerCapture(e.pointerId)
-      };
-      const onPointerMove = (e/*: MouseEvent*/) => {
-        e.preventDefault();
-        const updateDrag = p => ({ x: p.x + e.movementX, y: p.y + e.movementY });
-        setDrag(updateDrag)
-      };
-      ref.addEventListener('pointerdown', onMouseDown);
-      ref.addEventListener('pointerup', onMouseUp);
-      return () => {
-        ref.removeEventListener('pointerdown', onMouseDown);
-        ref.removeEventListener('pointerup', onMouseUp);
-        ref.removeEventListener('pointermove', onPointerMove);
-      };
-    }, [ref])
-    
-    return [drag, setDrag];
-  };
-  return { useDrag };
+  useEffect(() => {
+    if (!ref)
+      return;
+    const onMouseDown = (e/*: PointerEvent*/) => {
+      ref.addEventListener('pointermove', onPointerMove);
+      if (e.currentTarget instanceof Element)
+        e.currentTarget.setPointerCapture(e.pointerId)
+    };
+    const onMouseUp = (e/*: PointerEvent*/) => {
+      ref.removeEventListener('pointermove', onPointerMove)
+      if (e.currentTarget instanceof Element)
+        e.currentTarget.releasePointerCapture(e.pointerId)
+    };
+    const onPointerMove = (e/*: MouseEvent*/) => {
+      e.preventDefault();
+      const updateDrag = p => ({ x: p.x + e.movementX, y: p.y + e.movementY });
+      setDrag(updateDrag)
+    };
+    ref.addEventListener('pointerdown', onMouseDown);
+    ref.addEventListener('pointerup', onMouseUp);
+    return () => {
+      ref.removeEventListener('pointerdown', onMouseDown);
+      ref.removeEventListener('pointerup', onMouseUp);
+      ref.removeEventListener('pointermove', onPointerMove);
+    };
+  }, [ref])
+  
+  return [drag, setDrag];
 };
 
-export const DiagramRoot/*: Component<{| size: Vector2 |}>*/ = ({ size }, children, { hooks, useState }) => {
+export const DiagramRoot/*: Component<{| size: Vector2 |}>*/ = ({ size, children }) => {
   const [svg, setSVG] = useState/*:: <?HTMLElement>*/(null);
-  const { useDrag } = loadDragHooks(hooks);
 
   const [position] = useDrag(svg);
   const svgProps = {
@@ -67,7 +63,7 @@ export const DiagramRoot/*: Component<{| size: Vector2 |}>*/ = ({ size }, childr
     style: { userSelect: 'none', flexGrow: 1 }
   };
   
-  return h('svg:svg', svgProps, children);
+  return h('svg', svgProps, children);
 };
 
 /*::
@@ -98,10 +94,10 @@ export const DiagramVertex/*: Component<DiagramVertexProps>*/ = ({
   const rectWidth = (label.length * charWidth) + 20;
 
   const rectProps = {
-    width: rectWidth,
-    height: rectHeight,
-    x: position.x - (rectWidth/2),
-    y: position.y - (rectHeight/2),
+    width: rectWidth + 'px',
+    height: rectHeight + 'px',
+    x: position.x - (rectWidth/2) + 'px',
+    y: position.y - (rectHeight/2) + 'px',
     rx: 8,
     stroke: borderColor,
     fill: backgroundColor,
@@ -117,8 +113,8 @@ export const DiagramVertex/*: Component<DiagramVertexProps>*/ = ({
     lengthAdjust: "spacingAndGlyphs"
   };
   return [
-    h('svg:rect', rectProps),
-    h('svg:text', textProps, label),
+    h('rect', rectProps),
+    h('text', textProps, label),
     // h('svg:circle', { cx: position.x, cy: position.y, fill: 'red', r: 5 }), // just for marking the origin
   ];
 };
@@ -139,7 +135,7 @@ export const DiagramEdge/*: Component<DiagramEdgeProps>*/ = ({ start, end }) => 
     points: [createPoint(start), createPoint(end)].join(' '),
   };
   return [
-    h('svg:polyline', polyLineProps)
+    h('polyline', polyLineProps)
   ]
 };
 

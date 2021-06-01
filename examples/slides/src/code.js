@@ -30,9 +30,9 @@ const codeTextAreaStyle = {
   border: 'none'
 }
 
-export const CodeBlock/*: Component<{}>*/ = (_, code) => {
+export const CodeBlock/*: Component<{}>*/ = ({ children }) => {
   return h('section', { style: codeBlockContainer }, [
-    h('code', { style: codeBlock }, code),
+    h('code', { style: codeBlock }, children),
   ]);
 };
 

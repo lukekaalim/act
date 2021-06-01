@@ -2,7 +2,7 @@
 /*:: import type { UseEffectData } from './hooks/useEffect.js'; */
 /*:: import type { UseContextData } from './hooks/useContext.js'; */
 /*:: import type { UseStateData } from './hooks/useState.js'; */
-import { nanoid } from 'nanoid/non-secure';
+import { createId } from '@lukekaalim/act';
 
 /*::
 export opaque type StateID: string = string;
@@ -16,7 +16,7 @@ export type ComponentState = {|
   useContextData: UseContextData,
 |};
 */
-export const generateStateID = ()/*: StateID*/ => nanoid(8);
+export const generateStateID = ()/*: StateID*/ => createId();
 export const generateStatePath = (
   id/*: StateID*/,
   prevPath/*: StatePath*/ = []

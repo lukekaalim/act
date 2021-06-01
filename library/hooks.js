@@ -2,7 +2,7 @@
 /*:: import type { Context } from './context.js'; */
 /*::
 type Updater<T> = (previousValue: T) => T;
-type SetValue<T> = (value: T | Updater<T>) => mixed;
+type SetValue<T> = (value: T | Updater<T>) => void;
 export type UseState = <T>(initialValue: T) => [T, SetValue<T>];
 
 type CleanupFunc = () => mixed;

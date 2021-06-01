@@ -1,7 +1,6 @@
 // @flow strict
 /*:: import type { Element } from '@lukekaalim/act'; */
-
-import { nanoid } from 'nanoid/non-secure';
+import { createId } from '@lukekaalim/act';
 import { calculatePersisted } from './diff.js';
 import { elementsAreEqual } from './element.js';
 import { generateStateID, generateStatePath } from './state2.js';
@@ -20,19 +19,77 @@ export type Commit = {|
   element: Element,
   children: $ReadOnlyArray<Commit>,
 |};
+*/
+export const createCommitId = ()/*: CommitID*/ => createId();
 
-export type CommitDiffBase = { children: $ReadOnlyArray<CommitDiff> }
-
-export type CreateDiff = CommitDiffBase & { prev: null, next: Commit };
-export type UpdateDiff = CommitDiffBase & { prev: Commit, next: Commit };
-export type RemoveDiff = CommitDiffBase & { prev: Commit, next: null };
+/*::
+export type CreateDiff = {|
+  type: 'create',
+  stateId: StateID,
+  prev: null, next: Commit,
+  children: $ReadOnlyArray<CommitDiff>
+|};
+export type UpdateDiff = {|
+  type: 'update',
+  stateId: StateID,
+  prev: Commit, next: Commit,
+  children: $ReadOnlyArray<CommitDiff>
+|};
+export type PersistDiff = {|
+  type: 'persist',
+  stateId: StateID,
+  curr: Commit,
+|};
+export type RemoveDiff = {|
+  type: 'remove',
+  stateId: StateID,
+  prev: Commit, next: null,
+  children: $ReadOnlyArray<CommitDiff>,
+|};
 
 export type CommitDiff = 
   | CreateDiff
   | UpdateDiff
+  | PersistDiff
   | RemoveDiff
 */
 export const getStateId = (statePath/*: StatePath*/)/*: StateID*/ => statePath[statePath.length - 1];
+
+const createDiff = (
+  next/*: Commit*/,
+  children/*: $ReadOnlyArray<CommitDiff>*/
+)/*: CreateDiff*/ => ({
+  type: 'create',
+  stateId: next.stateId,
+  prev: null, next,
+  children,
+});
+const updateDiff = (
+  prev/*: Commit*/,
+  next/*: Commit*/,
+  children/*: $ReadOnlyArray<CommitDiff>*/
+)/*: UpdateDiff*/ => ({
+  type: 'update',
+  stateId: next.stateId,
+  prev, next,
+  children,
+});
+const persistDiff = (
+  curr/*: Commit*/,
+)/*: PersistDiff*/ => ({
+  type: 'persist',
+  stateId: curr.stateId,
+  curr,
+});
+export const removeDiff = (
+  prev/*: Commit*/,
+  children/*: $ReadOnlyArray<CommitDiff>*/
+)/*: RemoveDiff*/ => ({
+  type: 'remove',
+  stateId: prev.stateId,
+  prev, next: null,
+  children,
+});
 
 /*::
 export type CommitService = {|
@@ -56,13 +113,13 @@ export const createCommitService = (componentService/*: ComponentService*/, cont
 
   const create = (element/*: Element*/, parentPath/*:: ?: StatePath*/)/*: CreateDiff*/ => {
     const stateId = generateStateID()
-    const commitId = nanoid(8);
+    const commitId = createCommitId();
     const statePath = generateStatePath(stateId, parentPath);
 
     const elementChildren = traverse(statePath, element);
     
     const diffChildren = elementChildren.map(childElement => create(childElement, statePath));
-    const commitChildren = diffChildren.map(c => c.next).filter(Boolean);
+    const commitChildren = diffChildren.map(c => c.next);
   
     const commit = {
       commitId,
@@ -72,78 +129,59 @@ export const createCommitService = (componentService/*: ComponentService*/, cont
       element,
       children: commitChildren,
     };
-    return {
-      prev: null,
-      next: commit,
-      children: diffChildren,
-    };
+    return createDiff(commit, diffChildren);
   };
   const updateWithElement = (prev/*: Commit*/, element/*: Element*/)/*: UpdateDiff*/ => {
-    const commitId = nanoid(8);
-    // Get new elements
+    const commitId = createCommitId();
     const childElements = traverse(prev.statePath, element);
-    // See if we can re-use any
     const persisted = calculatePersisted(prev.children, childElements);
-    // Build diffs for elements removed
     const removed = prev.children
       .filter(c => !persisted.has(c.element.id))
       .map(c => remove(c));
+
     // Build diffs for elements created or updated
     const createdOrUpdated = childElements
-      .map(e => {
-        const persistedElement = persisted.get(e.id);
+      .map(element => {
+        const persistedElement = persisted.get(element.id);
         if (persistedElement)
           if (elementsAreEqual(persistedElement.prev, persistedElement.next))
-            return ({
-              prev: persistedElement.commit,
-              next: persistedElement.commit,
-              children: []
-            }/*: UpdateDiff*/);
+            return persistDiff(persistedElement.commit);
           else
             return updateWithElement(persistedElement.commit, persistedElement.next);
-        return create(e, prev.statePath);
+        else
+          return create(element, prev.statePath);
       });
 
-    const nextCommit/*: Commit*/ = {
+    const next/*: Commit*/ = {
       ...prev,
       element,
       commitId,
-      children: createdOrUpdated.map(d => d.next),
+      children: createdOrUpdated.map(d => d.next || d.curr),
     };
     
-    return {
-      prev,
-      next: nextCommit,
-      children: [...removed, ...createdOrUpdated],
-    }
+    return updateDiff(prev, next, [...removed, ...createdOrUpdated]);
   };
   const updateWithState = (prev/*: Commit*/, path/*: StatePath*/)/*: UpdateDiff*/ => {
-    const commitId = nanoid(8);
+    const commitId = createCommitId();
     const stateId = getStateId(path);
     // Trigger re-render
     if (prev.stateId === stateId)
       return updateWithElement(prev, prev.element);
     
     // Check if child may be part of state
-    const updated/*: UpdateDiff[]*/ = prev.children
-      .map(c => path.includes(c.stateId) ?
-        updateWithState(c, path) :
-        { prev: c, next: c, children: [] });
+    const updated = prev.children
+      .map(c => path.includes(c.stateId) ? updateWithState(c, path) : persistDiff(c));
     // Build a commit 
-    const commit = {
+    const next = {
       ...prev,
       commitId,
-      children: updated.map(d => d.next)
+      children: updated.map(d => d.next || d.curr)
     };
 
-    return {
-      prev,
-      next: commit,
-      children: updated,
-    }
+    return updateDiff(prev, next, updated)
   };
   const remove = (prev/*: Commit*/)/*: RemoveDiff*/ => {
-    if (prev.element.type === 'function')
+    if (typeof prev.element.type === 'function')
       componentService.teardownComponent(prev.statePath);
     
     if (prev.element.type === 'act:context')
@@ -151,11 +189,7 @@ export const createCommitService = (componentService/*: ComponentService*/, cont
 
     const children = prev.children.map(childCommit => remove(childCommit));
 
-    return {
-      prev,
-      next: null,
-      children,
-    }
+    return removeDiff(prev, children);
   };
 
   return {
