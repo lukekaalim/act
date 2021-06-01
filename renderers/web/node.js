@@ -17,10 +17,10 @@ export const removeNode = (node/*: Node*/) => {
   if (parent)
     parent.removeChild(node);
 }
-export const attachNodes = (parent/*: Node*/, children/*: Node[]*/) => {
+export const attachNodes = (parent/*: Node*/, children/*: Node[]*/, sibling/*: ?Node*/ = null) => {
   for (let i = 0; i < children.length; i++) {
     const child = children[children.length - i - 1];
-    const prevChild = children[children.length - i];
+    const prevChild = children[children.length - i] || sibling;
     if (parent !== child.parentNode || (prevChild && child.nextSibling !== prevChild))
       parent.insertBefore(child, prevChild);
   }
