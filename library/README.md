@@ -3,6 +3,8 @@ Small react-like library for rendering components.
 
 > ⚠️ Warning: This library is designed as an experiment, and should not be used for production.
 
+> ⚠️ Warning: This library is only available as an ESM.
+
 ## Types
 ### `Component<T>`
 ```
@@ -37,3 +39,15 @@ where
 T: { [string]: mixed }
 ```
 Creates a new Element.
+
+```js
+h('section', { className: 'my-section' }, [
+  h('h2', {}, 'My Document Title'),
+  h('ul', {}, [
+    ...dotPoints.map(point =>
+      h(DotPoint, { name: point.name }, point.content))
+  ]),
+  displayComments ? h(Comments) : null,
+])
+
+```

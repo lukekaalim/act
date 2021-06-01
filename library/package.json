@@ -9,6 +9,7 @@
     "postversion": "../scripts/postversion.sh",
     "preversion": "npm run test"
   },
+  "sideEffects": false,
   "author": "luke kaalim",
   "license": "MIT"
 }
