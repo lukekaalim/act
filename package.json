@@ -1,6 +1,7 @@
 {
   "private": true,
   "workspaces": [
+    "test",
     "library",
     "reconciler",
     "renderers/dom",
@@ -8,5 +9,8 @@
     "examples/edge",
     "examples/web",
     "examples/slides"
-  ]
+  ],
+  "scripts": {
+    "test": "cd test; npm test"
+  }
 }
