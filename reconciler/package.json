@@ -4,6 +4,7 @@
   "description": "React-like UI library",
   "main": "main.js",
   "type": "module",
+  "sideEffects": false,
   "author": "Luke Kaalim",
   "license": "MIT",
   "dependencies": {},
