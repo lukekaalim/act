@@ -1,0 +1,23 @@
+name: "Publish @lukekaalim/act"
+
+on:
+  push:
+    tags:
+      - '@lukekaalim/act@*'
+
+jobs:
+  publish-client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: library
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
