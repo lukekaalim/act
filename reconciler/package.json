@@ -7,6 +7,11 @@
   "sideEffects": false,
   "author": "Luke Kaalim",
   "license": "MIT",
+  "scripts": {
+    "test": "cd ..; npm test",
+    "postversion": "../scripts/postversion.sh",
+    "preversion": "npm run test"
+  },
   "dependencies": {},
   "devDependencies": {
     "@lukekaalim/act": "*"

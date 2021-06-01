@@ -4,6 +4,11 @@
   "type": "module",
   "version": "0.1.0",
   "sideEffects": false,
+  "scripts": {
+    "test": "cd ../..; npm test",
+    "postversion": "../../scripts/postversion.sh",
+    "preversion": "npm run test"
+  },
   "dependencies": {
     "@lukekaalim/act-reconciler": "^1.0.0"
   },
