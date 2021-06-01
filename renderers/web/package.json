@@ -1,5 +1,5 @@
 {
-  "name": "@lukekaalim/act-dom",
+  "name": "@lukekaalim/act-web",
   "main": "main.js",
   "type": "module",
   "version": "0.1.0",
@@ -10,6 +10,6 @@
     "@lukekaalim/act": "*"
   },
   "peerDependencies": {
-    "@lukekaalim/act": "*"
+    "@lukekaalim/act": "^2.0.3"
   }
 }

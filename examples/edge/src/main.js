@@ -1,6 +1,6 @@
 // @flow strict
 import { h, useState, useEffect } from '@lukekaalim/act';
-import { render } from '@lukekaalim/act-dom';
+import { render } from '@lukekaalim/act-web';
 
 const randomColor = () => {
   const hue = Math.floor(Math.random() * 360);

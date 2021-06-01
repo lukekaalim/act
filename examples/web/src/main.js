@@ -1,5 +1,5 @@
 // @flow strict
-import { render } from '@lukekaalim/act-dom';
+import { render } from '@lukekaalim/act-web';
 import { createElement as h, useState } from '@lukekaalim/act';
 
 const ToggleButton = () => {

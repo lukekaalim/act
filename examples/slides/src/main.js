@@ -1,6 +1,6 @@
 // @flow strict
 import { h } from '@lukekaalim/act';
-import { render } from '@lukekaalim/act-dom';
+import { render } from '@lukekaalim/act-web';
 import { Intro } from './intro';
 
 const main = () => {

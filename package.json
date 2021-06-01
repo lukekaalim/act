@@ -4,7 +4,7 @@
     "test",
     "library",
     "reconciler",
-    "renderers/dom",
+    "renderers/web",
     "renderers/three",
     "examples/edge",
     "examples/web",
