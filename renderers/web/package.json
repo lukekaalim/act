@@ -3,6 +3,7 @@
   "main": "main.js",
   "type": "module",
   "version": "0.1.0",
+  "sideEffects": false,
   "dependencies": {
     "@lukekaalim/act-reconciler": "^1.0.0"
   },
