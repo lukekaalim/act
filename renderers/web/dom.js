@@ -2,7 +2,7 @@
 /*:: import type { ElementType } from '@lukekaalim/act'; */
 /*:: import type { CommitDiff, StateID } from '@lukekaalim/act-reconciler'; */
 /*:: import type { RenderService } from './main.js'; */
-import { setProps } from './prop.js';
+import { setProps, setRef } from './prop.js';
 import { createNode, attachNodes, removeNode } from './node.js';
 
 export const createDOMRenderer = (
@@ -34,6 +34,7 @@ export const createDOMRenderer = (
     if (!node)
       return children;
 
+    setRef(node, diff);
     if (diff.type === 'remove')
       return (removeNode(node), []);
   

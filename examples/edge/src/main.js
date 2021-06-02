@@ -79,10 +79,12 @@ const Entry = ({ children }) => {
 };
 
 const Root = () => {
+  const [ref, setRef] = useState(null);
+  console.log(ref);
   const [keys, setKeys] = useState('0,1,2,3')
   const [activeTermIndex, setIndex] = useState/*:: <number>*/(0)
   return [
-    h('h1', {}, 'Hello!'),
+    h('h1', { ref: setRef }, 'Hello!'),
     h('input', { onInput: e => setKeys(e.currentTarget.value), value: keys }),
     h('ul', { style: { padding: 0, display: 'flex' } }, [
       ...keys.split(',').filter(Boolean).map(key => h('li', { key, style: { display: 'flex' } }, h(Entry, {}, key)))

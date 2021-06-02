@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { PropDiff, CommitDiff, UpdateDiff, CreateDiff } from '@lukekaalim/act-reconciler'; */
+/*:: import type { PropDiff, CommitDiff, UpdateDiff, CreateDiff, RemoveDiff } from '@lukekaalim/act-reconciler'; */
 import { calculatePropsDiff } from '@lukekaalim/act-reconciler'
 
 const propBlacklist = new Set(['ref', 'key', 'children']);
@@ -82,4 +82,16 @@ export const setProps = (
     setHTMLProps(element, diff);
   if (element instanceof Text)
     setTextProps(element, diff);
+};
+
+export const setRef = (
+  node/*: ?Node*/,
+  diff/*: UpdateDiff | CreateDiff | RemoveDiff*/
+) => {
+  const onRef = (diff.next || diff.prev).element.props['ref'];
+  if (typeof onRef === 'function')
+    if (diff.type === 'create')
+      (onRef/*: Function*/)(node);
+    else if(diff.type === 'remove')
+      (onRef/*: Function*/)(null);
 };
