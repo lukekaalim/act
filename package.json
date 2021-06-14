@@ -8,7 +8,9 @@
     "renderers/three",
     "examples/edge",
     "examples/web",
-    "examples/slides"
+    "examples/slides",
+    "examples/components",
+    "libraries/curve"
   ],
   "scripts": {
     "test": "cd test; npm test"

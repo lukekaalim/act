@@ -1,0 +1,20 @@
+{
+  "name": "@lukekaalim/act-curve",
+  "version": "0.1.0",
+  "description": "Hooks for fast-updating easing function for DOM nodes",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "test": "cd ../../; npm test;",
+    "postversion": "../scripts/postversion.sh",
+    "preversion": "npm run test"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@lukekaalim/act": "*"
+  },
+  "peerDependencies": {
+    "@lukekaalim/act": "^2.0.3"
+  }
+}

@@ -3,7 +3,7 @@
 /*::
 type Updater<T> = (previousValue: T) => T;
 type SetValue<T> = (value: T | Updater<T>) => void;
-export type UseState = <T>(initialValue: T) => [T, SetValue<T>];
+export type UseState = <T>(initialValue: T | () => T) => [T, SetValue<T>];
 
 type CleanupFunc = () => mixed;
 type Deps = null | mixed[];
@@ -11,6 +11,9 @@ type Effect = () => ?CleanupFunc;
 export type UseEffect = (effect: Effect, deps?: Deps) => void;
 
 export type UseContext = <T>(context: Context<T>) => T;
+
+export type UseMemo = <T>(calc: () => T, deps?: Deps) => T;
+export type UseRef = <T>(initial: T) => { current: T };
 
 export type Hooks = {|
   useState: UseState,
@@ -33,3 +36,29 @@ let registry/*: Hooks*/ = {
 export const useState/*: UseState*/ = /*:: <T>*/(initialValue) => registry.useState(initialValue);
 export const useEffect/*: UseEffect*/ = (effect, deps) => registry.useEffect(effect, deps);
 export const useContext/*: UseContext*/ = /*:: <T>*/(context) => registry.useContext(context);
+
+export const useRef/*: UseRef*/ = /*:: <T>*/(initialValue/*: T*/)/*: { current: T }*/ => {
+  const [value] = useState/*:: <{ current: T }>*/({ current: initialValue })
+  return value;
+};
+
+export const useMemo/*: UseMemo*/ = /*:: <T>*/(calc/*: () => T*/, deps/*: Deps*/ = [])/*: T*/ => {
+  const { current: memoState } = useRef/*:: <{ isSet: boolean, value: T, oldDeps: Deps }>*/({
+    isSet: false,
+    value: (null/*: any*/),
+    oldDeps: deps
+  });
+  if (!memoState.isSet) {
+    memoState.isSet = true;
+    memoState.value = calc();
+    return memoState.value;
+  }
+  const { oldDeps } = memoState;
+  if ((deps && oldDeps) && (
+    deps.length !== oldDeps ||
+    deps.every((dep, i) => dep !== oldDeps[i])
+  )) {
+    memoState.value = calc();
+  }
+  return memoState.value;
+};
