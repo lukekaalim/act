@@ -15,6 +15,6 @@
     "@lukekaalim/act": "*"
   },
   "peerDependencies": {
-    "@lukekaalim/act": "^2.0.3"
+    "@lukekaalim/act": "^2.1.0"
   }
 }
