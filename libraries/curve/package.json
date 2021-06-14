@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "cd ../../; npm test;",
-    "postversion": "../scripts/postversion.sh",
+    "postversion": "../../scripts/postversion.sh",
     "preversion": "npm run test"
   },
   "author": "",
