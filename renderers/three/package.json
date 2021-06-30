@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "Render threejs content using act",
   "main": "main.js",
+  "type": "module",
   "scripts": {
-    "test": "cd ../../; npm test;"
+    "test": "cd ../../; npm test;",
+    "postversion": "../../scripts/postversion.sh",
+    "preversion": "npm run test"
   },
-  "author": "",
+  "author": "Luke Kaalim",
   "license": "ISC",
   "dependencies": {
     "@lukekaalim/act": "^2.2.0",
