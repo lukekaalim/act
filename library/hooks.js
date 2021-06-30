@@ -1,12 +1,12 @@
 // @flow strict
 /*:: import type { Context } from './context.js'; */
 /*::
-type Updater<T> = (previousValue: T) => T;
-type SetValue<T> = (value: T | Updater<T>) => void;
+export type Updater<T> = (previousValue: T) => T;
+export type SetValue<T> = (value: T | Updater<T>) => void;
 export type UseState = <T>(initialValue: T | () => T) => [T, SetValue<T>];
 
 type CleanupFunc = () => mixed;
-type Deps = null | mixed[];
+export type Deps = null | mixed[];
 type Effect = () => ?CleanupFunc;
 export type UseEffect = (effect: Effect, deps?: Deps) => void;
 
