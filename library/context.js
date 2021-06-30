@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Component } from './component.js'; */
 import { createElement } from './element.js';
-import { createId } from './ids';
+import { createId } from './ids.js';
 /*::
 export opaque type ContextID: string = string;
 
