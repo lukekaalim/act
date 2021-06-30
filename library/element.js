@@ -14,10 +14,10 @@ export type ElementType = string | Component<Props>;
 
 export opaque type ElementID: string = string;
 export type Element = {|
-  id: ElementID,
-  type: ElementType,
-  props: { +[string]: mixed },
-  children: $ReadOnlyArray<Element>,
+  +id: ElementID,
+  +type: ElementType,
+  +props: { +[string]: mixed },
+  +children: $ReadOnlyArray<Element>,
 |};
 */
 
