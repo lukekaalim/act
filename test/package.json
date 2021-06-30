@@ -2,7 +2,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@lukekaalim/test": "^8.1.0"
+    "@lukekaalim/test": "^8.3.0"
   },
   "scripts": {
     "test": "node entry.js"

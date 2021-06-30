@@ -1,10 +1,19 @@
 // @flow strict
 import { assert, colorReporter, exitCodeReporter } from '@lukekaalim/test';
 
+import { testSchedule } from './reconciler.js';
+import { testComponentService } from './component.js';
+import { testTree } from './tree.js';
+
 export const test = () => {
-  const assertion = assert('Act Monorepo Tests', [
+  console.clear();
+  const assertion = assert('all tests', [
     assert('@lukekaalim/act', true),
-    assert('@lukekaalim/act-reconciler', true),
+    assert('@lukekaalim/act-reconciler', [
+      testSchedule(),
+      testComponentService(),
+      testTree()
+    ]),
     assert('@lukekaalim/act-dom', true),
   ]);
   console.log(colorReporter(assertion));
