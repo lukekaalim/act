@@ -452,8 +452,8 @@ const SimpleRendererTest = () => {
   return [
     h('h2', {}, 'Try out the simple renderer!'),
     h(EditableCodeBlock, { text: expressionCode, onTextChange: setExpressionCode }),
-    h('button', { onClick: onRenderClick, style: { fontSize: '24px', maring: '12px', width: '256px' } }, 'Render'),
-    h('section', { style: rendererSectionStyle, onDOMRef: setElement }),
+    h('button', { onClick: onRenderClick, style: { fontSize: '24px', width: '256px' } }, 'Render'),
+    h('section', { style: rendererSectionStyle, ref: setElement }),
     h(DiagramRoot, { size: diagramSize }, [
       h(TreeDiagram, { position: { x: diagramSize.x/2, y: diagramSize.y - 32 }, tree, offset: { x: 256, y: 64 } })
     ])

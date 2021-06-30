@@ -1,0 +1,17 @@
+{
+  "name": "@lukekaalim/act-three",
+  "version": "1.0.0",
+  "description": "Render threejs content using act",
+  "main": "main.js",
+  "scripts": {
+    "test": "cd ../../; npm test;"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@lukekaalim/act": "^2.2.0",
+    "@lukekaalim/act-reconciler": "^2.0.0",
+    "@lukekaalim/act-web": "^0.4.0",
+    "three": "^0.130.0"
+  }
+}

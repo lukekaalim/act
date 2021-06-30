@@ -1,13 +1,14 @@
 {
+  "private": true,
   "scripts": {
     "dev": "esbuild src/main.js --servedir=www --outdir=www/js --bundle --sourcemap"
   },
   "type": "module",
   "dependencies": {
     "@lukekaalim/act": "*",
-    "@lukekaalim/act-web": "*",
-    "@lukekaalim/act-curve": "*",
-    "number-to-words": "1.2.4"
+    "@lukekaalim/act-curve": "^2.0.0",
+    "@lukekaalim/act-three": "^1.0.0",
+    "@lukekaalim/act-web": "*"
   },
   "devDependencies": {
     "esbuild": "^0.11.20"

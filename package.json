@@ -10,9 +10,13 @@
     "examples/web",
     "examples/slides",
     "examples/components",
+    "examples/renderers",
     "libraries/curve"
   ],
   "scripts": {
     "test": "cd test; npm test"
+  },
+  "devDependencies": {
+    "flow-bin": "^0.154.0"
   }
 }

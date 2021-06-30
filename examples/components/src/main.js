@@ -1,32 +1,33 @@
 // @flow strict
-import { h, useState } from '@lukekaalim/act';
+import { h, useRef, useState } from '@lukekaalim/act';
 import { render } from '@lukekaalim/act-web';
 import { useCurve, useCurves } from '@lukekaalim/act-curve';
 import { toWords } from 'number-to-words';
 
 const App = () => {
-  const [ref, setRef] = useState/*:: <?HTMLElement>*/(null);
-  const [ref2, setRef2] = useState/*:: <?HTMLElement>*/(null);
+  const ref = useRef();
+  const ref2 = useRef();
   const [v, setV] = useState(0);
   const [duration, setDuration] = useState(1000);
   const [t, toggle] = useState(false);
 
-  useCurve(v, x => ref && (
-    ref.style.transform = `translate(${x}px)`,
-    ref.textContent = toWords(x),
-    ref.style.backgroundColor = `hsl(${Math.floor(x) % 360}, 70%, 80%)`
+  useCurve(v, x => ref.current && (
+    ref.current.style.transform = `translate(${x}px)`,
+    ref.current.textContent = toWords(x),
+    ref.current.style.backgroundColor = `hsl(${Math.floor(x) % 360}, 70%, 80%)`
   ), { duration });
 
   const v2 = t ? { x: 0, y: 0 } : { x: 150, y: 150 };
 
-  useCurves(v2, v2 => ref2 && (
-    ref2.textContent = JSON.stringify({ x: Math.floor(v2.x), y: Math.floor(v2.y) })
+  useCurves(v2, v2 => ref2.current && (
+    ref2.current.textContent = JSON.stringify({ x: Math.floor(v2.x), y: Math.floor(v2.y) }),
+    ref2.current.style.transform = `translate(${v2.x}px, ${v2.y}px)`
   ));
 
   return [
-    h('p', { ref: setRef, style: { padding: 20, display: 'inline-block', position: 'relative' } }),
+    h('p', { ref, style: { padding: 20, display: 'inline-block', position: 'relative' } }),
     h('br'),
-    h('p', { ref: setRef2, style: { padding: 20, display: 'inline-block', position: 'relative' } }),
+    h('p', { ref: ref2, style: { padding: 20, display: 'inline-block', position: 'relative' } }),
     h('br'),
     h('input', { type: 'number', value: v, onInput: (e) => setV(e.target.valueAsNumber || 0) }),
     h('input', { type: 'number', value: duration, onInput: (e) => setDuration(e.target.valueAsNumber || 0) }),
