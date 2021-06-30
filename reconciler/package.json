@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-reconciler",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "React-like UI library",
   "main": "main.js",
   "type": "module",
