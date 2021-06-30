@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { Element } from '@lukekaalim/act'; */
-/*:: import type { CommitDiff, StateID } from '@lukekaalim/act-reconciler'; */
+/*:: import type { CommitDiff } from '@lukekaalim/act-reconciler'; */
 /*:: import type { RenderService } from './main.js'; */
 
 export const createNode = (element/*: Element*/, namespace/*: string*/)/*: ?Node*/ => {
@@ -21,7 +21,8 @@ export const attachNodes = (parent/*: Node*/, children/*: Node[]*/, sibling/*: ?
   for (let i = 0; i < children.length; i++) {
     const child = children[children.length - i - 1];
     const prevChild = children[children.length - i] || sibling;
-    if (parent !== child.parentNode || (prevChild && child.nextSibling !== prevChild))
+    if (parent !== child.parentNode || (prevChild && child.nextSibling !== prevChild)) {
       parent.insertBefore(child, prevChild);
+    }
   }
 };

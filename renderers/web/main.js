@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { Element } from '@lukekaalim/act'; */
-/*:: import type { Commit, CommitDiff, CreateDiff, StateID } from '@lukekaalim/act-reconciler'; */
+/*:: import type { CommitDiff } from '@lukekaalim/act-reconciler'; */
 import { createTree } from '@lukekaalim/act-reconciler';
 import { attachNodes } from './node.js';
 import { createWebRenderService } from './web.js';
@@ -16,7 +16,7 @@ export const render = (element/*: Element*/, node/*: HTMLElement*/) => {
   const onDiff = diff => attachNodes(node, web.render(diff));
   const options = {
     onDiff,
-    scheduleWork: requestAnimationFrame,
+    scheduleWork: (c) => requestAnimationFrame(() => void c()),
   };
   const tree = createTree(element, options);
 };

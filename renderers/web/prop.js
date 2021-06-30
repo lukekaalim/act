@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { PropDiff, CommitDiff, UpdateDiff, CreateDiff, RemoveDiff } from '@lukekaalim/act-reconciler'; */
+/*:: import type { PropDiff, CommitDiff } from '@lukekaalim/act-reconciler'; */
 import { calculatePropsDiff } from '@lukekaalim/act-reconciler'
 
 const propBlacklist = new Set(['ref', 'key', 'children']);
@@ -59,16 +59,16 @@ export const setHTMLProp = (
 
 export const setHTMLProps = (
   element/*: HTMLElement | SVGElement*/,
-  diff/*: UpdateDiff | CreateDiff*/
+  diff/*: CommitDiff*/
 ) => {
-  const propDiffs = calculatePropsDiff(diff.prev ? diff.prev.element.props : {}, diff.next.element.props)
+  const propDiffs = calculatePropsDiff(diff.prev.element.props, diff.next.element.props)
   for (const [_, propDiff] of propDiffs)
     setHTMLProp(element, propDiff);
 };
 
 export const setTextProps = (
   element/*: Text*/,
-  diff/*: UpdateDiff | CreateDiff*/
+  diff/*: CommitDiff*/
 ) => {
   const { content } = diff.next.element.props;
   element.textContent = typeof content === 'string' ? content : '';
@@ -76,7 +76,7 @@ export const setTextProps = (
 
 export const setProps = (
   element/*: ?Node*/,
-  diff/*: UpdateDiff | CreateDiff*/
+  diff/*: CommitDiff*/
 ) => {
   if (element instanceof HTMLElement || element instanceof SVGElement)
     setHTMLProps(element, diff);
@@ -86,12 +86,18 @@ export const setProps = (
 
 export const setRef = (
   node/*: ?Node*/,
-  diff/*: UpdateDiff | CreateDiff | RemoveDiff*/
-) => {
-  const onRef = (diff.next || diff.prev).element.props['ref'];
-  if (typeof onRef === 'function')
-    if (diff.type === 'create')
-      (onRef/*: Function*/)(node);
-    else if(diff.type === 'remove')
-      (onRef/*: Function*/)(null);
+  diff/*: CommitDiff*/
+) => {;
+  const ref/*: any*/ = diff.next.element.props['ref'];
+  if (typeof ref === 'function') {
+    if (diff.prev.pruned)
+      (ref/*: Function*/)(node);
+    else if (diff.next.pruned)
+      (ref/*: Function*/)(null);
+  } else if (ref && typeof ref === 'object') {
+    if (diff.prev.pruned)
+      ref['current'] = node;
+    else if (diff.next.pruned)
+      ref['current'] = null;
+  }
 };

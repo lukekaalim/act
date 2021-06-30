@@ -10,12 +10,12 @@
     "preversion": "npm run test"
   },
   "dependencies": {
-    "@lukekaalim/act-reconciler": "^1.0.0"
+    "@lukekaalim/act-reconciler": "^2.0.0"
   },
   "devDependencies": {
     "@lukekaalim/act": "*"
   },
   "peerDependencies": {
-    "@lukekaalim/act": "^2.0.3"
+    "@lukekaalim/act": "^2.2.0"
   }
 }

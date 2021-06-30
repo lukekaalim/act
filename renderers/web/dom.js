@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { ElementType } from '@lukekaalim/act'; */
-/*:: import type { CommitDiff, StateID } from '@lukekaalim/act-reconciler'; */
+/*:: import type { CommitDiff, CommitID } from '@lukekaalim/act-reconciler'; */
 /*:: import type { RenderService } from './main.js'; */
 import { setProps, setRef } from './prop.js';
 import { createNode, attachNodes, removeNode } from './node.js';
@@ -9,38 +9,38 @@ export const createDOMRenderer = (
   namespace/*: string*/,
   subRenderers/*: Map<ElementType, RenderService>*/ = new Map(),
 )/*: RenderService*/ => {
-  const nodeByStateId = new Map/*:: <StateID, Node>*/();
+  const nodeByCommit = new Map/*:: <CommitID, Node>*/();
 
   const getNodeForDiff = (diff) => {
-    if (diff.type === 'create')
+    if (diff.prev.pruned)
       return createNode(diff.next.element, namespace);
-    return nodeByStateId.get(diff.stateId);
+    return nodeByCommit.get(diff.next.id);
   };
 
-  const findNodesByStateId = (commit)/*: Node[]*/ => {
-    const node = nodeByStateId.get(commit.stateId);
+  const findNodesById = (commit)/*: Node[]*/ => {
+    const node = nodeByCommit.get(commit.id);
     if (node)
       return [node];
-    return commit.children.map(findNodesByStateId).flat(1);
+    return commit.children.map(findNodesById).flat(1);
   };
 
   const renderDiffToNodes = (diff/*: CommitDiff*/)/*: Node[]*/ => {
-    if (diff.type === 'persist')
-      return findNodesByStateId(diff.curr);
+    if (diff.prev.version === diff.next.version)
+      return findNodesById(diff.next);
     const node = getNodeForDiff(diff);
 
-    const children = diff.children.map(render).flat(1);
+    const children = diff.diffs.map(render).flat(1);
 
     if (!node)
       return children;
 
     setRef(node, diff);
-    if (diff.type === 'remove')
+    if (diff.next.pruned)
       return (removeNode(node), []);
   
     setProps(node, diff);
     attachNodes(node, children);
-    nodeByStateId.set(diff.stateId, node);
+    nodeByCommit.set(diff.next.id, node);
   
     return [node];
   }
