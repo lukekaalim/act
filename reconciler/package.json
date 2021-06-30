@@ -12,11 +12,10 @@
     "postversion": "../scripts/postversion.sh",
     "preversion": "npm run test"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@lukekaalim/act": "*"
+    "@lukekaalim/act": "^2.2.0"
   },
   "peerDependencies": {
-    "@lukekaalim/act": "^2.0.0"
+    "@lukekaalim/act": "^2.2.0"
   }
 }

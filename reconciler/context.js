@@ -1,58 +1,44 @@
 // @flow strict
 /*:: import type { Element, Component, Context, ContextID } from '@lukekaalim/act'; */
-import { getStateId } from "./commit2";
 
-/*:: import type { Tree } from './tree'; */
-/*:: import type { StateID, StatePath, ComponentState } from './state2'; */
-/*:: import type { Commit, CommitDiff } from './commit2'; */
+/*:: import type { BranchState, TraversalResult, Commit, Change, CommitRef, CommitID } from './commit2.js'; */
+/*:: import type { Scheduler } from './schedule.js'; */
 
 /*::
 export type ContextState<T> = {|
-  providerId: StateID,
   contextId: ContextID,
-  subscribers: Map<StateID, (value: T) => void>,
-  currentValue: T,
+  subscribers: Map<CommitID, CommitRef>,
+  value: T,
 |};
 
 export type ContextService = {|
-  traverseProviderElement: (path: StatePath, element: Element) => void,
-  removeContextState: (path: StatePath) => void,
+  traverse: (ref: CommitRef, change: Change, branch: BranchState) => TraversalResult,
 |};
 */
 
-export const createContextService = (tree/*: Tree*/)/*: ContextService*/ => {
-  const updateContextState = (state, newValue) => {
-    tree.contexts.set(state.providerId, { ...state, currentValue: newValue });
-    for (const [_, subscriber] of state.subscribers)
-      subscriber(newValue);
-  };
-  const createContextState = (stateId, contextId, initialValue) => {
-    const state = {
-      providerId: stateId,
-      contextId,
-      subscribers: new Map(),
-      currentValue: initialValue
-    }
-    tree.contexts.set(stateId, state);
-  };
-  const removeContextState = (path) => {
-    const stateId = getStateId(path);
-    tree.contexts.delete(stateId);
-  };
-  const traverseProviderElement = (path, element) => {
-    const stateId = getStateId(path);
-    const { value, contextId } = element.props;
-    const prevState = tree.contexts.get(stateId);
-    if (prevState)
-      if (prevState.currentValue !== value)
-        updateContextState(prevState, value)
-    else
-      if (typeof contextId === 'string')
-        createContextState(stateId, (contextId/*: any*/), value);
+export const createContextService = (scheduler/*: Scheduler*/)/*: ContextService*/ => {
+  const states/*: Map<CommitID, ContextState<mixed>>*/ = new Map();
+
+  const traverse = (ref, change, branch) => {
+    const element = change.element || change.prev.element;
+    const { contextId, value } = (element.props/*: any*/);
+    const state = states.get(ref.id) || { contextId, subscribers: new Map(), value };
+    states.set(ref.id, state);
+
+    if (state.value !== value)
+      for (const [id, subscriber] of state.subscribers)
+        scheduler.scheduleChange(subscriber);
+
+    if (change.element === null)
+      states.delete(ref.id);
+    
+    return {
+      children: element.children,
+      branch: { ...branch, context: new Map(branch.context).set(contextId, state) }
+    };
   };
 
   return {
-    traverseProviderElement,
-    removeContextState,
+    traverse,
   };
 };
