@@ -14,7 +14,8 @@ export type Context<T> = {|
 
 export const createContext = /*:: <T>*/(defaultValue/*: T*/)/*: Context<T>*/ => {
   const contextId = createId();
-  const Provider = ({ value }, children) => createElement('act:context', { value, contextId }, children);
+  const Provider = ({ value, children }) =>
+    createElement('act:context', { value, contextId }, children);
 
   return {
     defaultValue,
