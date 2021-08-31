@@ -17,6 +17,6 @@
     "test": "cd test; npm test"
   },
   "devDependencies": {
-    "flow-bin": "^0.154.0"
+    "flow-bin": "^0.158.0"
   }
 }
