@@ -68,8 +68,10 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
     const useEffect = (newEffect, newDeps = null) => {
       const effect = state.effects.get(key) || { id: createId(), deps: null, cleanup: null };
       state.effects.set(key, effect);
-      if (depsAreEqual(newDeps, effect.deps))
+      if (depsAreEqual(newDeps, effect.deps)) {
+        key++;
         return;
+      }
       const run = () => {
         if (effect.cleanup)
           effect.cleanup();
