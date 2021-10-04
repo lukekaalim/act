@@ -59,6 +59,7 @@ export const useMemo/*: UseMemo*/ = /*:: <T>*/(calc/*: () => T*/, deps/*: Deps*/
     deps.every((dep, i) => dep !== oldDeps[i])
   )) {
     memoState.value = calc();
+    memoState.oldDeps = deps;
   }
   return memoState.value;
 };
