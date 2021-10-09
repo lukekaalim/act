@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-three",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "Render threejs content using act",
   "main": "main.js",
   "type": "module",
