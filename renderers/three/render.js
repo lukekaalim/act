@@ -91,7 +91,7 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
   };
 
   const renderRoot = (diff/*: CommitDiff*/)/*: Node[]*/ => {
-    if (diff.next.element.type !== 'Three')
+    if (diff.next.element.type !== 'three')
       return [];
 
     const root = roots.get(diff.next.id) || createRoot(diff);
