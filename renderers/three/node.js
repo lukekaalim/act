@@ -16,21 +16,25 @@ export type NodeDefinition = {
 };
 */
 
+const updateObjectProps = (object, props) => {
+  for (const { key, next } of props)
+    switch (key) {
+      case 'position':
+        object.position.copy((next/*: any*/)); break;
+      case 'quaternion':
+        object.quaternion.copy((next/*: any*/)); break;
+      case 'scale':
+        object.scale.copy((next/*: any*/)); break;
+      default:
+        (object/*: any*/)[key] = next; break;
+    }
+}
+
 const createNodeDefinitionFromConstructor = ([type, constructor])/*: NodeDefinition*/ => {
   const create = () => {
     const object = new constructor();
     const update = (props) => {
-      for (const { key, next } of props)
-        switch (key) {
-          case 'position':
-            object.position.copy((next/*: any*/)); break;
-          case 'quaternion':
-            object.quaternion.copy((next/*: any*/)); break;
-          case 'scale':
-            object.scale.copy((next/*: any*/)); break;
-          default:
-            (object/*: any*/)[key] = next; break;
-        }
+      updateObjectProps(object, props);
     };
     const dispose = () => {
       return;
@@ -53,6 +57,7 @@ const groupDefinition = {
   create: () => {
     const object = new Group();
     const update = (props) => {
+      updateObjectProps(object, props.filter(p => p.key !== 'group'));
       for (const { key, next, prev } of props)
         switch (key) {
           case 'group':
