@@ -11,10 +11,12 @@
   },
   "author": "Luke Kaalim",
   "license": "ISC",
+  "peerDependencies": {
+    "three": "^0.130.0"
+  },
   "dependencies": {
     "@lukekaalim/act": "^2.2.0",
     "@lukekaalim/act-reconciler": "^2.0.1",
-    "@lukekaalim/act-web": "^0.4.0",
-    "three": "^0.130.0"
+    "@lukekaalim/act-web": "^0.4.0"
   }
 }
