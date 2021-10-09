@@ -23,6 +23,8 @@ const updateObjectProps = (object, props) => {
         object.position.copy((next/*: any*/)); break;
       case 'quaternion':
         object.quaternion.copy((next/*: any*/)); break;
+      case 'rotation':
+        object.rotation.copy((next/*: any*/)); break;
       case 'scale':
         object.scale.copy((next/*: any*/)); break;
       default:
