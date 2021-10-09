@@ -26,6 +26,8 @@ const createNodeDefinitionFromConstructor = ([type, constructor])/*: NodeDefinit
             object.position.copy((next/*: any*/)); break;
           case 'quaternion':
             object.quaternion.copy((next/*: any*/)); break;
+          case 'scale':
+            object.scale.copy((next/*: any*/)); break;
           default:
             (object/*: any*/)[key] = next; break;
         }
