@@ -40,6 +40,11 @@ export type PointsProps = {
   geometry?: BufferGeometry,
   material?: Material,
 };
+export type ThreeProps = {
+  width: number,
+  height: number,
+  setStyle?: boolean,
+};
 */
 
 export const Component = {
@@ -47,5 +52,6 @@ export const Component = {
   instanceMesh: ('instanceMesh'/*: ActComponent<InstanceMeshProps>*/),
   pointLight: ('pointLight'/*: ActComponent<PointLightsProps>*/),
   points: ('points'/*: ActComponent<PointsProps>*/),
+  three: ('three'/*: ActComponent<ThreeProps>*/),
 };
 export const C = Component;
