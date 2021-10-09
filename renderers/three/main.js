@@ -9,7 +9,7 @@ import { createThreeRenderer } from "./render.js";
 
 export const render = (element/*: Element*/, node/*: HTMLElement*/, renderer/*: ThreeRenderer*/ = createThreeRenderer()) => {
   const { renderRoot } = renderer;
-  const web = createWebRenderService(new Map([['Three', { render: renderRoot }]]));
+  const web = createWebRenderService(new Map([['three', { render: renderRoot }]]));
 
   const onDiff = diff => attachNodes(node, web.render(diff));
 

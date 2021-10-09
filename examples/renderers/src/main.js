@@ -59,13 +59,20 @@ const App = () => {
     geo.setAttribute('position', new BufferAttribute(vertices, 3 ));
     return geo;
   }, []);
+  const [windowSize, setWindowSize] = useState({ x: window.innerWidth, y: window.innerHeight });
+  useEffect(() => {
+    window.addEventListener('resize', () => {
+      console.log('resize');
+      setWindowSize({ x: window.innerWidth, y: window.innerHeight });
+    });
+  }, []);
 
   return [
     h('h1', {}, 'hello world!'),
     h('input', { type: 'range', min: 0, max: Math.PI * 10, step: 0.05, value: r, onInput: e => setR(e.currentTarget.valueAsNumber) }),
     h('input', { type: 'color', value: color, onChange: e => setColor(e.currentTarget.value) }),
     h('input', { type: 'text', value: JSON.stringify([wx, wy, wz]), onChange: e => setSize(JSON.parse(e.currentTarget.value)) }),
-    h('Three', { width: window.innerWidth / 2, height: window.innerHeight / 2, updateStyle: true }, [
+    h('three', { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true }, [
       //h('particles'),
       //h(C.mesh, { ref, geometry, material }),
       h(C.points, { ref, geometry, material })

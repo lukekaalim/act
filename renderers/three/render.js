@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { CommitDiff, PropDiff } from '@lukekaalim/act-reconciler'; */
+/*:: import type { CommitDiff, PropDiff, CommitID } from '@lukekaalim/act-reconciler'; */
 /*:: import type { Object3D } from 'three'; */
 /*:: import type { NodeDefinition } from './node.js'; */
 import {  PerspectiveCamera, Scene, WebGLRenderer } from 'three';
@@ -15,7 +15,7 @@ export type ThreeRenderer = {
 export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)/*: ThreeRenderer*/ => {
   const nodeDefsByType = new Map(nodeDefs.map(def => [def.type, def]));
 
-  const roots = new Map();
+  const roots = new Map/*:: <CommitID, [WebGLRenderer, Scene, PerspectiveCamera]>*/();
   const objects = new Map();
 
   const createRoot = (diff) => {
@@ -24,7 +24,7 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
     
     renderer.setSize(width, height, setStyle);
     const scene = new Scene();
-    const camera = new PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    const camera = new PerspectiveCamera( 75, width / height, 0.1, 1000 );
     camera.position.z = 5;
 
     const animate = () => {
@@ -36,6 +36,16 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
     roots.set(diff.next.id, [renderer, scene, camera]);
     return [renderer, scene, camera];
   };
+  const setRootProps = (diff, [renderer, scene, camera]) => {
+    const props = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
+
+    if (props.has('width') || props.has('height') || props.has('setStyle')) {
+      const { width, height, setStyle = false } = (diff.next.element.props/*: any*/);
+      renderer.setSize(width, height, setStyle);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+  }
 
   const removeRenderer = (diff, [renderer, scene, camera]) => {
     roots.delete(diff.next.id);
@@ -102,6 +112,7 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
       return removeRenderer(diff, root);
     
     const [renderer, scene] = root;
+    setRootProps(diff, root);
     attachObjects(scene, children);
 
     return [renderer.domElement];
