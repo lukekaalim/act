@@ -7,6 +7,7 @@
   BufferGeometry,
   Material,
   Texture,
+  Color,
 } from "three"; */
 /*:: import * as Three from 'three'; */
 
@@ -45,7 +46,7 @@ export type ThreeProps = {
   width: number,
   height: number,
   setStyle?: boolean,
-  background?: string | null | Texture,
+  background?: Color | null | Texture,
   alpha?: boolean,
 };
 */
