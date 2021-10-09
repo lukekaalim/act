@@ -44,6 +44,7 @@ export type PointsProps = {
   material?: Material,
 };
 export type ThreeProps = {
+  ref?: ((reference: Three.Scene) => mixed) | { current: Three.Scene | any },
   width: number,
   height: number,
   setStyle?: boolean,

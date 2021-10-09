@@ -23,7 +23,7 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
   const objects = new Map();
 
   const createRoot = (diff) => {
-    const { width, height, setStyle = false, background = null, alpha = false, onRender } = (diff.next.element.props/*: any*/);
+    const { width, height, setStyle = false, background = null, alpha = false, onRender, sceneRef } = (diff.next.element.props/*: any*/);
     
     const renderer = new WebGLRenderer({ alpha });
     renderer.setSize(width, height, setStyle);
@@ -99,13 +99,26 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
     nodeInstance.dispose();
   };
 
+  const setRef = (diff, reference) => {
+    if (diff.prev.pruned) {
+      const { ref } = (diff.next.element.props/*: any*/);
+      if (typeof ref === 'object')
+        ref.current = reference;
+      else if (typeof ref === 'function')
+       ref(reference);
+    } else if (diff.next.pruned) {
+      const { ref } = (diff.next.element.props/*: any*/);
+      if (typeof ref === 'object')
+        ref.current = null;
+      else if (typeof ref === 'function')
+       ref(null);
+    }
+  };
+
   const renderObject = (diff/*: CommitDiff*/)/*: Object3D[]*/ => {
     const nodeInstance = objects.get(diff.next.id) || createObject(diff);
 
-    const { ref } = (diff.next.element.props/*: any*/);
-    if (diff.prev.pruned && typeof ref === 'object' && ref)
-      ref.current = nodeInstance && nodeInstance.object;
-
+    setRef(diff, nodeInstance && nodeInstance.object)
     const children = diff.diffs.map(renderObject).flat(1);
 
     if (!nodeInstance)
@@ -131,6 +144,7 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
 
     const root = roots.get(diff.next.id) || createRoot(diff);
 
+    setRef(diff, root[1]);
     const children = diff.diffs.map(renderObject).flat(1);
 
     if (diff.next.pruned)
