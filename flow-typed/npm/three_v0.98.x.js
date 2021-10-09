@@ -482,7 +482,7 @@ declare module three {
     fog: ?Fog;
     overrideMaterial: ?Material;
     autoUpdate: bool;
-    background: Color | Texture | WebGLRenderTarget | void;
+    background: Color | Texture | WebGLRenderTarget | null;
 
     toJSON(): string;
   }

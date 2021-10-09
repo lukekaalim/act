@@ -20,10 +20,11 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
 
   const createRoot = (diff) => {
     const renderer = new WebGLRenderer();
-    const { width, height, setStyle = false } = (diff.next.element.props/*: any*/);
+    const { width, height, setStyle = false, background = null } = (diff.next.element.props/*: any*/);
     
     renderer.setSize(width, height, setStyle);
     const scene = new Scene();
+    scene.background = background;
     const camera = new PerspectiveCamera( 75, width / height, 0.1, 1000 );
     camera.position.z = 5;
 
@@ -38,13 +39,15 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
   };
   const setRootProps = (diff, [renderer, scene, camera]) => {
     const props = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
+    const { width, height, setStyle = false, background = null } = (diff.next.element.props/*: any*/);
 
     if (props.has('width') || props.has('height') || props.has('setStyle')) {
-      const { width, height, setStyle = false } = (diff.next.element.props/*: any*/);
       renderer.setSize(width, height, setStyle);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
     }
+    if (props.has('bacgkround'))
+      scene.background = background;
   }
 
   const removeRenderer = (diff, [renderer, scene, camera]) => {

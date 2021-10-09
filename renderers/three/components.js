@@ -6,6 +6,7 @@
   Quaternion,
   BufferGeometry,
   Material,
+  Texture,
 } from "three"; */
 /*:: import * as Three from 'three'; */
 
@@ -44,6 +45,7 @@ export type ThreeProps = {
   width: number,
   height: number,
   setStyle?: boolean,
+  background?: string | null | Texture,
 };
 */
 
