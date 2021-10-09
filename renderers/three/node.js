@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Object3D } from "three"; */
 /*:: import type { PropDiff } from '@lukekaalim/act-reconciler'; */ 
-import { Mesh, PointLight, Points } from "three";
+import { Group, Mesh, PointLight, Points } from "three";
 
 /*::
 export type NodeInstance = {
@@ -46,9 +46,33 @@ const createNodeDefinitionFromConstructor = ([type, constructor])/*: NodeDefinit
   }
 };
 
-export const threeNodes/*: NodeDefinition[]*/ = [
+const groupDefinition = {
+  type: 'group',
+  create: () => {
+    const object = new Group();
+    const update = (props) => {
+      for (const { key, next, prev } of props)
+        switch (key) {
+          case 'group':
+            prev && object.remove((prev/*: any*/));
+            next && object.add((next/*: any*/));
+        }
+    };
+    const dispose = () => {
+
+    };
+    return { object, update, dispose };
+  },
+}
+
+const constructorNodes/*: NodeDefinition[]*/ = [
   ['mesh', Mesh],
   ['pointLight', PointLight],
   ['points', Points],
 ].map(createNodeDefinitionFromConstructor);
 
+
+export const threeNodes/*: NodeDefinition[]*/ = [
+  ...constructorNodes,
+  groupDefinition,
+];

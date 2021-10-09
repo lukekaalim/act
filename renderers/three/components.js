@@ -8,6 +8,7 @@
   Material,
   Texture,
   Color,
+  Group,
 } from "three"; */
 /*:: import * as Three from 'three'; */
 
@@ -49,6 +50,10 @@ export type ThreeProps = {
   background?: Color | null | Texture,
   alpha?: boolean,
 };
+export type GroupProps = {
+  ...Object3DProps<Three.Group>,
+  group?: ?Three.Object3D,
+}
 */
 
 export const Component = {
@@ -57,5 +62,6 @@ export const Component = {
   pointLight: ('pointLight'/*: ActComponent<PointLightsProps>*/),
   points: ('points'/*: ActComponent<PointsProps>*/),
   three: ('three'/*: ActComponent<ThreeProps>*/),
+  group: ('group'/*: ActComponent<GroupProps>*/),
 };
 export const C = Component;

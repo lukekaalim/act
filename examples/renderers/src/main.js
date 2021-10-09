@@ -18,6 +18,7 @@ const geometry = new BoxGeometry(1, 1, 1);
 const material = new MeshBasicMaterial()
 
 const pointsMat = new PointsMaterial({ color: 0x888888 })
+const object = new Mesh(geometry, material);
 
 const App = () => {
   const ref = useRef/*:: <?Points>*/();
@@ -75,6 +76,7 @@ const App = () => {
     h('three', { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true }, [
       //h('particles'),
       //h(C.mesh, { ref, geometry, material }),
+      h(C.group, { group: object }),
       h(C.points, { ref, geometry, material })
     ]),
   ];
