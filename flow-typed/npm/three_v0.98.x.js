@@ -536,6 +536,7 @@ declare module three {
     // TODO: Add event dispatcher methods
 
     add(...os: Array<Object3D>): void;
+    removeFromParent(): this;
     applyMatrix(matrix: Matrix4): void;
     clone(recursive: boolean): Object3D;
     getObjectById(id: number): Object3D;

@@ -59,16 +59,19 @@ const App = () => {
     if (cube)
       cube.rotation.y += 0.01;
   }
+  const [show, setShow] = useState(false);
 
   return [
     h('h1', {}, 'hello world!'),
     h('input', { type: 'range', min: 0, max: Math.PI * 10, step: 0.05, value: r, onInput: e => setR(e.currentTarget.valueAsNumber) }),
     h('input', { type: 'color', value: color, onChange: e => setColor(e.currentTarget.value) }),
     h('input', { type: 'text', value: JSON.stringify([wx, wy, wz]), onChange: e => setSize(JSON.parse(e.currentTarget.value)) }),
+    h('button', { onClick: () => setShow(b => !b) }, 'Show!'),
     h(C.three, { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true, onRender }, [
+      null,
       //h('particles'),
       //h(C.mesh, { ref, geometry, material }),
-      h(C.group, { group: object }),
+      show && h(C.group, { group: object }),
       //h(C.points, { ref, geometry, material })
     ]),
   ];

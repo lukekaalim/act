@@ -95,6 +95,7 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
   }
 
   const removeObject = (nodeInstance) => {
+    nodeInstance.object.removeFromParent();
     nodeInstance.dispose();
   };
 
@@ -115,11 +116,13 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
 
     const props = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
     nodeInstance.update([...props.values()]);
+    attachObjects(nodeInstance.object, children);
     
     return [nodeInstance.object];
   };
   const attachObjects = (scene, children) => {
-    scene.add(...children);
+    if (children.length > 0)
+      scene.add(...children);
   };
 
   const renderRoot = (diff/*: CommitDiff*/)/*: Node[]*/ => {
