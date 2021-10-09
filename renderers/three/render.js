@@ -81,6 +81,8 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
     const { type } = diff.next.element;
     if (typeof type !== 'string')
       return null;
+    if (type === 'act:null')
+      return null;
 
     const nodeDef = nodeDefsByType.get(type);
     if (!nodeDef)
