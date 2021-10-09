@@ -46,6 +46,7 @@ export type ThreeProps = {
   height: number,
   setStyle?: boolean,
   background?: string | null | Texture,
+  alpha?: boolean,
 };
 */
 

@@ -19,9 +19,9 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
   const objects = new Map();
 
   const createRoot = (diff) => {
-    const renderer = new WebGLRenderer();
-    const { width, height, setStyle = false, background = null } = (diff.next.element.props/*: any*/);
+    const { width, height, setStyle = false, background = null, alpha = false } = (diff.next.element.props/*: any*/);
     
+    const renderer = new WebGLRenderer({ alpha });
     renderer.setSize(width, height, setStyle);
     const scene = new Scene();
     scene.background = background;
@@ -39,14 +39,14 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
   };
   const setRootProps = (diff, [renderer, scene, camera]) => {
     const props = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
-    const { width, height, setStyle = false, background = null } = (diff.next.element.props/*: any*/);
+    const { width, height, setStyle = false, background = null, alpha = false } = (diff.next.element.props/*: any*/);
 
     if (props.has('width') || props.has('height') || props.has('setStyle')) {
       renderer.setSize(width, height, setStyle);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
     }
-    if (props.has('bacgkround'))
+    if (props.has('background'))
       scene.background = background;
   }
 
