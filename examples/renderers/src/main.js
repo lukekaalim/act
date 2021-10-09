@@ -30,19 +30,6 @@ const App = () => {
   useCurve(r, r => ref.current && (
     ref.current.rotation.x = r
   ));
-  useEffect(() => {
-    let running = true;
-    const frame = () => {
-      const cube = ref.current;
-      if (cube)
-        cube.rotation.y += 0.01;
-
-      if (running)
-        requestAnimationFrame(frame)
-    };
-    frame();
-    return () => running = false;
-  }, [])
 
   material.color = new Color(color);
   const geometry = useMemo(() => new BoxGeometry(wx,wy,wz), [wx,wy,wz])
@@ -63,21 +50,26 @@ const App = () => {
   const [windowSize, setWindowSize] = useState({ x: window.innerWidth, y: window.innerHeight });
   useEffect(() => {
     window.addEventListener('resize', () => {
-      console.log('resize');
       setWindowSize({ x: window.innerWidth, y: window.innerHeight });
     });
   }, []);
+
+  const onRender = () => {
+    const cube = ref.current;
+    if (cube)
+      cube.rotation.y += 0.01;
+  }
 
   return [
     h('h1', {}, 'hello world!'),
     h('input', { type: 'range', min: 0, max: Math.PI * 10, step: 0.05, value: r, onInput: e => setR(e.currentTarget.valueAsNumber) }),
     h('input', { type: 'color', value: color, onChange: e => setColor(e.currentTarget.value) }),
     h('input', { type: 'text', value: JSON.stringify([wx, wy, wz]), onChange: e => setSize(JSON.parse(e.currentTarget.value)) }),
-    h('three', { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true }, [
+    h(C.three, { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true, onRender }, [
       //h('particles'),
       //h(C.mesh, { ref, geometry, material }),
       h(C.group, { group: object }),
-      h(C.points, { ref, geometry, material })
+      //h(C.points, { ref, geometry, material })
     ]),
   ];
 };

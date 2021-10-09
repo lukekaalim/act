@@ -10,16 +10,20 @@ import { calculatePropsDiff } from '@lukekaalim/act-reconciler'
 export type ThreeRenderer = {
   renderRoot: CommitDiff => Node[],
 };
+
+export type Frame = {
+  id: ?AnimationFrameID
+}
 */
 
 export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)/*: ThreeRenderer*/ => {
   const nodeDefsByType = new Map(nodeDefs.map(def => [def.type, def]));
 
-  const roots = new Map/*:: <CommitID, [WebGLRenderer, Scene, PerspectiveCamera]>*/();
+  const roots = new Map/*:: <CommitID, [WebGLRenderer, Scene, PerspectiveCamera, Frame]>*/();
   const objects = new Map();
 
   const createRoot = (diff) => {
-    const { width, height, setStyle = false, background = null, alpha = false } = (diff.next.element.props/*: any*/);
+    const { width, height, setStyle = false, background = null, alpha = false, onRender } = (diff.next.element.props/*: any*/);
     
     const renderer = new WebGLRenderer({ alpha });
     renderer.setSize(width, height, setStyle);
@@ -28,18 +32,21 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
     const camera = new PerspectiveCamera( 75, width / height, 0.1, 1000 );
     camera.position.z = 5;
 
-    const animate = () => {
-      renderer.render( scene, camera );
-      requestAnimationFrame( animate );
-    };
-    animate();
+    const frame/*: Frame*/ = { id: null };
 
-    roots.set(diff.next.id, [renderer, scene, camera]);
-    return [renderer, scene, camera];
+    const animate = (timestamp) => {
+      onRender && onRender(timestamp);
+      renderer.render( scene, camera );
+      frame.id = requestAnimationFrame( animate );
+    };
+    frame.id = animate(performance.now());
+
+    roots.set(diff.next.id, [renderer, scene, camera, frame]);
+    return [renderer, scene, camera, frame];
   };
-  const setRootProps = (diff, [renderer, scene, camera]) => {
+  const setRootProps = (diff, [renderer, scene, camera, frame]) => {
     const props = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
-    const { width, height, setStyle = false, background = null, alpha = false } = (diff.next.element.props/*: any*/);
+    const { width, height, setStyle = false, background = null, onRender } = (diff.next.element.props/*: any*/);
 
     if (props.has('width') || props.has('height') || props.has('setStyle')) {
       renderer.setSize(width, height, setStyle);
@@ -48,11 +55,21 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
     }
     if (props.has('background'))
       scene.background = background;
+    if (props.has('onRender')) {
+      frame.id && cancelAnimationFrame(frame.id);
+      const animate = (timestamp) => {
+        onRender && onRender(timestamp);
+        renderer.render( scene, camera );
+        frame.id = requestAnimationFrame( animate );
+      };
+      frame.id = animate(performance.now());
+    }
   }
 
-  const removeRenderer = (diff, [renderer, scene, camera]) => {
+  const removeRenderer = (diff, [renderer, scene, camera, frame]) => {
     roots.delete(diff.next.id);
     renderer.dispose();
+    frame.id && cancelAnimationFrame(frame.id);
 
     const { parentNode } = renderer.domElement;
     if (parentNode)

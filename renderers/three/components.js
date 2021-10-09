@@ -49,6 +49,7 @@ export type ThreeProps = {
   setStyle?: boolean,
   background?: Color | null | Texture,
   alpha?: boolean,
+  onRender?: (timestamp: number) => void,
 };
 export type GroupProps = {
   ...Object3DProps<Three.Group>,
