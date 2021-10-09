@@ -2,6 +2,7 @@
 // flow-typed version: 824f187c47/three_v0.98.x/flow_>=v0.107.x
 
 // @flow
+/*::
 declare module three {
   declare export class Vector2 {
     constructor(x: number, y: number): this;
@@ -304,7 +305,7 @@ declare module three {
     normals: Array<number>,
   }
 
-  declare export class Geometry {
+  declare export class BufferGeometry {
     constructor(): this;
     colors: Array<Color>;
     faces: Array<Face3>;
@@ -338,14 +339,15 @@ declare module three {
     computeFlatVertexNormals(): void;
     computeMorphNormals(): void;
     computeVertexNormals(areaWeighted: boolean): void;
-    copy(geometry: Geometry): void;
+    copy(geometry: BufferGeometry): void;
     dispose(): void;
     lookAt(vector: Vector3): void;
     merge(
-      geometry: Geometry,
+      geometry: BufferGeometry,
       matrix: Matrix4,
       materialIndexOffset: number
     ): void;
+    setAttribute(name: string, attribute: BufferAttribute): void;
     mergeMesh(mesh: Mesh): void;
     mergeVertices(): void;
     normalize(): void;
@@ -412,9 +414,22 @@ declare module three {
     copy(face3: Face3): void;
   }
 
+  declare export class InstanceMesh extends Mesh {
+    
+  }
+
+  declare export class BufferAttribute {
+    constructor(array: $TypedArray, itemSize: number, normalized?: boolean ): void
+  }
+
+  declare export class Points extends Object3D {
+    geometry: BufferGeometry;
+    material: Material;
+  }
+
   declare export class Mesh extends Object3D {
     constructor(
-      geometry?: Geometry,
+      geometry?: BufferGeometry,
       // Undocumented at time of writing: Mesh takes a Material or an array of
       // Materials. See: https://github.com/mrdoob/three.js/issues/10931
       material?: Material | Array<Material>
@@ -422,7 +437,7 @@ declare module three {
 
     drawMode: DrawMode;
     isMesh: boolean;
-    geometry: Geometry;
+    geometry: BufferGeometry;
     // Undocumented at time of writing: material can be a Material or an array
     // of Materials. See: https://github.com/mrdoob/three.js/issues/10931
     material: Material | Array<Material>;
@@ -478,7 +493,7 @@ declare module three {
     // TODO: Enable again once https://github.com/facebook/flow/issues/3888 is
     // addressed.
     // camera: Camera,
-    geometry: Geometry,
+    geometry: BufferGeometry,
     // TODO: Enable again once https://github.com/facebook/flow/issues/3888 is
     // addressed.
     // material: Material,
@@ -822,6 +837,11 @@ declare module three {
     wireframeLineCap?: WireframeLineCap,
     wireframeLineJoin?: WireframeLineJoin,
   }
+
+  declare export class PointsMaterial extends Material {
+    constructor({ color: string | number }): PointsMaterial
+  }
+
   declare export class MeshBasicMaterial extends Material {
     constructor(args?: MeshBasicMaterialCtorArgs): this;
     alphaMap: ?Texture;
@@ -858,7 +878,7 @@ declare module three {
     heightSegments: number;
     depthSegments: number;
   }
-  declare export class BoxGeometry extends Geometry {
+  declare export class BoxGeometry extends BufferGeometry {
     constructor(
       width: number,
       height: number,
@@ -974,3 +994,5 @@ declare module three {
   declare export var RepeatWrapping: RepeatWrappingEnum
 
 }
+
+*/

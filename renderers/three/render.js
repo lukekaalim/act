@@ -1,7 +1,10 @@
 // @flow strict
-/*:: import type { CommitDiff } from '@lukekaalim/act-reconciler'; */
+/*:: import type { CommitDiff, PropDiff } from '@lukekaalim/act-reconciler'; */
 /*:: import type { Object3D } from 'three'; */
-import { BoxGeometry, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+/*:: import type { NodeDefinition } from './node.js'; */
+import {  PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { threeNodes } from './node.js';
+import { calculatePropsDiff } from '@lukekaalim/act-reconciler'
 
 /*::
 export type ThreeRenderer = {
@@ -9,7 +12,9 @@ export type ThreeRenderer = {
 };
 */
 
-export const createThreeRenderer = ()/*: ThreeRenderer*/ => {
+export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)/*: ThreeRenderer*/ => {
+  const nodeDefsByType = new Map(nodeDefs.map(def => [def.type, def]));
+
   const roots = new Map();
   const objects = new Map();
 
@@ -43,23 +48,43 @@ export const createThreeRenderer = ()/*: ThreeRenderer*/ => {
   };
 
   const createObject = (diff) => {
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial( { color: '#00ff00' } );
-    const cube = new Mesh( geometry, material );
+    const { type } = diff.next.element;
+    if (typeof type !== 'string')
+      return null;
 
-    objects.set(diff.next.id, cube);
+    const nodeDef = nodeDefsByType.get(type);
+    if (!nodeDef)
+      throw new Error(`Unknown type ${type}`);
 
-    return cube;
+    const nodeInstance = nodeDef.create();
+    objects.set(diff.next.id, nodeInstance);
+
+    return nodeInstance;
   }
 
+  const removeObject = (nodeInstance) => {
+    nodeInstance.dispose();
+  };
+
   const renderObject = (diff/*: CommitDiff*/)/*: Object3D[]*/ => {
-    const object = objects.get(diff.next.id) || createObject(diff);
+    const nodeInstance = objects.get(diff.next.id) || createObject(diff);
 
     const { ref } = (diff.next.element.props/*: any*/);
     if (diff.prev.pruned && typeof ref === 'object' && ref)
-      ref.current = object;
-  
-    return [object];
+      ref.current = nodeInstance && nodeInstance.object;
+
+    const children = diff.diffs.map(renderObject).flat(1);
+
+    if (!nodeInstance)
+      return children;
+    
+    if (diff.next.pruned)
+      return (removeObject(nodeInstance), []);
+
+    const props = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
+    nodeInstance.update([...props.values()]);
+    
+    return [nodeInstance.object];
   };
   const attachObjects = (scene, children) => {
     scene.add(...children);
