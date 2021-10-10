@@ -4,9 +4,9 @@ name=$(cat package.json | jq .name -r)
 version=$(cat package.json | jq .version -r)
 tag="$name@$version"
 
-echo $(cd ..; npm i)
+echo $(cd $(git rev-parse --show-toplevel); npm i)
 
-git add . ../package-lock.json
+git add . $(git rev-parse --show-toplevel)/package-lock.json
 git commit -m $tag
 git tag -a $tag -m "Publied version $version of $name"
 
