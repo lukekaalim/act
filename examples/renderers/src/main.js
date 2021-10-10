@@ -10,7 +10,7 @@ import {
   BufferAttribute,
   PointsMaterial,
 } from "three";
-import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
+import { h, useEffect, useMemo, useRef, useState, createContext, useContext } from '@lukekaalim/act';
 import { createThreeRenderer, threeNodes, render, C } from '@lukekaalim/act-three';
 import { useCurve } from '@lukekaalim/act-curve';
 
@@ -19,6 +19,9 @@ const material = new MeshBasicMaterial()
 
 const pointsMat = new PointsMaterial({ color: 0x888888 })
 const object = new Mesh(geometry, material);
+
+const a = createContext(null);
+const b = createContext(null);
 
 const App = () => {
   const ref = useRef/*:: <?Points>*/();
@@ -64,6 +67,11 @@ const App = () => {
 
   return [
     h('h1', {}, 'hello world!'),
+    h(a.Provider, { value: r }, [
+      h(b.Provider, { value: null }, [
+        h('h2', {}, 'Testing context!')
+      ])
+    ]),
     h('input', { type: 'range', min: 0, max: Math.PI * 10, step: 0.05, value: r, onInput: e => setR(e.currentTarget.valueAsNumber) }),
     h('input', { type: 'color', value: color, onChange: e => setColor(e.currentTarget.value) }),
     h('input', { type: 'text', value: JSON.stringify([wx, wy, wz]), onChange: e => setSize(JSON.parse(e.currentTarget.value)) }),

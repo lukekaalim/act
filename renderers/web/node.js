@@ -10,6 +10,8 @@ export const createNode = (element/*: Element*/, namespace/*: string*/)/*: ?Node
     return null;
   if (element.type === 'act:string')
     return document.createTextNode('');
+  if (element.type === 'act:context')
+    return null;
   return document.createElementNS(namespace, element.type);
 };
 export const removeNode = (node/*: Node*/) => {

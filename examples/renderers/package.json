@@ -7,7 +7,7 @@
   "dependencies": {
     "@lukekaalim/act": "*",
     "@lukekaalim/act-curve": "^2.0.0",
-    "@lukekaalim/act-three": "^2.0.0",
+    "@lukekaalim/act-three": "^3.9.1",
     "@lukekaalim/act-web": "*",
     "three-nebula": "^10.0.2"
   },
