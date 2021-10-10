@@ -25,9 +25,11 @@ export const createContextService = (scheduler/*: Scheduler*/)/*: ContextService
     const state = states.get(ref.id) || { contextId, subscribers: new Map(), value };
     states.set(ref.id, state);
 
-    if (state.value !== value)
+    if (state.value !== value) {
       for (const [id, subscriber] of state.subscribers)
         scheduler.scheduleChange(subscriber);
+      states.set(ref.id,{ ...state, value });
+    }
 
     if (change.element === null)
       states.delete(ref.id);
