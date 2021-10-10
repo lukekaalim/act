@@ -2,7 +2,7 @@
   "name": "@lukekaalim/act-web",
   "main": "main.js",
   "type": "module",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "sideEffects": false,
   "scripts": {
     "test": "cd ../..; npm test",
@@ -10,7 +10,7 @@
     "preversion": "npm run test"
   },
   "dependencies": {
-    "@lukekaalim/act-reconciler": "^2.0.1"
+    "@lukekaalim/act-reconciler": "^2.0.4"
   },
   "devDependencies": {
     "@lukekaalim/act": "*"
