@@ -83,13 +83,12 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
       return;
     }
     const useContext = /*:: <T>*/(context/*: Context<T>*/)/*: T*/ => {
-      const contextState = state.subscriptions.get(context.contextId) || branch.context.get(context.contextId);
+      const contextState = branch.context.get(context.contextId);
       if (!contextState)
         return context.defaultValue;
 
       state.subscriptions.set(context.contextId, contextState);
-      if (!contextState.subscribers.has(state.ref.id))
-        contextState.subscribers.set(state.ref.id, state.ref);
+      contextState.subscribers.set(state.ref.id, state.ref);
   
       return (contextState.value/*: any*/);
     };
