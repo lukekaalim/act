@@ -16,7 +16,10 @@ export const setStylesProp = (
 
   for (const [rule, { next }] of diff.entries()) {
     const nextRuleValue = (typeof next === 'string' || typeof next === 'number') ? next : null;
-    (style/*: Object*/)[rule] = nextRuleValue;
+    if (nextRuleValue === null)
+      style.removeProperty(rule);
+    else
+      style.setProperty(rule, nextRuleValue.toString());
   }
 };
 
