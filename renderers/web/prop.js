@@ -16,10 +16,13 @@ export const setStylesProp = (
 
   for (const [rule, { next }] of diff.entries()) {
     const nextRuleValue = (typeof next === 'string' || typeof next === 'number') ? next : null;
-    if (nextRuleValue === null)
-      style.removeProperty(rule);
+    if (typeof (style/*: any*/)[rule] !== 'undefined')
+      (style/*: any*/)[rule] = nextRuleValue;
     else
-      style.setProperty(rule, nextRuleValue.toString());
+      if (nextRuleValue === null)
+        style.removeProperty(rule);
+      else
+        style.setProperty(rule, nextRuleValue.toString());
   }
 };
 
