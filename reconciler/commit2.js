@@ -97,7 +97,7 @@ export const calculateChanges = (
     const prev = change.prev.children[index];
     const keyIndex = keyIndices.get(prev.element.props.key);
     const elementByKey = (keyIndex !== undefined) && children[keyIndex];
-    const elementByIndex = children[index];
+    const elementByIndex = !prev.element.props.key && children[index];
 
     if (elementByKey && !nextCommits.has(keyIndex) && elementByKey.type === prev.element.type)
       nextCommits.set(keyIndex, prev);
