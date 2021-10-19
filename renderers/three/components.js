@@ -9,6 +9,9 @@
   Texture,
   Color,
   Group,
+  Camera,
+  PerspectiveCamera,
+  Euler
 } from "three"; */
 /*:: import * as Three from 'three'; */
 
@@ -18,6 +21,7 @@ export type Object3DProps<T> = {
 
   name?: string,
   position?: Vector3,
+  rotation?: Euler,
   quaternion?: Quaternion,
   visible?: boolean,
   scale?: Vector3,
@@ -43,23 +47,34 @@ export type PointsProps = {
   geometry?: BufferGeometry,
   material?: Material,
 };
+type Ref<T> = ((reference: T) => mixed) | { current: T | any };
 export type ThreeProps = {
-  ref?: ((reference: Three.Scene) => mixed) | { current: Three.Scene | any },
+  ref?: Ref<{ scene: Three.Scene, camera: PerspectiveCamera, renderer: Three.WebGLRenderer }>,
   width: number,
   height: number,
   setStyle?: boolean,
   background?: Color | null | Texture,
   alpha?: boolean,
+  camera?: Camera,
   onRender?: (timestamp: number) => void,
 };
 export type GroupProps = {
   ...Object3DProps<Three.Group>,
   group?: ?Three.Object3D,
 }
+export type PerspectiveCameraProps = {
+  ...Object3DProps<Three.PerspectiveCamera>,
+  aspect?: number,
+  near?: number,
+  far?: number,
+  fov?: number,
+  zoom?: number,
+}
 */
 
 export const Component = {
   mesh: ('mesh'/*: ActComponent<MeshProps>*/),
+  perspectiveCamera: ('perspectiveCamera'/*: ActComponent<PerspectiveCameraProps>*/),
   instanceMesh: ('instanceMesh'/*: ActComponent<InstanceMeshProps>*/),
   pointLight: ('pointLight'/*: ActComponent<PointLightsProps>*/),
   points: ('points'/*: ActComponent<PointsProps>*/),

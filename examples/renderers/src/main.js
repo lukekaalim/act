@@ -9,6 +9,8 @@ import {
   Vector3,
   BufferAttribute,
   PointsMaterial,
+  PerspectiveCamera,
+  Euler,
 } from "three";
 import { h, useEffect, useMemo, useRef, useState, createContext, useContext } from '@lukekaalim/act';
 import { createThreeRenderer, threeNodes, render, C } from '@lukekaalim/act-three';
@@ -62,8 +64,20 @@ const App = () => {
     if (cube)
       cube.rotation.y += 0.01;
   }
-  const onRef = console.log; 
+  const rootRef = useRef()
   const [show, setShow] = useState(false);
+  const [camera, setCamera] = useState(null);
+  useEffect(() => {
+    const { current: root } = rootRef;
+    if (!root)
+      return;
+    root.camera.position.x = 0;
+    root.camera.position.y = 0;
+    root.camera.position.z = 0;
+    setCamera(root.camera);
+  }, []);
+
+  const [cameraRotation, setCameraRotation] = useState/*:: <Euler>*/(new Euler(0, 0, 0));
 
   return [
     h('h1', {}, 'hello world!'),
@@ -76,8 +90,10 @@ const App = () => {
     h('input', { type: 'color', value: color, onChange: e => setColor(e.currentTarget.value) }),
     h('input', { type: 'text', value: JSON.stringify([wx, wy, wz]), onChange: e => setSize(JSON.parse(e.currentTarget.value)) }),
     h('button', { onClick: () => setShow(b => !b) }, 'Show!'),
-    h(C.three, { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true, onRender, ref: onRef }, [
+    h('button', { onClick: () => setCameraRotation(b => new Euler(b.x, b.y, b.z + (Math.PI / 16))) }, 'spin!!'),
+    h(C.three, { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true, onRender, ref: rootRef }, [
       null,
+      h(C.group, { group: camera, position: new Vector3(0, 0, 5), rotation: cameraRotation }),
       //h('particles'),
       //h(C.mesh, { ref, geometry, material }),
       show && h(C.group, { group: object }),

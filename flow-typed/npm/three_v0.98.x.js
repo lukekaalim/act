@@ -621,8 +621,16 @@ declare module three {
     toJSON(): string;
   }
 
+  declare export class Euler {
+    constructor(x?: number, y?: number, z?: number, order?: string): this;
+    order: string;
+    x: number;
+    y: number;
+    z: number,
+  }
+
   declare export class PerspectiveCamera extends Camera {
-    constructor(fov: number, aspect: number, near: number, far: number): this;
+    constructor(fov?: number, aspect?: number, near?: number, far?: number): this;
 
     aspect: number;
     far: number;

@@ -144,15 +144,15 @@ export const createThreeRenderer = (nodeDefs/*: NodeDefinition[]*/ = threeNodes)
 
     const root = roots.get(diff.next.id) || createRoot(diff);
 
-    setRef(diff, root[1]);
     const children = diff.diffs.map(renderObject).flat(1);
 
     if (diff.next.pruned)
       return removeRenderer(diff, root);
     
-    const [renderer, scene] = root;
+    const [renderer, scene, camera] = root;
     setRootProps(diff, root);
     attachObjects(scene, children);
+    setRef(diff, { renderer, scene, camera });
 
     return [renderer.domElement];
   }
