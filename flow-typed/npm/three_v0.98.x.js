@@ -414,7 +414,7 @@ declare module three {
     copy(face3: Face3): void;
   }
 
-  declare export class InstanceMesh extends Mesh {
+  declare export class InstancedMesh extends Mesh {
     
   }
 
@@ -848,7 +848,8 @@ declare module three {
   }
 
   declare export class PointsMaterial extends Material {
-    constructor({ color: string | number }): PointsMaterial
+    constructor({ color: string | number }): PointsMaterial,
+    color: string | number | Color,
   }
 
   declare export class MeshBasicMaterial extends Material {
@@ -956,6 +957,7 @@ declare module three {
   }
   declare class LoadingManager {}
   declare export class Texture {}
+  declare export class CubeTexture {}
 
   declare function TextureLoaderOnLoadCallback(texture: Texture): void;
   declare function TextureLoaderOnProgressCallback(request: XMLHttpRequest): void;
@@ -987,11 +989,12 @@ declare module three {
   declare export class WebGLRenderer {
     constructor(...args: Array<mixed>): this;
     render(
-      scene: Scene,
+      scene: Object3D,
       camera: Camera,
       renderTarget?: WebGLRenderTarget, forceClear?: boolean
     ): void;
     dispose(): null;
+    clear(color?: boolean, depth?: boolean, stencil?: boolean): null;
     setSize(width: number, height: number, updateStyle: boolean): void;
     domElement: Element;
   }

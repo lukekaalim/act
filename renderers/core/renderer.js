@@ -4,25 +4,27 @@
 
 /*::
 export type Renderer<TNode> = {
-  canRenderElement: (type: string) => boolean,
   render: (diff: CommitDiff) => TNode[],
-};
-
-export type ManagedRendererOptions<TNode> = {
-  types: Set<string>,
-  add: (element: Element) => null | TNode,
-  update: (prev: Element, next: Element, children: TNode[]) => void,
+}
+export type RendererOptions<TNode> = {
+  add: (diff: CommitDiff) => null | TNode,
+  update: (node: TNode, diff: CommitDiff, children: TNode[]) => void,
   remove: (node: TNode) => void,
+  next?: (diff: CommitDiff) => TNode[],
 };
 */
 
-export const createRenderer = /*:: <TNode>*/(options/*: ManagedRendererOptions<TNode>*/)/*: Renderer<TNode>*/ => {
-  const { types, add, remove, update } = options;
+const parent = () => {
+  child();
+};
+const child = () => {
+  parent();
+}
+
+export const createManagedRenderer = /*:: <TNode>*/(options/*: RendererOptions<TNode>*/)/*: Renderer<TNode>*/ => {
+  const { add, remove, update, next } = options;
   const nodesByCommitID/*: Map<CommitID, TNode>*/ = new Map();
 
-  const canRenderElement = (type) => {
-    return types.has(type) || type === 'act:null';
-  };
   const createNode = (diff) => {
     const { type } = diff.next.element;
     // Components dont create nodes
@@ -32,7 +34,7 @@ export const createRenderer = /*:: <TNode>*/(options/*: ManagedRendererOptions<T
     if (type === 'act:null')
       return null;
 
-    const node = add(diff.next.element);
+    const node = add(diff);
     if (node)
       nodesByCommitID.set(diff.next.id, node);
 
@@ -44,23 +46,19 @@ export const createRenderer = /*:: <TNode>*/(options/*: ManagedRendererOptions<T
   };
   const render = (diff)/*: TNode[]*/ => {
     const node = nodesByCommitID.get(diff.next.id) || createNode(diff);
-
-    const children = diff.diffs.map(render).flat(1);
-
+    const children = diff.diffs.map(next || render).flat(1);
+  
     if (!node)
       return children;
-    
-    if (diff.next.pruned)
-      return (removeNode(diff, node), []);
 
-    if (diff.prev.element.id !== diff.next.element.id)
-      update(diff.prev.element, diff.next.element, children);
+    update(node, diff, children);
     
-    return [node];
+    if (!diff.next.pruned)
+      return [node];
+    
+    removeNode(diff, node);
+    return [];
   };
 
-  return {
-    canRenderElement,
-    render,
-  };
+  return { render };
 };

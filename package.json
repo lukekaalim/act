@@ -11,7 +11,8 @@
     "examples/slides",
     "examples/components",
     "examples/renderers",
-    "libraries/curve"
+    "libraries/curve",
+    "renderers/core"
   ],
   "scripts": {
     "test": "cd test; npm test"
