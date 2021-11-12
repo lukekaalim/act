@@ -12,8 +12,10 @@ export type UseEffect = (effect: Effect, deps?: Deps) => void;
 
 export type UseContext = <T>(context: Context<T>) => T;
 
+export type Ref<T> = { current: T };
+
 export type UseMemo = <T>(calc: () => T, deps?: Deps) => T;
-export type UseRef = <T>(initial: T) => { current: T };
+export type UseRef = <T>(initial: T) => Ref<T>;
 
 export type Hooks = {|
   useState: UseState,

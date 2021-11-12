@@ -163,19 +163,19 @@ declare module three {
     setZ(z: number): void;
     copy(vector: this): void;
     fromArray(array: [number, number, number], offset: number): void;
-    add(vector: this): void;
-    addVectors(a: this, b: this): void;
-    addScaledVector(vector: this, scale: number): void;
+    add(vector: this): this;
+    addVectors(a: this, b: this): this;
+    addScaledVector(vector: this, scale: number): this;
     sub(vector: this): void;
     subVectors(a: this, b: this): void;
     multiplyScalar(scalar: number): void;
     divideScalar(scalar: number): void;
-    negate(): void;
+    negate(): this;
     dot(vector: this): void;
     lengthSq(): number;
     length(): number;
     lengthManhattan(): number;
-    normalize(): void;
+    normalize(): this;
     distanceTo(vector: Vector3): number;
     distanceToSquared(vector: Vector3): number;
     setLength(length: number): void;
@@ -228,7 +228,7 @@ declare module three {
   declare class Euler {}
 
   declare export class Quaternion {
-    constructor(x: number, y: number, z: number, w: number): this;
+    constructor(x?: number, y?: number, z?: number, w?: number): this;
 
     x: number;
     y: number;
@@ -278,20 +278,26 @@ declare module three {
     ): Quaternion;
   }
 
-  declare class Matrix3 {
+  declare export class Matrix3 {
 
   }
 
-  declare class Matrix4 {
-    setPosition(v: Vector3): void;
+  declare export class Matrix4 {
+    copy(m: Matrix4): this;
+    setPosition(v: Vector3): this;
+    lookAt(eye: Vector3, target: Vector3, up: Vector3): this;
     makeRotationFromQuaternion(q: Quaternion): void;
   }
 
-  declare class Box3 {
+  declare export class Box3 {
 
   }
 
-  declare class Sphere {
+  declare export class Sphere {
+
+  }
+
+  declare export class GridHelper extends Object3D {
 
   }
 
