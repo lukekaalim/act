@@ -11,6 +11,9 @@ import {
   PointsMaterial,
   PerspectiveCamera,
   Euler,
+  GridHelper,
+  Matrix4,
+  Quaternion,
 } from "three";
 import { h, useEffect, useMemo, useRef, useState, createContext, useContext } from '@lukekaalim/act';
 import { render, scene, group, points, three, perspectiveCamera } from '@lukekaalim/act-three';
@@ -68,10 +71,45 @@ const App = () => {
   }
   const [show, setShow] = useState(false);
   const camera = useMemo(() => {
-    return new PerspectiveCamera()
+    return new PerspectiveCamera();
   }, [])
 
+  const grid = useMemo(() => new GridHelper());
+
   const [cameraRotation, setCameraRotation] = useState/*:: <Euler>*/(new Euler(0, 0, 0));
+  const size = { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true };
+
+  useMemo(() => {
+    camera.aspect = size.width / size.height;
+    camera.updateProjectionMatrix();
+  }, [camera, windowSize])
+
+  const [cameraPosition, setCameraPosition] = useState/*:: <Vector3>*/(new Vector3(0, 1, 5));
+  const [cameraFocusPosition, setCameraFocusPosition] = useState(new Vector3(0, 0, 0));
+
+  useEffect(() => {
+    const onKeyUp = (e/*: KeyboardEvent*/) => {
+      console.log(e.code);
+      switch (e.code) {
+        case 'KeyW':
+          return setCameraPosition(v => v.clone().add(new Vector3(0, 0, 1)));
+        case 'KeyS':
+          return setCameraPosition(v => v.clone().add(new Vector3(0, 0, -1)));
+        case 'KeyA':
+          return setCameraPosition(v => v.clone().add(new Vector3(-1, 0, 0)));
+        case 'KeyD':
+          return setCameraPosition(v => v.clone().add(new Vector3(1, 0, 0)));
+      }
+    };
+    document.addEventListener('keyup', onKeyUp);
+    return () => {
+      document.removeEventListener('keyup', onKeyUp);
+    }
+  }, []);
+
+  const matrix = new Matrix4()
+    .lookAt(cameraPosition, cameraFocusPosition, new Vector3(0,1,0));
+  const cameraQuaternion = new Quaternion().setFromRotationMatrix(matrix);
 
   return [
     h('h1', {}, 'hello world!'),
@@ -81,17 +119,19 @@ const App = () => {
       ])
     ]),
     h('input', { type: 'range', min: 0, max: Math.PI * 10, step: 0.05, value: r, onInput: e => setR(e.currentTarget.valueAsNumber) }),
-    h('input', { type: 'color', value: color, onChange: e => setColor(e.currentTarget.value) }),
+    h('input', { type: 'color', value: color, onInput: e => setColor(e.currentTarget.value) }),
     h('input', { type: 'text', value: JSON.stringify([wx, wy, wz]), onChange: e => setSize(JSON.parse(e.currentTarget.value)) }),
     h('button', { onClick: () => setShow(b => !b) }, 'Show!'),
     h('button', { onClick: () => setCameraRotation(b => new Euler(b.x, b.y, b.z + (Math.PI / 16))) }, 'spin!!'),
+    h('br'),
     h(three, {
-      renderer: { size: { width: windowSize.x / 2, height: windowSize.y / 2, updateStyle: true, } },
+      renderer: { size, clearAlpha: 1 },
       camera,
       onRender
      }, [
-      h(scene, {}, [
-        h(group, { group: camera, position: new Vector3(0, 0, 5), rotation: cameraRotation }),
+      h(scene, { }, [
+        h(group, { group: grid }),
+        h(group, { group: camera, position: cameraPosition, quaternion: cameraQuaternion }),
         //h('particles'),
         //h(C.mesh, { ref, geometry, material }),
         show && h(group, { group: object }),
