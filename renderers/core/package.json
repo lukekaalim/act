@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Utility functions for building three renderers",
   "main": "entry.js",
+  "type": "module",
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postversion": "../../scripts/postversion.sh"
   },
   "repository": {
     "type": "git",
