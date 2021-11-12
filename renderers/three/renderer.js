@@ -42,6 +42,7 @@ export const createRootRenderer = (objectRenderer/*: Renderer<Object3D>*/)/*: Re
 
     root.renderer.dispose();
     root.canvas.parentNode?.removeChild(root.canvas);
+    roots.delete(diff.next.id);
   };
   const render = (diff) => {
     const root = roots.get(diff.next.id) || createRoot(diff);
