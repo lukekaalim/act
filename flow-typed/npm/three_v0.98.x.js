@@ -163,19 +163,19 @@ declare module three {
     setZ(z: number): void;
     copy(vector: this): void;
     fromArray(array: [number, number, number], offset: number): void;
-    add(vector: this): void;
-    addVectors(a: this, b: this): void;
-    addScaledVector(vector: this, scale: number): void;
+    add(vector: this): this;
+    addVectors(a: this, b: this): this;
+    addScaledVector(vector: this, scale: number): this;
     sub(vector: this): void;
     subVectors(a: this, b: this): void;
     multiplyScalar(scalar: number): void;
     divideScalar(scalar: number): void;
-    negate(): void;
+    negate(): this;
     dot(vector: this): void;
     lengthSq(): number;
     length(): number;
     lengthManhattan(): number;
-    normalize(): void;
+    normalize(): this;
     distanceTo(vector: Vector3): number;
     distanceToSquared(vector: Vector3): number;
     setLength(length: number): void;
@@ -228,7 +228,7 @@ declare module three {
   declare class Euler {}
 
   declare export class Quaternion {
-    constructor(x: number, y: number, z: number, w: number): this;
+    constructor(x?: number, y?: number, z?: number, w?: number): this;
 
     x: number;
     y: number;
@@ -278,20 +278,26 @@ declare module three {
     ): Quaternion;
   }
 
-  declare class Matrix3 {
+  declare export class Matrix3 {
 
   }
 
-  declare class Matrix4 {
-    setPosition(v: Vector3): void;
+  declare export class Matrix4 {
+    copy(m: Matrix4): this;
+    setPosition(v: Vector3): this;
+    lookAt(eye: Vector3, target: Vector3, up: Vector3): this;
     makeRotationFromQuaternion(q: Quaternion): void;
   }
 
-  declare class Box3 {
+  declare export class Box3 {
 
   }
 
-  declare class Sphere {
+  declare export class Sphere {
+
+  }
+
+  declare export class GridHelper extends Object3D {
 
   }
 
@@ -414,7 +420,7 @@ declare module three {
     copy(face3: Face3): void;
   }
 
-  declare export class InstanceMesh extends Mesh {
+  declare export class InstancedMesh extends Mesh {
     
   }
 
@@ -627,6 +633,19 @@ declare module three {
     x: number;
     y: number;
     z: number,
+  }
+
+  declare export class SpriteMaterial extends Material {
+    color: Color;
+    alphaMap: Texture;
+    map: Texture;
+    rotation: number;
+    sizeAttenuation: boolean;
+  }
+
+  declare export class Sprite extends Object3D {
+    material: Material;
+    center: Vector2;
   }
 
   declare export class PerspectiveCamera extends Camera {
@@ -848,7 +867,8 @@ declare module three {
   }
 
   declare export class PointsMaterial extends Material {
-    constructor({ color: string | number }): PointsMaterial
+    constructor({ color: string | number }): PointsMaterial,
+    color: string | number | Color,
   }
 
   declare export class MeshBasicMaterial extends Material {
@@ -956,6 +976,7 @@ declare module three {
   }
   declare class LoadingManager {}
   declare export class Texture {}
+  declare export class CubeTexture {}
 
   declare function TextureLoaderOnLoadCallback(texture: Texture): void;
   declare function TextureLoaderOnProgressCallback(request: XMLHttpRequest): void;
@@ -987,11 +1008,12 @@ declare module three {
   declare export class WebGLRenderer {
     constructor(...args: Array<mixed>): this;
     render(
-      scene: Scene,
+      scene: Object3D,
       camera: Camera,
       renderTarget?: WebGLRenderTarget, forceClear?: boolean
     ): void;
     dispose(): null;
+    clear(color?: boolean, depth?: boolean, stencil?: boolean): null;
     setSize(width: number, height: number, updateStyle: boolean): void;
     domElement: Element;
   }

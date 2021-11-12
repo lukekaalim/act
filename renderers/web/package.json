@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-web",
-  "main": "main.js",
+  "main": "entry.js",
   "type": "module",
   "version": "0.4.6",
   "sideEffects": false,
@@ -10,6 +10,7 @@
     "preversion": "npm run test"
   },
   "dependencies": {
+    "@lukekaalim/act-renderer-core": "^1.0.0",
     "@lukekaalim/act-reconciler": "^2.0.5"
   },
   "devDependencies": {

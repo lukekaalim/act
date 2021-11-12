@@ -77,7 +77,8 @@ export const setTextProps = (
   diff/*: CommitDiff*/
 ) => {
   const { content } = diff.next.element.props;
-  element.textContent = typeof content === 'string' ? content : '';
+  if (content !== element.textContent)
+    element.textContent = typeof content === 'string' ? content : '';
 };
 
 export const setProps = (

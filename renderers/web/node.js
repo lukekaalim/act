@@ -1,9 +1,8 @@
 // @flow strict
 /*:: import type { Element } from '@lukekaalim/act'; */
 /*:: import type { CommitDiff } from '@lukekaalim/act-reconciler'; */
-/*:: import type { RenderService } from './main.js'; */
 
-export const createNode = (element/*: Element*/, namespace/*: string*/)/*: ?Node*/ => {
+export const createNode = (element/*: Element*/, namespace/*: string*/)/*: null | Node*/ => {
   if (typeof element.type !== 'string')
     return null;
   if (element.type === 'act:null')
@@ -19,12 +18,13 @@ export const removeNode = (node/*: Node*/) => {
   if (parent)
     parent.removeChild(node);
 }
-export const attachNodes = (parent/*: Node*/, children/*: Node[]*/, sibling/*: ?Node*/ = null) => {
-  for (let i = 0; i < children.length; i++) {
-    const child = children[children.length - i - 1];
-    const prevChild = children[children.length - i] || sibling;
-    if (parent !== child.parentNode || (prevChild && child.nextSibling !== prevChild)) {
-      parent.insertBefore(child, prevChild);
+export const attachNodes = (parent/*: Node*/, children/*: Node[]*/) => {
+  // iterate backwards through the children
+  for (let i = children.length; i > 0; i--) {
+    const child = children[i - 1];
+    const rightSibling = children[i];
+    if (parent !== child.parentNode || (rightSibling && child.nextSibling !== rightSibling)) {
+      parent.insertBefore(child, rightSibling);
     }
   }
 };
