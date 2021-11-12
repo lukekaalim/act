@@ -1,9 +1,9 @@
-name: "Publish @lukekaalim/act-core"
+name: "Publish @lukekaalim/act-renderer-core"
 
 on:
   push:
     tags:
-      - '@lukekaalim/act-core@*'
+      - '@lukekaalim/act-renderer-core@*'
 
 jobs:
   publish-render-three:
