@@ -5,7 +5,8 @@
 
 import { calculatePropsDiff } from "@lukekaalim/act-reconciler";
 import { setHTMLProp } from "@lukekaalim/act-web";
-import { Group, PerspectiveCamera } from "three";
+import { Group } from "three";
+import { setRef } from "@lukekaalim/act-renderer-core";
 
 export const setCanvasProps = ({ prev, next }/*: PropDiff*/, canvas/*: HTMLCanvasElement*/) => {
   const validPrev = typeof prev === 'object' && prev ? prev : {};
@@ -88,26 +89,10 @@ export const setObjectProp = ({ key, prev, next }/*: PropDiff*/, object/*: Objec
       return object.rotation.copy((next/*: any*/));
     case 'scale':
       return object.scale.copy((next/*: any*/));
+    case 'matrix':
+      return void object.matrix.copy((next/*: any*/));
     default:
       (object/*: any*/)[key] = next; break;
-  }
-};
-
-export const setRef = (
-  object/*: ?Object3D*/,
-  diff/*: CommitDiff*/
-) => {;
-  const ref/*: any*/ = diff.next.element.props['ref'];
-  if (typeof ref === 'function') {
-    if (diff.prev.pruned)
-      (ref/*: Function*/)(object);
-    else if (diff.next.pruned)
-      (ref/*: Function*/)(null);
-  } else if (ref && typeof ref === 'object') {
-    if (diff.prev.pruned)
-      ref['current'] = object;
-    else if (diff.next.pruned)
-      ref['current'] = null;
   }
 };
 
