@@ -629,6 +629,19 @@ declare module three {
     z: number,
   }
 
+  declare export class SpriteMaterial extends Material {
+    color: Color;
+    alphaMap: Texture;
+    map: Texture;
+    rotation: number;
+    sizeAttenuation: boolean;
+  }
+
+  declare export class Sprite extends Object3D {
+    material: Material;
+    center: Vector2;
+  }
+
   declare export class PerspectiveCamera extends Camera {
     constructor(fov?: number, aspect?: number, near?: number, far?: number): this;
 

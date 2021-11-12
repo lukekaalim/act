@@ -2,6 +2,7 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type {
   Vector3,
+  Vector2,
   Object3D,
   Quaternion,
   BufferGeometry,
@@ -56,6 +57,11 @@ export type MeshProps = {
   geometry?: BufferGeometry,
   material?: Material,
 };
+export type SpriteProps = {
+  ...Object3DProps<Three.Sprite>,
+  material: Material;
+  center: Vector2;
+};
 export type InstancedMeshProps = {
   ...MeshProps,
   ...Object3DProps<Three.InstancedMesh>,
@@ -71,17 +77,6 @@ export type PointsProps = {
   ...Object3DProps<Three.Points>,
   geometry?: BufferGeometry,
   material?: Material,
-};
-type Ref<T> = ((reference: T) => mixed) | { current: T | any };
-export type ThreeProps = {
-  ref?: Ref<{ scene: Three.Scene, camera: PerspectiveCamera, renderer: Three.WebGLRenderer }>,
-  width: number,
-  height: number,
-  setStyle?: boolean,
-  background?: Color | null | Texture,
-  alpha?: boolean,
-  camera?: Camera,
-  onRender?: (timestamp: number) => void,
 };
 export type GroupProps = {
   ...Object3DProps<Three.Group>,
@@ -105,6 +100,7 @@ export const group = ('group'/*: Component<GroupProps>*/);
 export const perspectiveCamera = ('perspectiveCamera'/*: Component<PerspectiveCameraProps>*/);
 
 export const mesh = ('mesh'/*: Component<MeshProps>*/);
+export const sprite = ('sprite'/*: Component<SpriteProps>*/);
 export const points = ('points'/*: Component<PointsProps>*/);
 export const instancedMesh = ('instancedMesh'/*: Component<InstancedMeshProps>*/);
 export const pointLight = ('pointLight'/*: Component<PointLightsProps>*/);
