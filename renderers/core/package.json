@@ -4,7 +4,6 @@
   "description": "Utility functions for building three renderers",
   "main": "entry.js",
   "type": "module",
-  "devDependencies": {},
   "scripts": {
     "postversion": "../../scripts/postversion.sh"
   },
@@ -17,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/lukekaalim/act/issues"
   },
-  "homepage": "https://github.com/lukekaalim/act#readme"
+  "homepage": "https://github.com/lukekaalim/act#readme",
+  "dependencies": {
+    "@lukekaalim/act": "^2.3.0",
+    "@lukekaalim/act-reconciler": "^2.0.5"
+  }
 }
