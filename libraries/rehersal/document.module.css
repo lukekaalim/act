@@ -49,3 +49,7 @@
 .document blockquote > p {
   margin: 0;
 }
+
+.document a {
+  font-weight: bold;
+}

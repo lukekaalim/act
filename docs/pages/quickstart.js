@@ -29,7 +29,7 @@ Lets install our dependencies:
  - \`@lukekaalim/act\` (generic element building)
  - \`@lukekaalim/act-web\` (specific act tool for building websites)
 
-And we'll use the tool \`vite\` to bundle our site into something hostable.
+And we'll use the tool [vite](https://vitejs.dev/) to bundle our site into something hostable.
 
 ${'```'}
 npm i @lukekaalim/act @lukekaalim/act-web

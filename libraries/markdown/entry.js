@@ -10,10 +10,13 @@ const MarkdownParagraph = ({ node }) => {
   return h('p', {}, h(MarkdownChildren, { node }));
 }
 const MarkdownText = ({ node }) => {
-  return h('span', {}, node.value);
+  return node.value;
 }
 const MarkdownEmphasis = ({ node }) => {
   return h('i', {}, h(MarkdownChildren, { node }));
+}
+const MarkdownStrong = ({ node }) => {
+  return h('strong', { }, h(MarkdownChildren, { node }))
 }
 const getHeadingElementType = (node) => {
   switch (true) {
@@ -99,6 +102,8 @@ const MarkdownNode = ({ node }) => {
       return h(MarkdownImage, { node })
     case 'blockquote':
       return h(MarkdownBlockquote, { node });
+    case 'strong':
+      return h(MarkdownStrong, { node });
     default:
       console.log(node);
       return null;
