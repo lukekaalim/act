@@ -20,7 +20,8 @@
     "libraries/markdown"
   ],
   "scripts": {
-    "test": "cd test; npm test"
+    "test": "cd test; npm test",
+    "build:docs": "npm run build -w docs"
   },
   "devDependencies": {
     "flow-bin": "^0.158.0"
