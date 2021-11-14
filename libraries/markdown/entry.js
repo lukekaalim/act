@@ -67,6 +67,9 @@ const MarkdownThematicBreak = ({ node }) => {
 const MarkdownImage = ({ node }) => {
   return h('img', { src: node.url, alt: node.alt, title: node.title });
 }
+const MarkdownBlockquote = ({ node }) => {
+  return h('blockquote', { }, h(MarkdownChildren, { node }))
+}
 
 const MarkdownNode = ({ node }) => {
   switch (node.type) {
@@ -94,6 +97,8 @@ const MarkdownNode = ({ node }) => {
       return h(MarkdownThematicBreak);
     case 'image':
       return h(MarkdownImage, { node })
+    case 'blockquote':
+      return h(MarkdownBlockquote, { node });
     default:
       console.log(node);
       return null;
