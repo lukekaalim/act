@@ -11,6 +11,8 @@ import { TabbedToolbox } from "../libraries/rehersal/tools/tabs";
 import { Workspace } from '../libraries/rehersal/layouts/workspace.js';
 import { rehersalPage } from './pages/libraries/rehersal.js';
 import { markdownPage, markdownRendererPage } from "./pages/libraries/markdown";
+import { elementsPage } from './pages/elements.js';
+import { quickstartPage } from './pages/quickstart.js';
 
 
 /*::
@@ -23,14 +25,15 @@ export type Page = {
 const text = `
 # @lukekaalim/act
 
-![npm (scoped)](https://img.shields.io/npm/v/@lukekaalim/act)
+[![npm (scoped)](https://img.shields.io/npm/v/@lukekaalim/act)](https://www.npmjs.com/package/@lukekaalim/act)
+![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@lukekaalim/act-web)
 
 A generic rendering library for heiarchical elements.
 
 Use it like react!
 
 Render to HTML with \`@lukekaalim/act-web\`
-or even use 3D capabilites with \`three\` using \`@lukekaalim/act-three\`
+or even use 3D capabilites with [threejs](https://threejs.org/) using \`@lukekaalim/act-three\`
 
 ## Install
 ${'```'}
@@ -38,39 +41,25 @@ npm install @lukekaalim-act
 ${'```'}
 `;
 
-const testPage = {
-  link: { name: 'test', href: '/test', children: [] },
-  content: h(() => {
-    return h(Workspace, {
-      bench: h(GridBench),
-      tools: h(TabbedToolbox, { tabs: {
-        readme: h(Document, { text })
-      } })
-    });
-  })
-}
+const wipLink = { name: "[TODO]", children: [] }
 
-const linkC = { name: 'longer even than root level hahahahaha', href: '/', children: [] };
-const linkB = { name: 'a', href: '/', children: [linkC] };
-const linkA = { name: 'a', href: '/', children: [linkB] };
-const link = { name: 'root level and reall long', href: '/', children: [linkA, linkB, linkC] };
-
-const page = {
-  link: { name: 'a', href: '/', children: [] },
-  content: 'AA',
-};
 
 const rootPage = {
   link: { name: 'README.md', href: '/', children: [
+    quickstartPage.link,
+    elementsPage.link,
     componentPage.link,
+    { name: 'Renderers', children: [wipLink], href: null },
     { name: 'Libraries', children: [rehersalPage.link, markdownPage.link,], href: null },
+    { name: 'Internals', children: [wipLink], href: null },
   ] },
   content: h(Document, { text })
 };
 const pages = [
   rootPage,
+  quickstartPage,
   componentPage,
-  testPage,
+  elementsPage,
   rehersalPage,
   markdownPage,
   markdownRendererPage
