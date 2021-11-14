@@ -28,7 +28,7 @@ const text = `
 [![npm (scoped)](https://img.shields.io/npm/v/@lukekaalim/act)](https://www.npmjs.com/package/@lukekaalim/act)
 ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@lukekaalim/act)
 
-A generic rendering library for heiarchical elements.
+A generic rendering library for hierarchical elements.
 
 Use it like react!
 
