@@ -26,6 +26,8 @@
   padding: 1em;
   background-color: #260951;
   color: white;
+
+  white-space: pre-wrap;
 }
 .document pre:global(.inline) {
   border-radius: 5px;
@@ -37,4 +39,13 @@
 
 .document img {
   max-width: 100%;
+}
+
+.document blockquote {
+  padding: 17px;
+  background-color: rgb(200, 222, 240);
+  border-radius: 8px;
+}
+.document blockquote > p {
+  margin: 0;
 }
