@@ -12,7 +12,12 @@
     "examples/components",
     "examples/renderers",
     "libraries/curve",
-    "renderers/core"
+    "libraries/rehersal",
+    "renderers/core",
+    "libraries/costume",
+    "docs",
+    "libraries/navigation",
+    "libraries/markdown"
   ],
   "scripts": {
     "test": "cd test; npm test"

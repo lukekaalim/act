@@ -1,0 +1,23 @@
+{
+  "name": "@lukekaalim/act-markdown",
+  "version": "1.0.0",
+  "description": "Renders markdown syntax into act elements",
+  "main": "entry.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukekaalim/act.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lukekaalim/act/issues"
+  },
+  "homepage": "https://github.com/lukekaalim/act#readme",
+  "dependencies": {
+    "mdast-util-from-markdown": "^1.1.0"
+  }
+}

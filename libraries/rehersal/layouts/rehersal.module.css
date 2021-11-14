@@ -1,0 +1,20 @@
+.rehersal {
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.rehersalHorizontalContainer {
+  height: 100%;
+
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+}
+
+.rehersalContent {
+  flex-grow: 1;
+  width: 10px;
+}

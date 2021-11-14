@@ -1,0 +1,25 @@
+{
+  "name": "@lukekaalim/act-rehersal",
+  "version": "1.0.0",
+  "description": "A component library for building act previews",
+  "main": "entry.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astral-atlas/wildspace.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/astral-atlas/wildspace/issues"
+  },
+  "homepage": "https://github.com/astral-atlas/wildspace#readme",
+  "dependencies": {
+    "@lukekaalim/cast": "^4.1.1",
+    "@lukekaalim/act-navigation": "^1.0.0",
+    "@lukekaalim/act-markdown": "^1.0.0",
+    "mdast-util-from-markdown": "^1.0.4"
+  }
+}

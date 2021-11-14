@@ -1,0 +1,17 @@
+.workspace {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tools {
+  position: relative;
+  height: 50%;
+  overflow: auto;
+}
+
+.bench {
+  position: relative;
+  height: 50%;
+  overflow: auto;
+}
