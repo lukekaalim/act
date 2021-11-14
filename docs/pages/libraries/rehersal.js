@@ -6,7 +6,7 @@ import { Document } from '@lukekaalim/act-rehersal';
 const text = `
 # @lukekaalim/act-rehersal.
 
-A compoonent library for building documentation websites.
+A component library for building documentation websites.
 
 ## Install
 ${'```'}js
