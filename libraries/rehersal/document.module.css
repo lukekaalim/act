@@ -53,3 +53,7 @@
 .document a {
   font-weight: bold;
 }
+
+.document li > p {
+  margin: 0;
+}

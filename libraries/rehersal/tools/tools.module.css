@@ -11,6 +11,10 @@
   height: 100%;
 }
 
+.tab {
+  border-color: rgb(227, 227, 227);
+}
+
 .tabbedToolbox > menu {
   list-style: none;
   padding: 0;

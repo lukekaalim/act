@@ -9,7 +9,7 @@ import { Document, Rehersal, GridBench } from '@lukekaalim/act-rehersal';
 import { componentPage } from './pages/components.js';
 import { TabbedToolbox } from "../libraries/rehersal/tools/tabs";
 import { Workspace } from '../libraries/rehersal/layouts/workspace.js';
-import { rehersalPage } from './pages/libraries/rehersal.js';
+import { rehersalPage, rehersalPages } from './pages/libraries/rehersal.js';
 import { markdownPage, markdownRendererPage } from "./pages/libraries/markdown";
 import { elementsPage } from './pages/elements.js';
 import { quickstartPage } from './pages/quickstart.js';
@@ -45,7 +45,7 @@ const wipLink = { name: "[TODO]", children: [] }
 
 
 const rootPage = {
-  link: { name: 'README.md', href: '/', children: [
+  link: { name: '@lukekaalim/act', href: '/', children: [
     quickstartPage.link,
     elementsPage.link,
     componentPage.link,
@@ -60,7 +60,7 @@ const pages = [
   quickstartPage,
   componentPage,
   elementsPage,
-  rehersalPage,
+  ...rehersalPages,
   markdownPage,
   markdownRendererPage
 ];

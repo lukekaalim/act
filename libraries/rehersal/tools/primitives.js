@@ -2,6 +2,8 @@
 /*:: import type { Component, SetValue, ElementNode } from '@lukekaalim/act'; */
 import { h, useState, useEffect } from '@lukekaalim/act';
 
+import styles from './primitives.module.css';
+
 /*::
 export type TextInputProps = {
   disabled?: boolean,
@@ -14,7 +16,7 @@ export type TextInputProps = {
 
 export const TextInput/*: Component<TextInputProps>*/ = ({ label = '', value = '', onChange = _ => {}, onInput = _ => {}, disabled = false }) => {
   return [
-    h('label', { style: { display: 'flex', flexDirection: 'column', width: '300px', margin: '24px' } }, [
+    h('label', { className: styles.text, style: { display: 'flex', flexDirection: 'column', width: '300px' } }, [
       h('span', {}, label),
       h('input', {
         type: 'text',
@@ -28,8 +30,10 @@ export const TextInput/*: Component<TextInputProps>*/ = ({ label = '', value = '
 };
 /*::
 export type NumberInputProps = {
+  disabled?: boolean,
   label?: string,
   value?: number,
+  hasRange?: boolean,
   min?: number,
   max?: number,
   step?: number,
@@ -39,12 +43,14 @@ export type NumberInputProps = {
 */
 
 
-export const NumberInput/*: Component<NumberInputProps>*/ = ({ label = '', min, max, step, value = '', onChange = _ => {}, onInput = _ => {} }) => {
+export const NumberInput/*: Component<NumberInputProps>*/ = ({ hasRange = true, disabled = false, label = '', min, max, step, value = '', onChange = _ => {}, onInput = _ => {} }) => {
   return [
-    h('div', { style: { display: 'flex', flexDirection: 'column', width: '300px', margin: '24px' } }, [
-      h('label', { style: { display: 'flex', flexDirection: 'column', width: '150px' } }, [
-        h('span', {}, label),
+    h('div', { className: styles.number, style: { display: 'flex', flexDirection: 'column', width: '300px' } }, [
+      h('label', { style: { display: 'flex', flexDirection: 'column' } }, [
+        h('div', {}, label),
         h('input', {
+          style: { width: '50%' },
+          disabled,
           type: 'number',
           value,
           min,
@@ -54,7 +60,8 @@ export const NumberInput/*: Component<NumberInputProps>*/ = ({ label = '', min, 
           onChange: e => onChange(e.target.valueAsNumber)
         })
       ]),
-      h('input', {
+      hasRange && h('input', {
+        disabled,
         style: {},
         type: 'range',
         value,
@@ -63,6 +70,37 @@ export const NumberInput/*: Component<NumberInputProps>*/ = ({ label = '', min, 
         step,
         onInput: e => onInput(e.target.valueAsNumber),
         onChange: e => onChange(e.target.valueAsNumber)
+      })
+    ]),
+  ];
+};
+
+/*::
+export type BooleanInputProps = {
+  disabled?: boolean,
+  label?: string,
+  value?: boolean,
+  onChange?: boolean => mixed,
+  onInput?: boolean => mixed,
+};
+*/
+
+export const BooleanInput/*: Component<BooleanInputProps>*/ = ({
+  label,
+  value,
+  disabled = false,
+  onInput = _ => {},
+  onChange = _ => {},
+}) => {
+  return [
+    h('label', { className: styles.boolean, style: { display: 'flex', flexDirection: 'column', width: '300px' } }, [
+      h('div', {}, label),
+      h('input', {
+        type: 'checkbox',
+        checked: value,
+        disabled,
+        onInput: e => onInput(e.target.checked),
+        onChange: e => onChange(e.target.checked)
       })
     ]),
   ];
@@ -89,8 +127,8 @@ export const SelectInput/*: Component<SelectInputProps>*/ = ({
 }) => {
   return [
     h('div', { style: { display: 'flex', flexDirection: 'column', width: '300px', margin: '24px' } }, [
-      h('label', { style: { display: 'flex', flexDirection: 'column', width: '150px' } }, [
-        h('span', {}, label),
+      h('label', { style: { display: 'flex', flexDirection: 'column' } }, [
+        h('div', {}, label),
         h('select', {
           value,
           onInput: e => onInput(e.target.value),
