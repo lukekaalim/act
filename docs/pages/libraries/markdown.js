@@ -3,6 +3,7 @@
 import { h, useEffect, useState } from '@lukekaalim/act';
 import { Document, GridBench, TabbedToolbox, Workspace } from '@lukekaalim/act-rehersal';
 import { MarkdownRenderer } from '@lukekaalim/act-markdown';
+import readme from '@lukekaalim/act-markdown/README.md?raw';
 
 const usageText = `
 ## Usage
@@ -56,21 +57,10 @@ And here is more markdown.
   })
 };
 
-const text = `
-# @lukekaalim/act-markdown.
-
-A component library that parses markdown syntax via \`mdast-util-from-markdown\`
-and renders it to html elements in act.
-
-## Install
-${'```'}js
-npm install @lukekaalim/act-markdown
-${'```'}
-
-${usageText}
-`;
-
 export const markdownPage/*: Page*/ = {
   link: { href: '/libraries/markdown', name: '@lukekaalim/act-markdown', children: [{ name: 'exports', children: [markdownRendererPage.link] }] },
-  content: h(Document, { text })
+  content: [
+    h(Document, { text: readme }),
+    h(Document, { text: usageText })
+  ]
 }
