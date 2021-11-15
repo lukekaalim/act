@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/lukekaalim/act#readme",
   "dependencies": {
+    "@lukekaalim/act": "^2.3.0",
     "mdast-util-from-markdown": "^1.1.0"
   }
 }
