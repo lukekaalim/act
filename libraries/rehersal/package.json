@@ -19,7 +19,7 @@
   "dependencies": {
     "@lukekaalim/cast": "^4.1.1",
     "@lukekaalim/act-navigation": "^1.0.0",
-    "@lukekaalim/act-markdown": "^1.0.0",
+    "@lukekaalim/act-markdown": "*",
     "mdast-util-from-markdown": "^1.0.4"
   }
 }

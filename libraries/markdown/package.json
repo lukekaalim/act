@@ -1,11 +1,11 @@
 {
   "name": "@lukekaalim/act-markdown",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Renders markdown syntax into act elements",
   "main": "entry.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postversion": "../../scripts/postversion.sh"
   },
   "repository": {
     "type": "git",

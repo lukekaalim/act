@@ -1,7 +1,7 @@
 {
   "name": "docs",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "type": "module",
   "main": "index.js",
   "devDependencies": {
     "vite": "^2.6.14"
