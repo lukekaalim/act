@@ -13,6 +13,7 @@ import { rehersalPage, rehersalPages } from './pages/libraries/rehersal.js';
 import { markdownPage, markdownRendererPage } from "./pages/libraries/markdown";
 import { elementsPage } from './pages/elements.js';
 import { quickstartPage } from './pages/quickstart.js';
+import { curvePage, curvePages } from './pages/libraries/curve.js';
 
 
 /*::
@@ -50,7 +51,7 @@ const rootPage = {
     elementsPage.link,
     componentPage.link,
     { name: 'Renderers', children: [wipLink], href: null },
-    { name: 'Libraries', children: [rehersalPage.link, markdownPage.link,], href: null },
+    { name: 'Libraries', children: [rehersalPage.link, markdownPage.link, curvePage.link], href: null },
     { name: 'Internals', children: [wipLink], href: null },
   ] },
   content: h(Document, { text })
@@ -61,6 +62,7 @@ const pages = [
   componentPage,
   elementsPage,
   ...rehersalPages,
+  ...curvePages,
   markdownPage,
   markdownRendererPage
 ];

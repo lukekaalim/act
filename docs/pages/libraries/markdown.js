@@ -44,7 +44,7 @@ This is some example markdown
       
 And here is more markdown.
       
-![Mountain](https://live.staticflickr.com/389/31833779864_7ec0b63ffc_h.jpg "Cool mountain")
+![River](https://images.unsplash.com/photo-1558386619-d39547b31c83?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1470&q=80 "Cool river")
 `)
 
     return h(Workspace, {
