@@ -61,7 +61,7 @@ export const useBezier = (to/*: number*/, onUpdate/*: number => mixed*/) => {
       
       return {
         ...previous,
-        from: [[0, value[1]], [0, value[1] + (slope / 2)]],
+        from: [[0, value[1]], [0, value[1] + slope]],
         to: [[1, to], [1, to]],
         start: performance.now()
       };
