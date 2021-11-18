@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { Page } from '@lukekaalim/act-rehersal'; */
-import { useConstantInterpolation, useCubicEaseInterpolation, useLinearInterpolation, useProgress } from '@lukekaalim/act-curve';
+import { useBezier, useConstantInterpolation, useCubicEaseInterpolation, useLinearInterpolation, useProgress } from '@lukekaalim/act-curve';
 import { h, useRef, useState } from '@lukekaalim/act';
 import { Document, GridBench, NumberInput, TabbedToolbox, Workspace } from '@lukekaalim/act-rehersal';
 
@@ -38,14 +38,16 @@ export const linearCurvePage/*: Page*/ = {
     const linearRef = useRef/*:: <?HTMLProgressElement>*/(null);
     const progressRef = useRef/*:: <?HTMLProgressElement>*/(null);
     const cubicRef = useRef/*:: <?HTMLProgressElement>*/(null);
+    const bezierRef = useRef/*:: <?HTMLProgressElement>*/(null);
     const [value, setValue] = useState(0);
     const [duration, setDuration] = useState(1000);
     const [speed, setSpeed] = useState(10);
 
-    useProgress(duration, (progress) => withRefElement(progressRef, element => element.value = progress), [value])
+    useProgress(duration, v => setProgressValue(progressRef, v), [value])
     useConstantInterpolation(value, interpolateNumber, duration, v => setProgressValue(constantRef, v), [value]);
     useCubicEaseInterpolation(value, interpolateNumber, duration, v => setProgressValue(cubicRef, v), [value]);
     useLinearInterpolation(value, interpolateNumber, (a, b) => Math.abs(a - b) / (speed / 1000), v => setProgressValue(linearRef, v), [value]);
+    useBezier(value, v => setProgressValue(bezierRef, v));
 
     return h(Workspace, {
       bench: [
@@ -64,6 +66,10 @@ export const linearCurvePage/*: Page*/ = {
         h('label', {}, [
           h('div', {}, 'Cubic'),
           h('progress', { ref: cubicRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
+        ]),
+        h('label', {}, [
+          h('div', {}, 'Bezier'),
+          h('progress', { ref: bezierRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
         ]),
       ],
       tools: h(TabbedToolbox, { tabs: {
