@@ -1,5 +1,6 @@
 // @flow strict
 import { useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
+import { useAnimation } from "./animation";
 
 const easeInOutCubic = (x/*: number*/)/*: number*/ => (
   x < 0.5 ?
@@ -89,3 +90,57 @@ export const useCurves = /*:: <T: { +[string]: number }>*/(
     return () => cancelAnimationFrame(id);
   }, [applyCurves, curves, duration, easer]);
 };
+
+/*::
+export type Animator = {
+  update: (to: number, start: DOMHighResTimeStamp) => void,
+  getValue: (now: DOMHighResTimeStamp) => number,
+  isDone: (now: DOMHighResTimeStamp) => boolean
+}
+
+export type UseInterpolator = (value: number, onUpdate: number => mixed) => void;
+export type UseInterpolatorMap = <T: { [string]: number }>(values: T, onUpdate: T => mixed) => void; 
+*/
+
+export const createInterpolationHook = (createAnimator/*: (initialValue: number) => Animator*/)/*: UseInterpolator*/ => {
+  const useInterpolator = (value, onUpdate) => {
+    const animator = useMemo(() => createAnimator(value), []);
+    useAnimation((now) => {
+      onUpdate(animator.getValue(now))
+      return animator.isDone(now);
+    }, [value])
+    useEffect(() => {
+      animator.update(value, performance.now());
+    }, [value]);
+  };
+
+  return useInterpolator;
+};
+
+export const createInterpolationMapHook = (createAnimator/*: (initialValue: number) => Animator*/)/*: UseInterpolatorMap*/=> {
+  const useInterpolator = /*:: <T>*/(value, onUpdate) => {
+    const states = useMemo(() => new Map(), []);
+    useAnimation((now) => {
+      let isDone = true;
+      const map = {};
+      for (const [key, { animator }] of states) {
+        map[key] = animator.getValue(now)
+        isDone = isDone && animator.isDone(now);
+      }
+      onUpdate(map);
+      return isDone;
+    }, [value])
+    useEffect(() => {
+      const now = performance.now();
+      for (const [key, mapValue] of ((Object.entries(value)/*: any*/)/*: [string, number][]*/)) {
+        const { animator, to } = states.get(key) || { animator: createAnimator(mapValue), to: mapValue };
+        if (to !== mapValue) {
+          animator.update(mapValue, now);
+          states.set(key, { animator, to });
+        }
+      }
+    }, [value]);
+  };
+
+  return useInterpolator;
+}

@@ -1,72 +1,144 @@
 // @flow strict
+/*:: import type { Component } from '@lukekaalim/act'; */
+/*:: import type { UseInterpolator, UseInterpolatorMap } from "./hook"; */
+import { h, useEffect, useMemo, useRef } from "@lukekaalim/act";
+import { usePreviousEffect } from "./previous.js";
+import { calculateProgress, createProgressAnimator } from "./progress.js";
+import { lerp, Vector2 } from "./math.js";
+import { useAnimation } from "./animation.js";
+import { createInterpolationMapHook } from "./hook.js";
+import { createInterpolationHook } from "./hook";
 
-import { useInterpolation } from "./linear";
-import { usePreviousEffect } from "./previous";
-import { calculateProgress, createProgressTimer } from "./progress";
+
+const calculateBezierPosition = (v/*: Vector2[]*/, t/*: number*/) => {
+  if (v.length === 0)
+    throw new Error();
+  if (v.length === 1)
+    return v[0];
+
+  const a = v.slice(0, -1);
+  const b = v.slice(1);
+  return Vector2.lerp(calculateBezierPosition(a, t), calculateBezierPosition(b, t), t);
+}
+
+const calculateCubicBezierPosition = (bezier/*: CubicBezier*/, t/*: number*/)/*: Vector2*/ => {
+  return calculateBezierPosition([bezier.start.position, bezier.start.control, bezier.end.control, bezier.end.position], t);
+}
+const calculateCubicBezierForwardVelocity = (bezier/*: CubicBezier*/, t/*: number*/)/*: Vector2*/ => {
+  const a = calculateBezierPosition([bezier.start.position, bezier.start.control, bezier.end.control], t);
+  const b = calculateBezierPosition([bezier.start.control, bezier.end.control, bezier.end.position], t);
+  const position = calculateBezierPosition([a, b], t);
+
+  return b.add(position.negate());
+}
 
 /*::
-export type Vector2 = [number, number];
+export type CubicBezier = {
+  start: BezierTarget,
+  end: BezierTarget,
+}
+
+export type BezierTarget = {
+  position: Vector2,
+  control: Vector2,
+};
 */
 
-const calculateInterpolation = (v1/*: number*/, v2/*: number*/, t/*: number*/)/*: number*/ => {
-  const distance = v2 - v1;
-  return v1 + (t*distance);
-}
-
-const calculateVector2Interpolation = (v1/*: Vector2*/, v2/*: Vector2*/, t/*: number*/)/*: Vector2*/ => {
-  return [
-    calculateInterpolation(v1[0], v2[0], t),
-    calculateInterpolation(v1[1], v2[1], t),
-  ];
-};
-
-const calculateQuadraticBezierValue = (v/*: [Vector2, Vector2, Vector2]*/, t/*: number*/) => {
-  const a = calculateVector2Interpolation(v[0], v[1], t);
-  const b = calculateVector2Interpolation(v[1], v[2], t);
-  return calculateVector2Interpolation(a, b, t);
-}
-
-const calculateCubicBezierValue = (v/*: [Vector2, Vector2, Vector2, Vector2]*/, t/*: number*/) => {
-  const a = calculateQuadraticBezierValue([v[0], v[1], v[2]], t);
-  const b = calculateQuadraticBezierValue([v[1], v[2], v[3]], t);
-  return calculateVector2Interpolation(a, b, t);
-};
-
-export const useBezier = (to/*: number*/, onUpdate/*: number => mixed*/) => {
-  const interpolate = (from, to, progress) => {
-    const clampedProgress = Math.max(0, Math.min(1, progress));
-    const value = calculateCubicBezierValue([from[0], from[1], to[1], to[0]], clampedProgress);
-    return value;
+export const createMomentumPreservingBezier = (previousBezier/*: CubicBezier*/, progress/*: number*/, target/*: number*/)/*: CubicBezier*/ => {
+  const position = calculateCubicBezierPosition(previousBezier, progress);
+  const velocity = calculateCubicBezierForwardVelocity(previousBezier, progress);
+  const bezier = {
+    start: {
+      position: new Vector2(0, position.y),
+      control: new Vector2(1, position.y + (velocity.y)) },
+    end: {
+      position: new Vector2(1, target),
+      control: new Vector2(0, target)
+    },
   };
-  const getSlope = (from, to, progress) => {
-    const clampedProgress = Math.max(0, Math.min(1, progress));
-    const a = calculateQuadraticBezierValue([from[0], from[1], to[1]], clampedProgress);
-    const b = calculateQuadraticBezierValue([from[1], to[1], to[0]], clampedProgress);
-    const direction = [b[0] - a[0], b[1] - a[1]];
-    const slope = (direction[1] / direction[0]) || 0;
-    return slope;
+  return bezier;
+}
+export const createPointBezier = (target/*: number*/)/*: CubicBezier*/ => {
+  const bezier = {
+    start: { position: new Vector2(0, target), control: new Vector2(0, target) },
+    end: { position: new Vector2(1, target), control: new Vector2(1, target) }
+  };
+  return bezier;
+}
+
+/*::
+export type BezierAnimator = {
+  update: (to: number, start: DOMHighResTimeStamp) => void,
+  getPoint: (now: DOMHighResTimeStamp) => { velocity: number, position: number },
+  getValue: (now: DOMHighResTimeStamp) => number,
+  isDone: (now: DOMHighResTimeStamp) => boolean,
+};
+*/
+
+const getCubicPoint = (a, b, c, d, t) => {
+  const ab = lerp(a, b, t);
+  const bc = lerp(b, c, t);
+  const cd = lerp(c, d, t);
+
+  const abc = lerp(ab, bc, t);
+  const bcd = lerp(bc, cd, t);
+
+  const position = lerp(abc, bcd, t);
+  const velocity = bcd - position;
+  return { velocity, position };
+};
+
+export const createBezierAnimator = (
+  duration/*: number*/,
+  initialValue/*: number*/
+)/*: BezierAnimator*/ => {
+  let from = initialValue;
+  let to = initialValue;
+  let velocity = initialValue;
+
+  const progressAnimator = createProgressAnimator();
+
+  const update = (nextTo, start) => {
+    const nextPoint = getPoint(start);
+
+    from = nextPoint.position;
+    to = nextTo;
+    velocity = nextPoint.velocity;
+
+    progressAnimator.update(start, duration);
+  };
+  const getPoint = (now) => {
+    const progress = progressAnimator.getProgress(now);
+    return getCubicPoint(from, from + velocity, to + velocity, to, progress);
+  }
+  const getValue = (now) => {
+    const { position } = getPoint(now);
+    return position;
+  }
+  const isDone = (now) => {
+    const progress = progressAnimator.getProgress(now);
+    return progress >= 1;
   }
 
-  useInterpolation(
-    to,
-    (current, previous, progress) => {
-      const value = interpolate(current.from, current.to, progress);
-      onUpdate(value[1]);
-      return value[1];
-    },
-    (previous) => {
-      const progress = calculateProgress(previous.start, previous.duration, performance.now());
-      const value = interpolate(previous.from, previous.to, progress);
-      const slope = getSlope(previous.from, previous.to, progress);
-      
-      return {
-        ...previous,
-        from: [[0, value[1]], [0, value[1] + slope]],
-        to: [[1, to], [1, to]],
-        start: performance.now()
-      };
-    },
-    { duration: 1000, from: [[0, to], [0, to]], to: [[1, to], [1, to]], start: performance.now() },
-    [to]
-  )
+  return { update, getPoint, getValue, isDone };
 };
+
+export const calculateBezierPoints = (bezier/*: CubicBezier*/, segments/*: number*/)/*: Vector2[]*/ => {
+  const points = [];
+  for (let i = 0; i < segments; i++)
+    points.push(calculateCubicBezierPosition(bezier, i/segments));
+  return points;
+}
+
+export const useBeziers/*: UseInterpolatorMap*/ = createInterpolationMapHook(v => createBezierAnimator(1000, v));
+export const useBezier/*: UseInterpolator*/ = createInterpolationHook(v => createBezierAnimator(1000, v));
+export const useBezierVelocity/*: UseInterpolator*/ = createInterpolationHook(v => {
+  const bezier = createBezierAnimator(1000, v)
+  return {
+    ...bezier,
+    getValue: (now) => {
+      const { velocity } = bezier.getPoint(now);
+      return velocity;
+    }
+  }
+});

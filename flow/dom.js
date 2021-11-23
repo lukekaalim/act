@@ -57,6 +57,15 @@ declare class SVGLength {
   static SVG_LENGTHTYPE_PC: SVG_LENGTHTYPE_PC;
 }
 
+declare class SVGPoint {
+  x: number;
+  y: number;
+}
+
+declare class SVGPointList {
+  +length: number;
+}
+
 declare class SVGLengthList {
   [number]: SVGLength;
   clear(): void;
@@ -70,5 +79,17 @@ declare class SVGAnimatedLengthList {
 
 declare class SVGSVGElement {
   createSVGLength(): SVGLength
+}
+
+declare interface SVGGraphicsElement extends SVGElement {
+
+}
+
+declare interface SVGGeometryElement extends SVGGraphicsElement {
+  
+}
+
+declare class SVGPolylineElement implements SVGGeometryElement {
+  points(): SVGPointList
 }
 */

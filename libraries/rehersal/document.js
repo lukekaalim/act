@@ -5,6 +5,9 @@ import { MarkdownRenderer } from "@lukekaalim/act-markdown";
 
 import styles from './document.module.css';
 
-export const Document/*: Component<{ text: string }>*/ = ({ text }) => {
-  return h('div', { className: styles.document }, h(MarkdownRenderer, { markdownText: text }));
+export const Document/*: Component<{ text?: string }>*/ = ({ text, children }) => {
+  return h('div', { className: styles.document }, [
+    text ? h(MarkdownRenderer, { markdownText: text }) : null,
+    children,
+  ]);
 };

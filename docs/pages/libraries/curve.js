@@ -1,30 +1,10 @@
 // @flow strict
 /*:: import type { Page } from '@lukekaalim/act-rehersal'; */
-import { useBezier, useConstantInterpolation, useCubicEaseInterpolation, useLinearInterpolation, useProgress } from '@lukekaalim/act-curve';
+import { useBezier, useBezierVelocity, useProgress } from '@lukekaalim/act-curve';
 import { h, useRef, useState } from '@lukekaalim/act';
-import { Document, GridBench, NumberInput, TabbedToolbox, Workspace } from '@lukekaalim/act-rehersal';
+import { Document, NumberInput, TabbedToolbox, Workspace } from '@lukekaalim/act-rehersal';
 
-const clamp = (value, ...bounds) => {
-  const lowerBound = Math.min(...bounds);
-  const upperBound = Math.max(...bounds);
 
-  return Math.min(upperBound, Math.max(lowerBound, value));
-};
-const interpolateNumber = (to, from, progress) => clamp(from + ((to - from) * (progress)), from, to);
-const createProgressInterpolater = (progressRef) => (to, from, progress) => {
-  const value = interpolateNumber(to, from, progress);
-
-  const { current: element } = progressRef;
-  if (element)
-    element.value = Math.floor(value);
-
-  return value;
-}
-const withRefElement = (ref, callback) => {
-  const { current: element } = ref;
-  if (element)
-    callback(element);
-}
 const setProgressValue = (progressRef, value) => {
   const { current: element } = progressRef;
   if (element)
@@ -39,44 +19,52 @@ export const linearCurvePage/*: Page*/ = {
     const progressRef = useRef/*:: <?HTMLProgressElement>*/(null);
     const cubicRef = useRef/*:: <?HTMLProgressElement>*/(null);
     const bezierRef = useRef/*:: <?HTMLProgressElement>*/(null);
+    const bezierVelocityRef = useRef/*:: <?HTMLProgressElement>*/(null);
     const [value, setValue] = useState(0);
     const [duration, setDuration] = useState(1000);
     const [speed, setSpeed] = useState(10);
 
     useProgress(duration, v => setProgressValue(progressRef, v), [value])
-    useConstantInterpolation(value, interpolateNumber, duration, v => setProgressValue(constantRef, v), [value]);
-    useCubicEaseInterpolation(value, interpolateNumber, duration, v => setProgressValue(cubicRef, v), [value]);
-    useLinearInterpolation(value, interpolateNumber, (a, b) => Math.abs(a - b) / (speed / 1000), v => setProgressValue(linearRef, v), [value]);
-    useBezier(value, v => setProgressValue(bezierRef, v));
+    //useConstantInterpolation(value, interpolateNumber, duration, v => setProgressValue(constantRef, v), [value]);
+    //useCubicEaseInterpolation(value, interpolateNumber, duration, v => setProgressValue(cubicRef, v), [value]);
+    //useLinearInterpolation(value, interpolateNumber, (a, b) => Math.abs(a - b) / (speed / 1000), v => setProgressValue(linearRef, v), [value]);
+    useBezier(value, value => setProgressValue(bezierRef, value));
+    useBezierVelocity(value, velocity => setProgressValue(bezierVelocityRef, velocity + 50));
 
     return h(Workspace, {
       bench: [
-        h('label', {}, [
-          h('div', {}, 'Progress'),
-          h('progress', { ref: progressRef, style: { height: '50px', width: '100%' }, max: '1', min: '0', step: '0.01' })
-        ]),
-        h('label', {}, [
-          h('div', {}, 'Constant'),
-          h('progress', { ref: constantRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
-        ]),
-        h('label', {}, [
-          h('div', {}, 'Linear'),
-          h('progress', { ref: linearRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
-        ]),
-        h('label', {}, [
-          h('div', {}, 'Cubic'),
-          h('progress', { ref: cubicRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
-        ]),
-        h('label', {}, [
-          h('div', {}, 'Bezier'),
-          h('progress', { ref: bezierRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
+        h(Document, {}, [
+          h('label', {}, [
+            h('div', {}, 'Progress'),
+            h('progress', { ref: progressRef, style: { height: '50px', width: '100%' }, max: '1', min: '0', step: '0.01' })
+          ]),
+          h('label', {}, [
+            h('div', {}, 'Constant [WIP]'),
+            h('progress', { ref: constantRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
+          ]),
+          h('label', {}, [
+            h('div', {}, 'Linear [WIP]'),
+            h('progress', { ref: linearRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
+          ]),
+          h('label', {}, [
+            h('div', {}, 'Cubic [WIP]'),
+            h('progress', { ref: cubicRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
+          ]),
+          h('label', {}, [
+            h('div', {}, 'Bezier'),
+            h('progress', { ref: bezierRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
+          ]),
+          h('label', {}, [
+            h('div', {}, 'Bezier Velocity'),
+            h('progress', { ref: bezierVelocityRef, style: { height: '50px', width: '100%' }, max: '100', min: '0' })
+          ]),
         ]),
       ],
       tools: h(TabbedToolbox, { tabs: {
         'controls': [
-          h(NumberInput, { value, onChange: setValue, label: 'Target (unit)' }),
+          h(NumberInput, { value, onInput: setValue, label: 'Target (unit)' }),
           h(NumberInput, { max: 100, value: speed, onChange: setSpeed, label: 'Speed (unit per second)' }),
-          h(NumberInput, { max: 1000, value: duration, onChange: setDuration, label: 'Duration (milliseconds)' })
+          h(NumberInput, { value: duration, max: 10000, onChange: setDuration, label: 'Duration (milliseconds)' })
         ]
       } })
     })

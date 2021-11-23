@@ -1,35 +1,57 @@
 // @flow strict
 
-import { useEffect } from "@lukekaalim/act";
+import { useAnimation } from "./animation";
+import { useEffect, useMemo } from "@lukekaalim/act";
 
 export const calculateProgress = (start/*: number*/, duration/*: number*/, now/*: number*/)/*: number*/ => {
   if (duration === 0)
     return 1;
-  return (now - start) / duration;
+
+  const difference = now - start;
+  const progress = difference / duration;
+  const clampedProgress = Math.max(0, Math.min(1, progress))
+
+  return clampedProgress;
 }
 
-export const createProgressTimer = (duration/*: number*/, onProgress/*: number => mixed*/)/*: () => void*/ => {
-  const start = performance.now();
+/*::
+export type ProgressAnimator = {
+  update: (start: number, duration: number) => void,
+  getProgress: (now: number) => number,
+};
+*/
 
-  const update = (now) => {
-    const progress = calculateProgress(start, duration, now);
+export const createProgressAnimator = ()/*: ProgressAnimator*/ => {
+  let start = 0;
+  let duration = 0;
 
-    onProgress(progress);
-    if (progress < 1)
-      id = requestAnimationFrame(update);
+  const getProgress = (now) => {
+    return calculateProgress(start, duration, now);
   };
-  let id = requestAnimationFrame(update);
+  const update = (nextStart, nextDuration) => {
+    start = nextStart;
+    duration = nextDuration;
+  };
 
-  return () => {
-    cancelAnimationFrame(id);
+  return {
+    update,
+    getProgress,
   }
 };
 
-export const useProgress = (duration/*: number*/, onProgress/*: number => mixed*/, deps/*: mixed[]*/) => {
+export const useProgress = (
+  duration/*: number*/,
+  onProgress/*: (progress: number) => mixed*/,
+  deps/*:: ?: mixed[]*/ = []
+)/*: ProgressAnimator*/ => {
+  const animator = useMemo(() => createProgressAnimator(), []);
+  useAnimation(now => {
+    const progress = animator.getProgress(now);
+    onProgress(progress);
+    return progress === 1;
+  }, [duration, ...deps]);
   useEffect(() => {
-    const cleanup = createProgressTimer(duration, onProgress);
-    return () => {
-      cleanup();
-    }
-  }, [...deps])
+    animator.update(duration, performance.now());
+  }, [duration, ...deps]);
+  return animator;
 };

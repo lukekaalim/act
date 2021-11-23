@@ -52,10 +52,10 @@ export const NumberInput/*: Component<NumberInputProps>*/ = ({ hasRange = true, 
           style: { width: '50%' },
           disabled,
           type: 'number',
-          value,
           min,
           max,
           step,
+          value,
           onInput: e => onInput(e.target.valueAsNumber),
           onChange: e => onChange(e.target.valueAsNumber)
         })
@@ -64,10 +64,10 @@ export const NumberInput/*: Component<NumberInputProps>*/ = ({ hasRange = true, 
         disabled,
         style: {},
         type: 'range',
-        value,
         min,
         max,
         step,
+        value,
         onInput: e => onInput(e.target.valueAsNumber),
         onChange: e => onChange(e.target.valueAsNumber)
       })
