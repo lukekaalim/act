@@ -109,7 +109,7 @@ export const createBezierAnimator = (
   };
   const getPoint = (now) => {
     const progress = progressAnimator.getProgress(now);
-    return getCubicPoint(from, from + velocity, to + velocity, to, progress);
+    return getCubicPoint(from, from + velocity, to - velocity, to, progress);
   }
   const getValue = (now) => {
     const { position } = getPoint(now);
