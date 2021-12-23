@@ -1,146 +1,34 @@
 // @flow strict
-import { useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
+/*:: import type { BezierAnimator, BezierAnimatorOptions } from "./bezier.js"; */
+import { useEffect, useState } from "@lukekaalim/act";
 import { useAnimation } from "./animation";
-
-const easeInOutCubic = (x/*: number*/)/*: number*/ => (
-  x < 0.5 ?
-    (4 * x * x * x) :
-    (1 - Math.pow(-2 * x + 2, 3) / 2)
-)
-const getProgress = (start, duration) => Math.min((Date.now() - start) / duration, 1);
-const interpolate = (start, end, t, easer) => start + easer(t) * (end - start);
-
-export const useCurve = (
-  nextValue/*: number*/,
-  applyCurve/*: (v: number) => mixed*/,
-  { duration = 1000, easer = easeInOutCubic  }/*: { duration?: number, easer?: number => number }*/ = {},
-) => {
-  const { current: curveState } = useRef({ targets: [nextValue, nextValue], startTime: 0 } );
-
-  useEffect(() => {
-    if (isNaN(nextValue))
-      return;
-    if (nextValue !== curveState.targets[1]) {
-      const newStartValue = interpolate(
-        curveState.targets[0],
-        curveState.targets[1],
-        getProgress(curveState.startTime, duration),
-        easer
-      );
-      curveState.startTime = Date.now();
-      curveState.targets = [newStartValue, nextValue];
-    }
-
-    const onFrame = () => {
-      const t = getProgress(curveState.startTime, duration)
-      const v = interpolate(curveState.targets[0], curveState.targets[1], t, easer);
-      applyCurve(v);
-      if (t < 1)
-        id = requestAnimationFrame(onFrame);
-    };
-    let id = requestAnimationFrame(onFrame);
-    return () => cancelAnimationFrame(id);
-  }, [nextValue, applyCurve, duration, easer]);
-};
-
-const entries = /*:: <V>*/(a/*: { +[string]: V }*/)/*: [string, V][]*/ => (Object.entries(a)/*: any*/);
-
-export const useCurves = /*:: <T: { +[string]: number }>*/(
-  curves/*: T*/,
-  applyCurves/*: T => mixed*/,
-  { duration = 1000, easer = easeInOutCubic  }/*: { duration?: number, easer?: number => number }*/ = {},
-) => {
-  const curveEntries = entries(curves);
-  const { current: curveStates } = useRef/*:: <Map<string, { targets: [number, number ], start: number }>>*/(
-    new Map(curveEntries.map(([n, v]) => [n, { start: 0, targets: [v, v] }]))
-  );
-
-  useEffect(() => {
-    for (const [prop, newValue] of curveEntries) {
-      if (isNaN(newValue))
-        continue;
-      const oldState = curveStates.get(prop);
-      if (!oldState || newValue !== oldState.targets[1]) {
-        if (oldState) {
-          const t = getProgress(oldState.start, duration)
-          const v = interpolate(oldState.targets[0], oldState.targets[1], t, easer);
-          oldState.start = Date.now();
-          oldState.targets = [v, newValue];
-        } else {
-          curveStates.set(prop, { start: Date.now(), targets: [newValue, newValue] })
-        }
-      }
-    }
-
-    const onFrame = () => {
-      const minStart = Math.max(...[...curveStates].map(([_, s]) => s.start));
-      const minT = getProgress(minStart, duration)
-
-      const value = {};
-      for (const [prop, { targets, start }] of curveStates) {
-        const t = getProgress(start, duration)
-        const v = interpolate(targets[0], targets[1], t, easer);
-        value[prop] = v;
-      }
-      applyCurves((value/*: any*/));
-      if (minT < 1)
-        id = requestAnimationFrame(onFrame);
-    };
-    let id = requestAnimationFrame(onFrame);
-    return () => cancelAnimationFrame(id);
-  }, [applyCurves, curves, duration, easer]);
-};
+import { createBezierAnimator } from "./bezier";
 
 /*::
-export type Animator = {
-  update: (to: number, start: DOMHighResTimeStamp) => void,
-  getValue: (now: DOMHighResTimeStamp) => number,
-  isDone: (now: DOMHighResTimeStamp) => boolean
+export type CurveOptions = {
+  duration?: number,
+  impulse?: number,
 }
-
-export type UseInterpolator = (value: number, onUpdate: number => mixed) => void;
-export type UseInterpolatorMap = <T: { [string]: number }>(values: T, onUpdate: T => mixed) => void; 
 */
 
-export const createInterpolationHook = (createAnimator/*: (initialValue: number) => Animator*/)/*: UseInterpolator*/ => {
-  const useInterpolator = (value, onUpdate) => {
-    const animator = useMemo(() => createAnimator(value), []);
-    useAnimation((now) => {
-      onUpdate(animator.getValue(now))
-      return animator.isDone(now);
-    }, [value])
-    useEffect(() => {
-      animator.update(value, performance.now());
-    }, [value]);
-  };
-
-  return useInterpolator;
+export const useCurve = (
+  target/*: number*/,
+  onUpdate/*: (position: number, velocity: number, acceleration: number) => mixed*/,
+  { duration = 500, impulse = 0 }/*: CurveOptions */ = {}
+)/*: BezierAnimator*/ => {
+  const [animator] = useState(createBezierAnimator({ initial: { to: target, from: target, velocity: 0 }, impulse, duration }));
+  useEffect(() => {
+    const now = performance.now();
+    if (animator.getPosition(now) !== target)
+      animator.update(target, now);
+  }, [target])
+  useAnimation((now) => {
+    const position = animator.getPosition(now);
+    const velocity = animator.getVelocity(now);
+    const acceleration = animator.getAcceleteration(now);
+    
+    onUpdate(position, velocity, acceleration);
+    return animator.isDone(now);
+  }, [target, onUpdate])
+  return animator;
 };
-
-export const createInterpolationMapHook = (createAnimator/*: (initialValue: number) => Animator*/)/*: UseInterpolatorMap*/=> {
-  const useInterpolator = /*:: <T>*/(value, onUpdate) => {
-    const states = useMemo(() => new Map(), []);
-    useAnimation((now) => {
-      let isDone = true;
-      const map = {};
-      for (const [key, { animator }] of states) {
-        map[key] = animator.getValue(now)
-        isDone = isDone && animator.isDone(now);
-      }
-      onUpdate(map);
-      return isDone;
-    }, [value])
-    useEffect(() => {
-      const now = performance.now();
-      for (const [key, mapValue] of ((Object.entries(value)/*: any*/)/*: [string, number][]*/)) {
-        const { animator, to } = states.get(key) || { animator: createAnimator(mapValue), to: mapValue };
-        if (to !== mapValue) {
-          animator.update(mapValue, now);
-          states.set(key, { animator, to });
-        }
-      }
-    }, [value]);
-  };
-
-  return useInterpolator;
-}

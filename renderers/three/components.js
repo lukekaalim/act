@@ -21,19 +21,10 @@
 /*:: import * as Three from 'three'; */
 
 /*::
-export type RootProps = {
-  canvas?: ?{ [string]: mixed },
-  renderer?: ?{
-    size?: ?{ width: number, height: number, updateStyle: boolean },
-    clearColor?: ?{ color: Color, alpha: number },
-    clearAlpha?: number,
-  },
-  onRender?: ?(timestamp: number, renderer: WebGLRenderer, scene: Object3D) => mixed,
-  camera?: ?Camera,
-};
+export type RefProp<T> = ((reference: T) => mixed) | { current: T | any }
 
 export type Object3DProps<T> = {
-  ref?: ((reference: T) => mixed) | { current: T | any },
+  ref?: RefProp<?T>,
 
   name?: string,
   position?: Vector3,
@@ -73,6 +64,18 @@ export type PointLightsProps = {
   intensity?: number,
   power?: number,
 };
+export type DirectionalLightProps = {
+  ...Object3DProps<Three.DirectionalLight>,
+  distance?: number,
+  decay?: number,
+  intensity?: number,
+  power?: number,
+};
+export type AmbientLightProps = {
+  ...Object3DProps<Three.AmbientLight>,
+  intensity?: number,
+  power?: number,
+};
 export type PointsProps = {
   ...Object3DProps<Three.Points>,
   geometry?: BufferGeometry,
@@ -90,17 +93,31 @@ export type PerspectiveCameraProps = {
   fov?: number,
   zoom?: number,
 }
+export type OrthographicCameraProps = {
+  ...Object3DProps<Three.OrthographicCamera>,
+  aspect?: number,
+  near?: number,
+  far?: number,
+  zoom?: number,
+}
 */
-
-export const three = ('three'/*: Component<RootProps>*/);
 
 export const scene = ('scene'/*: Component<SceneProps>*/);
 export const group = ('group'/*: Component<GroupProps>*/);
 
 export const perspectiveCamera = ('perspectiveCamera'/*: Component<PerspectiveCameraProps>*/);
+export const orthographicCamera = ('orthographicCamera'/*: Component<OrthographicCameraProps>*/);
 
 export const mesh = ('mesh'/*: Component<MeshProps>*/);
 export const sprite = ('sprite'/*: Component<SpriteProps>*/);
 export const points = ('points'/*: Component<PointsProps>*/);
 export const instancedMesh = ('instancedMesh'/*: Component<InstancedMeshProps>*/);
+
 export const pointLight = ('pointLight'/*: Component<PointLightsProps>*/);
+export const ambientLight = ('ambientLight'/*: Component<AmbientLightProps>*/);
+export const hemisphereLight = ('hemisphereLight'/*: Component<PointLightsProps>*/);
+export const directionalLight = ('directionalLight'/*: Component<DirectionalLightProps>*/);
+
+
+export * from './components/groups.js';
+export * from './components/lights.js';

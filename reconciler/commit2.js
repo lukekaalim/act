@@ -1,8 +1,9 @@
 // @flow strict
 /*:: import type { Element, ElementType, ContextID } from '@lukekaalim/act'; */
-import { createElement, createId } from '@lukekaalim/act';
 /*:: import type { ComponentService, ComponentState } from './component.js'; */
 /*:: import type { ContextState, ContextService } from './context.js'; */
+/*:: import type { BoundaryService } from './boundary.js'; */
+import { createElement, createId } from '@lukekaalim/act';
 
 /*::
 export type CommitID = string;
@@ -13,22 +14,28 @@ export type CommitRef = {
   id: CommitID,
   path: CommitPath
 };
+export type Suspension = {
+  ref: CommitRef,
+  value: mixed,
+};
 export type Commit = {
   ...CommitRef,
 
   pruned: boolean,
+  suspension: null | Suspension,
   version: CommitVersion,
   element: Element,
   children: $ReadOnlyArray<Commit>,
 };
 */
-const emptyCommit/*: Commit*/ = {
+export const emptyCommit/*: Commit*/ = {
   id: createId(),
   path: [],
   version: createId(),
   element: createElement('act:dead'),
   children: [],
   pruned: true,
+  suspension: null,
 };
 
 /*::
@@ -59,6 +66,7 @@ export type Change =
   | StateChange
 
 export type TraversalResult = {
+  suspension: null | Suspension,
   children: $ReadOnlyArray<Element>,
   branch: BranchState,
 };
@@ -74,6 +82,7 @@ export const emptyBranchState/*: BranchState*/ = {
 export const emptyTraversalResult/*: TraversalResult*/ = {
   children: [],
   branch: emptyBranchState,
+  suspension: null,
 };
 
 export const calculateChanges = (
@@ -117,11 +126,19 @@ export const calculateChanges = (
 
 export const createCommitService = (
   componentService/*: ComponentService*/,
-  contextService/*: ContextService*/
+  contextService/*: ContextService*/,
+  boundaryService/*: BoundaryService*/,
 )/*: CommitService*/ => {
   const traverse = (ref/*: CommitRef*/, change/*: Change*/, branch/*: BranchState*/)/*: TraversalResult*/ => {
     const { type } = change.element || change.prev.element;
+    const childrenTraversalResult = {
+      children: change.element ? change.element.children : [],
+      suspension: null,
+      branch: { ...branch, path: [...branch.path, ref.id] }
+    };
     switch (type) {
+      case 'act:boundary':
+        return childrenTraversalResult;
       case 'act:context':
         return contextService.traverse(ref, change, branch);
       case 'act:string':
@@ -130,10 +147,7 @@ export const createCommitService = (
     }
     switch (typeof type) {
       case 'string':
-        return {
-          children: change.element ? change.element.children : [],
-          branch: { ...branch, path: [...branch.path, ref.id] }
-        };
+        return childrenTraversalResult;
       case 'function':
         return componentService.traverse(ref, change, branch);
     }
@@ -145,16 +159,26 @@ export const createCommitService = (
     if (change.ref && change.ref.id !== ref.id && !change.ref.path.includes(ref.id))
       return { prev: change.prev, next: change.prev, diffs: [] };
 
+    if (change.element && change.prev && change.prev.element.id === change.element.id)
+      return { prev: change.prev, next: change.prev, diffs: [] };
+
     const result = traverse(ref, change, branch);
 
     const changes = calculateChanges(change, result);
-    const diffs = changes.map(change => render(change, { ...result.branch, path: [...result.branch.path, ref.id] }));
+    const diffs = changes.map(change =>
+      render(change, { ...result.branch, path: [...result.branch.path, ref.id] }));
+
+    const boundaryDiff = boundaryService.tryBoundaryCommit(ref, change, diffs, branch, render);
+    if (boundaryDiff)
+      return boundaryDiff;
+
     const next = {
       ...ref,
       version: createId(),
       element: change.element || change.prev.element,
       // $FlowFixMe[prop-missing]
       pruned: change.element === null,
+      suspension: result.suspension || diffs.map(d => d.next.suspension).find(Boolean) || null,
       children: diffs.map(d => d.next).filter(c => !c.pruned)
     };
     return { prev: change.prev || emptyCommit, next, diffs };

@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/lukekaalim/act/issues"
   },
-  "homepage": "https://github.com/lukekaalim/act#readme"
+  "homepage": "https://github.com/lukekaalim/act#readme",
+  "dependencies": {
+    "@lukekaalim/act-three": "^4.0.0"
+  }
 }

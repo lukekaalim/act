@@ -36,7 +36,8 @@ export const createContextService = (scheduler/*: Scheduler*/)/*: ContextService
     
     return {
       children: element.children,
-      branch: { ...branch, context: new Map(branch.context).set(contextId, { ...state, value}) }
+      branch: { ...branch, context: new Map(branch.context).set(contextId, { ...state, value}) },
+      suspension: null
     };
   };
 

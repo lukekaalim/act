@@ -1,8 +1,8 @@
 // @flow strict
 /*:: import type { NavigationLink } from "@lukekaalim/act-rehersal"; */
 /*:: import type { ElementNode } from "@lukekaalim/act"; */
-import { h, useState } from '@lukekaalim/act';
-import { render } from '@lukekaalim/act-web';
+import { h, useEffect, useState } from '@lukekaalim/act';
+import { render } from '@lukekaalim/act-three';
 import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation';
 
 import { Document, Rehersal, GridBench } from '@lukekaalim/act-rehersal';
@@ -14,6 +14,7 @@ import { markdownPage, markdownRendererPage } from "./pages/libraries/markdown";
 import { elementsPage } from './pages/elements.js';
 import { quickstartPage } from './pages/quickstart.js';
 import { curvePage, curvePages } from './pages/libraries/curve.js';
+import { SuspensionTest } from './examples/suspension.js';
 
 
 /*::
@@ -45,17 +46,25 @@ ${'```'}
 const wipLink = { name: "[TODO]", children: [] }
 
 
+const examplePage = {
+  link: { name: 'examples', href: '/examples', children: [], }, content: h(SuspensionTest)
+}
+
 const rootPage = {
   link: { name: '@lukekaalim/act', href: '/', children: [
     quickstartPage.link,
     elementsPage.link,
     componentPage.link,
+    examplePage.link,
     { name: 'Renderers', children: [wipLink], href: null },
     { name: 'Libraries', children: [rehersalPage.link, markdownPage.link, curvePage.link], href: null },
     { name: 'Internals', children: [wipLink], href: null },
+    { name: 'Example', children: [wipLink], href: null },
   ] },
   content: h(Document, { text })
 };
+
+
 const pages = [
   rootPage,
   quickstartPage,
@@ -63,6 +72,7 @@ const pages = [
   elementsPage,
   ...rehersalPages,
   ...curvePages,
+  examplePage,
   markdownPage,
   markdownRendererPage
 ];
@@ -81,8 +91,21 @@ const DocsApp = () => {
   if (!page)
     return null;
 
-  return h(Rehersal, { rootLink: rootPage.link, selectedLink: page.link, onLinkClick }, page.content);
+  return h('act:boundary', { fallback: ErrorFallback },
+    h(Rehersal, { rootLink: rootPage.link, selectedLink: page.link, onLinkClick }, page.content)
+  );
 };
+
+const ErrorFallback = ({ value }) => {
+  useEffect(() => {
+    console.error(value);
+  }, [value])
+
+  return [
+    h('pre', {}, value.message),
+    h('pre', {}, value.stack),
+  ];
+}
 
 const main = () => {
   const { body } = document;

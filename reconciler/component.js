@@ -48,12 +48,16 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
       const getValue = v => typeof v === 'function' ? v(hook.value) : v;
 
       const setValue = (newValue) => {
-        hook.value = getValue(newValue);
+        const nextHookValue = getValue(newValue);
+        if (nextHookValue === hook.value)
+          return;
+        hook.value = nextHookValue;
         scheduler.scheduleChange(state.ref);
       };
     
       const hook = {
-        value: getValue(initialValue),
+        // $FlowFixMe[incompatible-use]
+        value: typeof initialValue === 'function' ? initialValue() : initialValue,
         setValue,
       };
       state.values.set(key, hook);
@@ -124,10 +128,9 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
       throw new Error('Components must be functions');
     try {
       const elementNode = element.type({ ...element.props, children: element.children });
-      return normalizeElement(elementNode);
+      return [normalizeElement(elementNode), null];
     } catch (error) {
-      // TODO: suspension
-      throw error;
+      return [null, error];
     }
   };
 
@@ -135,13 +138,20 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
     const state = componentStates.get(ref.id) || createNewComponentState(ref);
     if (change.element === null) {
       teardownHooks(state, branch);
-      return { children: [], branch };
+      return { children: [], branch, suspension: null };
     }
-    const children = renderComponent(state, change.element || change.prev.element, branch);
+    const [children, error] = renderComponent(state, change.element || change.prev.element, branch);
+
+    if (!children || error) {
+      const previousChildren = change.prev && change.prev.children.map(c => c.element) || []
+      return { children: previousChildren, branch, suspension: { ref, value: error } }
+      
+    }
 
     return {
       children,
       branch,
+      suspension: null,
     };
   };
 

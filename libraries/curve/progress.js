@@ -18,6 +18,7 @@ export const calculateProgress = (start/*: number*/, duration/*: number*/, now/*
 export type ProgressAnimator = {
   update: (start: number, duration: number) => void,
   getProgress: (now: number) => number,
+  getState: () => { start: number, duration: number };
 };
 */
 
@@ -32,10 +33,14 @@ export const createProgressAnimator = ()/*: ProgressAnimator*/ => {
     start = nextStart;
     duration = nextDuration;
   };
+  const getState = () => {
+    return { start, duration };
+  }
 
   return {
     update,
     getProgress,
+    getState,
   }
 };
 

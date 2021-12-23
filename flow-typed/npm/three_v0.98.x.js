@@ -596,12 +596,12 @@ declare module three {
 
   declare export class OrthographicCamera extends Camera {
     constructor(
-      left: number,
-      right: number,
-      top: number,
-      bottom: number,
-      far: number,
-      near: number
+      left?: number,
+      right?: number,
+      top?: number,
+      bottom?: number,
+      far?: number,
+      near?: number
     ): this;
 
     bottom: number;
@@ -892,6 +892,10 @@ declare module three {
     wireframeLineJoin: WireframeLineJoin;
   }
 
+  declare export class MeshStandardMaterial extends Material {
+    constructor({ color: Color }): MeshStandardMaterial;
+  }
+
   declare type RepeatWrappingEnum = number
   // In case we really need this, see:
   // https://stackoverflow.com/questions/29133137/three-js-looking-for-an-alternative-to-meshfacematerial
@@ -918,6 +922,9 @@ declare module three {
     ): this;
 
     parameters: BoxGeometryParams;
+  }
+  declare export class PlaneGeometry extends BufferGeometry {
+    constructor(width: number, height: number, widthSegments?: number, heightSegments?: number): this;
   }
 
   declare class LightShadow {
@@ -954,6 +961,18 @@ declare module three {
 
     isAmbientLight: bool;
   }
+  declare export class DirectionalLight extends Light {
+    constructor(
+      color?: number,
+      intensity?: number,
+    ): this;
+  }
+  declare export class HemisphereLight extends Light {
+    constructor(
+      color?: number,
+      intensity?: number,
+    ): this;
+  }
 
 
   declare export class PointLight extends Light {
@@ -975,7 +994,9 @@ declare module three {
 
   }
   declare class LoadingManager {}
-  declare export class Texture {}
+  declare export class Texture {
+    dispose(): void;
+  }
   declare export class CubeTexture {}
 
   declare function TextureLoaderOnLoadCallback(texture: Texture): void;
@@ -993,10 +1014,11 @@ declare module three {
 
     load(
       url: string,
-      onLoad: typeof TextureLoaderOnLoadCallback,
-      onProgress: typeof TextureLoaderOnProgressCallback,
-      onError: typeof TextureLoaderOnErrorCallback,
-    ): void;
+      onLoad?: typeof TextureLoaderOnLoadCallback,
+      onProgress?: typeof TextureLoaderOnProgressCallback,
+      onError?: typeof TextureLoaderOnErrorCallback,
+    ): Texture;
+    loadAsync(url: string): Promise<Texture>;
     setCrossOrigin(value: string): void;
     setWithCredentials(value: boolean): void;
   }

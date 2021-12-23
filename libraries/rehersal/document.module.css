@@ -3,10 +3,11 @@
 .document {
   font-family: 'Roboto', sans-serif;
   max-width: 40em;
+  font-size: 18px;
 }
 
 .document p {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .document p,

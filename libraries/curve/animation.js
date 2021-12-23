@@ -24,7 +24,7 @@ export const useAnimation = (animation/*: ?(now: DOMHighResTimeStamp) => ?boolea
       if (!done)
         id = requestAnimationFrame(onAnimate);
     }
-    id = requestAnimationFrame(onAnimate);
+    onAnimate(performance.now());
 
     return () => {
       if (id)

@@ -3,16 +3,20 @@
 /*:: import type { Renderer } from '@lukekaalim/act-renderer-core'; */
 
 import { createTree } from "@lukekaalim/act-reconciler";
-import { createWebRenderer } from "@lukekaalim/act-web";
-import { attachNodes } from "@lukekaalim/act-web/node.js";
-import { createThreeRenderer } from "./renderer.js";
+import { createWebRenderer, setNodeChildren } from "@lukekaalim/act-web";
+
+import { createSceneRenderer } from "./renderer";
 
 export const render = (element/*: Element*/, node/*: HTMLElement*/) => {
-  const three = createThreeRenderer();
+
+  const scene = createSceneRenderer();
   const web = createWebRenderer({
-    'three': three,
+    'scene': scene,
   });
-  const onDiff = diff => attachNodes(node, web.render(diff));
+  const onDiff = diff => {
+    const children = web.render(diff);
+    setNodeChildren(diff, node, children)
+  };
 
   const options = {
     onDiff,

@@ -1,0 +1,68 @@
+.signature {
+  border: 1px solid #c4c4c4;
+  margin: 2em auto 2em auto;
+  border-radius: 4px;
+  padding: 1em;
+
+  overflow: auto;
+  background-color: #ffffff;
+}
+
+.fragmentAnchor a:visited {
+  color: black;
+}
+
+.fragmentAnchor img {
+  height: 14px;
+  opacity: 0;
+  margin-left: 4px;
+  transition: opacity 0.2s;
+}
+.fragmentAnchor:hover img {
+  opacity: 1;
+}
+
+.signature h3 {
+  margin-top: 0;
+}
+
+.exportType code {
+  border: 2px white solid;
+  background-color: #1f1b4f;
+  color: white;
+  padding: 1em;
+  box-sizing: border-box;
+  display: block;
+  border-radius: 1em;
+
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+.exportType code a {
+  color: white;
+}
+.exportType code a:visited {
+  color: white;
+}
+
+.exportType pre {
+  margin: 0;
+  tab-size: 1em;
+}
+
+.exportType {
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.typeFunctionArgument {
+  margin-left: 1em;
+}
+.typeFunctionArgument.unary {
+  margin-left: 0;
+  display: inline;
+}
+
+.syntaxHighlighted {
+  border: 1px dotted black;
+}

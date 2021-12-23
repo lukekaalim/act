@@ -1,81 +1,19 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
-/*:: import type { UseInterpolator, UseInterpolatorMap } from "./hook"; */
-import { h, useEffect, useMemo, useRef } from "@lukekaalim/act";
-import { usePreviousEffect } from "./previous.js";
-import { calculateProgress, createProgressAnimator } from "./progress.js";
-import { lerp, Vector2 } from "./math.js";
-import { useAnimation } from "./animation.js";
-import { createInterpolationMapHook } from "./hook.js";
-import { createInterpolationHook } from "./hook";
-
-
-const calculateBezierPosition = (v/*: Vector2[]*/, t/*: number*/) => {
-  if (v.length === 0)
-    throw new Error();
-  if (v.length === 1)
-    return v[0];
-
-  const a = v.slice(0, -1);
-  const b = v.slice(1);
-  return Vector2.lerp(calculateBezierPosition(a, t), calculateBezierPosition(b, t), t);
-}
-
-const calculateCubicBezierPosition = (bezier/*: CubicBezier*/, t/*: number*/)/*: Vector2*/ => {
-  return calculateBezierPosition([bezier.start.position, bezier.start.control, bezier.end.control, bezier.end.position], t);
-}
-const calculateCubicBezierForwardVelocity = (bezier/*: CubicBezier*/, t/*: number*/)/*: Vector2*/ => {
-  const a = calculateBezierPosition([bezier.start.position, bezier.start.control, bezier.end.control], t);
-  const b = calculateBezierPosition([bezier.start.control, bezier.end.control, bezier.end.position], t);
-  const position = calculateBezierPosition([a, b], t);
-
-  return b.add(position.negate());
-}
+import { createProgressAnimator } from "./progress.js";
+import { lerp } from "./math.js";
 
 /*::
-export type CubicBezier = {
-  start: BezierTarget,
-  end: BezierTarget,
-}
-
-export type BezierTarget = {
-  position: Vector2,
-  control: Vector2,
-};
+export type CubicBezier = [number, number, number, number];
 */
 
-export const createMomentumPreservingBezier = (previousBezier/*: CubicBezier*/, progress/*: number*/, target/*: number*/)/*: CubicBezier*/ => {
-  const position = calculateCubicBezierPosition(previousBezier, progress);
-  const velocity = calculateCubicBezierForwardVelocity(previousBezier, progress);
-  const bezier = {
-    start: {
-      position: new Vector2(0, position.y),
-      control: new Vector2(1, position.y + (velocity.y)) },
-    end: {
-      position: new Vector2(1, target),
-      control: new Vector2(0, target)
-    },
-  };
-  return bezier;
-}
-export const createPointBezier = (target/*: number*/)/*: CubicBezier*/ => {
-  const bezier = {
-    start: { position: new Vector2(0, target), control: new Vector2(0, target) },
-    end: { position: new Vector2(1, target), control: new Vector2(1, target) }
-  };
-  return bezier;
-}
-
-/*::
-export type BezierAnimator = {
-  update: (to: number, start: DOMHighResTimeStamp) => void,
-  getPoint: (now: DOMHighResTimeStamp) => { velocity: number, position: number },
-  getValue: (now: DOMHighResTimeStamp) => number,
-  isDone: (now: DOMHighResTimeStamp) => boolean,
-};
-*/
-
-const getCubicPoint = (a, b, c, d, t) => {
+export const getCubicPoint = (
+  a/*: number*/,
+  b/*: number*/,
+  c/*: number*/,
+  d/*: number*/,
+  t/*: number*/
+)/*: number*/ => {
   const ab = lerp(a, b, t);
   const bc = lerp(b, c, t);
   const cd = lerp(c, d, t);
@@ -83,62 +21,122 @@ const getCubicPoint = (a, b, c, d, t) => {
   const abc = lerp(ab, bc, t);
   const bcd = lerp(bc, cd, t);
 
-  const position = lerp(abc, bcd, t);
-  const velocity = bcd - position;
-  return { velocity, position };
+  const abcd = lerp(abc, bcd, t);
+
+  return abcd;
 };
 
-export const createBezierAnimator = (
-  duration/*: number*/,
-  initialValue/*: number*/
-)/*: BezierAnimator*/ => {
-  let from = initialValue;
-  let to = initialValue;
-  let velocity = initialValue;
+// same thing but more mathy
+export const getBerenstienCubicPoint = ([a, b, c, d]/*: CubicBezier*/, t/*: number*/)/*: number*/ => {
+  return (
+    a * (((-t) ** 3) + (3 * (t ** 2)) - (3 * t) + 1) +
+    b * (3 * (t ** 3) - (6 * (t ** 2)) + (3 * t)) +
+    c * (-3 * (t ** 3) + (3 * (t ** 2))) +
+    d * (t ** 3)
+  );
+}
+
+export const getBezierWeights = (t/*: number*/)/*: [number, number, number, number]*/ => {
+  return [
+    ((-t) ** 3) + (3 * (t ** 2)) - (3 * t) + 1,
+    3 * (t ** 3) - (6 * (t ** 2)) + (3 * t),
+    -3 * (t ** 3) + (3 * (t ** 2)),
+    t ** 3,
+  ]
+}
+
+export const getBezierVelocityWeights = (t/*: number*/)/*: [number, number, number, number]*/ => {
+  return [
+    -3 * ((t - 1) ** 2),
+    3 - (12 * t) + (9 * (t ** 2)),
+    3 * (2 - (3 * t)) * t,
+    3 * (t * t),
+  ];
+}
+
+export const getBezierP2ForVelocity = ([a, c, d]/*: [number, number, number]*/, t/*: number*/, v/*: number*/)/*: number*/ => {
+  return -(
+    a * (-3 * ((t - 1) ** 2)) +
+    c * (3 * (2 - (3 * t)) * t) +
+    d * (3 * (t * t)) -
+    v
+  ) / (3 - (12 * t) + (9 * (t ** 2)))
+}
+export const getBezierP3ForVelocity = ([a, b, d]/*: [number, number, number]*/, t/*: number*/, v/*: number*/)/*: number*/ => {
+  return -(
+    a * (-3 * ((t - 1) ** 2)) +
+    b * (3 - (12 * t) + (9 * (t ** 2)) +
+    d * (3 * (t * t)) -
+    v
+  ) / (3 * (2 - (3 * t)) * t))
+}
+
+export const getBezierVelocity = ([a, b, c, d]/*: CubicBezier*/, t/*: number*/)/*: number*/ => {
+  return (
+    3 * (-a * (-1 + t) ** 2 + t * (2 * c - 3 * c * t + d * t) + b * (1 - 4 * t + 3 * t ** 2))
+  );
+}
+
+export const getBezierAcceleration = ([a, b, c, d]/*: CubicBezier*/, t/*: number*/)/*: number*/ => {
+  return (
+    a * (-6 * t + 6) +
+    b * (18 * t - 12) +
+    c * (-18 * t + 6) +
+    d * (6 * t)
+  );
+}
+
+/*::
+export type BezierAnimatorOptions = {
+  initial?: { to: number, from: number, velocity: number },
+  duration?: number,
+  impulse?: number,
+};
+
+export type BezierAnimator = {
+  update: (to: number, start: DOMHighResTimeStamp) => void,
+  getPosition: (now: DOMHighResTimeStamp) => number,
+  getVelocity: (now: DOMHighResTimeStamp) => number,
+  getAcceleteration: (now: DOMHighResTimeStamp) => number,
+  isDone: (now: DOMHighResTimeStamp) => boolean,
+};
+*/
+
+export const createBezierAnimator = ({
+  initial = { to: 0, from: 0, velocity: 0 },
+  duration = 500,
+  impulse = 0,
+}/*: BezierAnimatorOptions*/ = {})/*: BezierAnimator*/ => {
+  let curve = [initial.to, initial.to + initial.velocity, initial.from, initial.from];
 
   const progressAnimator = createProgressAnimator();
 
   const update = (nextTo, start) => {
-    const nextPoint = getPoint(start);
+    const velocity = getVelocity(start);
+    const p1 = getPosition(start);
+    const distance = nextTo - p1;
+    const direction = Math.abs(distance) / distance;
+    const p2 = getBezierP2ForVelocity([p1, nextTo, nextTo], 0, velocity + (direction * impulse));
 
-    from = nextPoint.position;
-    to = nextTo;
-    velocity = nextPoint.velocity;
-
+    curve = [p1, p2, nextTo, nextTo];
     progressAnimator.update(start, duration);
   };
-  const getPoint = (now) => {
+  const getPosition = (now) => {
     const progress = progressAnimator.getProgress(now);
-    return getCubicPoint(from, from + velocity, to - velocity, to, progress);
+    return getBerenstienCubicPoint(curve, progress);
   }
-  const getValue = (now) => {
-    const { position } = getPoint(now);
-    return position;
+  const getVelocity = (now) => {
+    const progress = progressAnimator.getProgress(now);
+    return getBezierVelocity(curve, progress);
+  }
+  const getAcceleteration = (now) => {
+    const progress = progressAnimator.getProgress(now);
+    return getBezierAcceleration(curve, progress);
   }
   const isDone = (now) => {
     const progress = progressAnimator.getProgress(now);
     return progress >= 1;
   }
 
-  return { update, getPoint, getValue, isDone };
+  return { update, getPosition, getVelocity, getAcceleteration, isDone };
 };
-
-export const calculateBezierPoints = (bezier/*: CubicBezier*/, segments/*: number*/)/*: Vector2[]*/ => {
-  const points = [];
-  for (let i = 0; i < segments; i++)
-    points.push(calculateCubicBezierPosition(bezier, i/segments));
-  return points;
-}
-
-export const useBeziers/*: UseInterpolatorMap*/ = createInterpolationMapHook(v => createBezierAnimator(1000, v));
-export const useBezier/*: UseInterpolator*/ = createInterpolationHook(v => createBezierAnimator(1000, v));
-export const useBezierVelocity/*: UseInterpolator*/ = createInterpolationHook(v => {
-  const bezier = createBezierAnimator(1000, v)
-  return {
-    ...bezier,
-    getValue: (now) => {
-      const { velocity } = bezier.getPoint(now);
-      return velocity;
-    }
-  }
-});

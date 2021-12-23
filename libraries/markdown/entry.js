@@ -4,7 +4,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { h, useEffect, useState, useMemo } from '@lukekaalim/act';
 
 const MarkdownRoot = ({ node }) => {
-  return h('article', {  }, h(MarkdownChildren, { node }));
+  return h('section', {  }, h(MarkdownChildren, { node }));
 }
 const MarkdownParagraph = ({ node }) => {
   return h('p', {}, h(MarkdownChildren, { node }));
@@ -105,7 +105,8 @@ const MarkdownNode = ({ node }) => {
     case 'strong':
       return h(MarkdownStrong, { node });
     default:
-      console.log(node);
+      console.warn(`Unsupported markdown node type`);
+      console.warn(node);
       return null;
   }
 };

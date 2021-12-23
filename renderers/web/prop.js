@@ -42,10 +42,17 @@ export const setAttributeProp = (
   element/*: Element*/,
   { key, prev, next }/*: PropDiff*/
 ) => {
-  if (next === null && typeof prev === 'string')
+  if (next === null && prev !== null)
     element.removeAttribute(key);
-  else if (typeof next === 'string')
-    element.setAttribute(key, next);
+  else if (next !== null)
+    switch (typeof next) {
+      case 'string':
+        element.setAttribute(key, next);
+      case 'number':
+      case 'boolean':
+        element.setAttribute(key, next.toString());
+      default:
+    }
 };
 
 export const setHTMLProp = (

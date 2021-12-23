@@ -6,6 +6,7 @@
 /*:: import type { CommitID, CommitDiff, UpdateElementChange } from './commit2.js'; */
 /*:: import type { ScheduleFunction } from './schedule.js'; */
 
+import { createBoundaryService } from "./boundary.js";
 import { createCommitService } from "./commit2.js";
 import { createComponentService } from "./component.js";
 import { createContextService } from "./context.js";
@@ -37,7 +38,8 @@ export const createTree = (
   const schedule = createScheduler(render, scheduleWork);
   const component = createComponentService(schedule);
   const context = createContextService(schedule);
-  const commit = createCommitService(component, context);
+  const boundary = createBoundaryService();
+  const commit = createCommitService(component, context, boundary);
 
   const initDiff = commit.render({ element, prev: null });
   let prev = initDiff.next;
