@@ -54,6 +54,8 @@
   padding: 18px;
   border: 1px solid black;
   border-radius: 4px;
+
+  min-width: 80px;
 }
 
 .slideShow {

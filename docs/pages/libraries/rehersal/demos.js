@@ -107,7 +107,7 @@ export const FlippingButtonDemo/*: Component<>*/ = () => {
     onButton.style.transform = `rotate3d(0, 1, 0, ${value * 180}deg)`;
     offButton.style.transform = `rotate3d(0, 1, 0, ${(1-value) * -180}deg)`;
 
-    container.style.background = `linear-gradient(${720 * value}deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%)`
+    container.style.background = `linear-gradient(${180 * value}deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%)`
   });
 
   const onClick = () => {
@@ -116,8 +116,8 @@ export const FlippingButtonDemo/*: Component<>*/ = () => {
 
   return [
     h('div', { ref: setContainer, style: { position: 'relative', width: '360px', height: '190px' }, className: styles.flippingButtonDemo }, [
-      h('button', { ref: setOnButton, className: styles.flippingButton, style: { pointerEvents: value ? 'none' : 'all' }, onClick }, 'Turn On'),
-      h('button', { ref: setOffButton, className: styles.flippingButton, onClick }, 'Turn Off'),
+      h('button', { ref: setOnButton, className: styles.flippingButton, style: { pointerEvents: value ? 'none' : 'all' }, onClick }, 'Up'),
+      h('button', { ref: setOffButton, className: styles.flippingButton, onClick }, 'Down'),
     ]),
   ]
 };
