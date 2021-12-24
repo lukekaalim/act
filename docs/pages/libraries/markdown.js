@@ -58,7 +58,7 @@ And here is more markdown.
 };
 
 export const markdownPage/*: Page*/ = {
-  link: { href: '/libraries/markdown', name: '@lukekaalim/act-markdown', children: [{ name: 'exports', children: [markdownRendererPage.link] }] },
+  link: { href: '/libraries/markdown', name: 'Markdown', children: [{ name: 'exports', children: [markdownRendererPage.link] }] },
   content: [
     h(Document, {}, [
       h(Markdown, { text: readme }),

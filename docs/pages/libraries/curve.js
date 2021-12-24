@@ -176,7 +176,7 @@ ${'```'}
 export const curvePage/*: Page*/ = {
   link: {
     href: '/libraries/curve',
-    name: '@lukekaalim/act-curve',
+    name: 'Curve',
     children: [hooksPage.link, animatorsPage.link, componentsPage.link, playersPage.link, advancedHooksPage.link]
   },
   content:  h(Document, {}, [

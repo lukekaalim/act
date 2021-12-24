@@ -388,8 +388,8 @@ const DraggableGraphGrid2D/*: Component<DragAxisGrid2DProps>*/ = ({
 };
 
 export const rehersalPage/*: Page*/ = {
-  link: { href: '/libraries/rehersal', name: '@lukekaalim/act-rehersal', children: [
-    { name: 'exports', children: [primitivesPage.link] }
+  link: { href: '/libraries/rehersal', name: 'Rehersal', children: [
+    //{ name: 'exports', children: [primitivesPage.link] }
   ] },
   content: h(Document, {}, [
     h(() => {
