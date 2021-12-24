@@ -3,7 +3,7 @@
 /*:: import type { ElementNode } from "@lukekaalim/act"; */
 import { h, useEffect, useState } from '@lukekaalim/act';
 
-import rootReadme from '../README.md?raw';
+import actReadmeText from '@lukekaalim/act/README.md?raw';
 
 import { render } from '@lukekaalim/act-three';
 import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation';
@@ -45,7 +45,7 @@ const rootPage = {
     { name: 'Libraries', children: [rehersalPage.link, markdownPage.link, curvePage.link], href: null },
     { name: 'Internals', children: [], href: null },
   ] },
-  content: h(Document, {}, h(Markdown, { text: rootReadme, directives }))
+  content: h(Document, {}, h(Markdown, { text: actReadmeText, directives }))
 };
 
 
