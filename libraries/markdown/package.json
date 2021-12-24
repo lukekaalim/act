@@ -19,6 +19,8 @@
   "homepage": "https://github.com/lukekaalim/act#readme",
   "dependencies": {
     "@lukekaalim/act": "^2.3.0",
-    "mdast-util-from-markdown": "^1.1.0"
+    "mdast-util-directive": "^2.2.0",
+    "mdast-util-from-markdown": "^1.1.0",
+    "micromark-extension-directive": "^2.1.1"
   }
 }

@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Page } from '@lukekaalim/act-rehersal'; */
 import { h, useEffect, useState } from '@lukekaalim/act';
-import { Document, GridBench, TabbedToolbox, Workspace } from '@lukekaalim/act-rehersal';
+import { Document, GridBench, Markdown, TabbedToolbox, Workspace } from '@lukekaalim/act-rehersal';
 import { MarkdownRenderer } from '@lukekaalim/act-markdown';
 import readme from '@lukekaalim/act-markdown/README.md?raw';
 
@@ -60,6 +60,9 @@ And here is more markdown.
 export const markdownPage/*: Page*/ = {
   link: { href: '/libraries/markdown', name: '@lukekaalim/act-markdown', children: [{ name: 'exports', children: [markdownRendererPage.link] }] },
   content: [
+    h(Document, {}, [
+      h(Markdown, { text: readme }),
+    ]),
     h(Document, { text: readme }),
     h(Document, { text: usageText })
   ]

@@ -10,3 +10,5 @@ and renders it to html elements in [@lukekaalim/act](https://act.luke.kaal.im).
 ```bash
 npm install @lukekaalim/act-markdown
 ```
+
+::name[content]{key=val}

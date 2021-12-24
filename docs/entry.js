@@ -2,10 +2,13 @@
 /*:: import type { NavigationLink } from "@lukekaalim/act-rehersal"; */
 /*:: import type { ElementNode } from "@lukekaalim/act"; */
 import { h, useEffect, useState } from '@lukekaalim/act';
+
+import rootReadme from '../README.md?raw';
+
 import { render } from '@lukekaalim/act-three';
 import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation';
 
-import { Document, Rehersal, GridBench } from '@lukekaalim/act-rehersal';
+import { Document, Rehersal, GridBench, Markdown } from '@lukekaalim/act-rehersal';
 import { componentPage } from './pages/components.js';
 import { TabbedToolbox } from "../libraries/rehersal/tools/tabs";
 import { Workspace } from '../libraries/rehersal/layouts/workspace.js';
@@ -15,6 +18,8 @@ import { elementsPage } from './pages/elements.js';
 import { quickstartPage } from './pages/quickstart.js';
 import { curvePage, curvePages } from './pages/libraries/curve.js';
 import { SuspensionTest } from './examples/suspension.js';
+import { conceptsPage, conceptsPages } from './pages/concepts';
+import { CurveCubeDemo } from './pages/libraries/rehersal/demos';
 
 
 /*::
@@ -24,55 +29,32 @@ export type Page = {
 };
 */
 
-const text = `
-# @lukekaalim/act
-
-[![npm (scoped)](https://img.shields.io/npm/v/@lukekaalim/act)](https://www.npmjs.com/package/@lukekaalim/act)
-![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@lukekaalim/act)
-
-A generic rendering library for hierarchical elements.
-
-Use it like react!
-
-Render to HTML with \`@lukekaalim/act-web\`
-or even use 3D capabilites with [threejs](https://threejs.org/) using \`@lukekaalim/act-three\`
-
-## Install
-${'```'}
-npm install @lukekaalim-act
-${'```'}
-`;
-
-const wipLink = { name: "[TODO]", children: [] }
-
-
-const examplePage = {
-  link: { name: 'examples', href: '/examples', children: [], }, content: h(SuspensionTest)
-}
+const directives = {
+  demos: () => {
+    return [
+      h(CurveCubeDemo)
+    ];
+  }
+};
 
 const rootPage = {
   link: { name: '@lukekaalim/act', href: '/', children: [
     quickstartPage.link,
-    elementsPage.link,
-    componentPage.link,
-    examplePage.link,
-    { name: 'Renderers', children: [wipLink], href: null },
+    conceptsPage.link,
+    { name: 'Renderers', children: [], href: null },
     { name: 'Libraries', children: [rehersalPage.link, markdownPage.link, curvePage.link], href: null },
-    { name: 'Internals', children: [wipLink], href: null },
-    { name: 'Example', children: [wipLink], href: null },
+    { name: 'Internals', children: [], href: null },
   ] },
-  content: h(Document, { text })
+  content: h(Document, {}, h(Markdown, { text: rootReadme, directives }))
 };
 
 
 const pages = [
   rootPage,
   quickstartPage,
-  componentPage,
-  elementsPage,
+  ...conceptsPages,
   ...rehersalPages,
   ...curvePages,
-  examplePage,
   markdownPage,
   markdownRendererPage
 ];

@@ -2,10 +2,11 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Page } from '../entry.js'; */
 import { h, useState } from '@lukekaalim/act';
-import { Document } from '@lukekaalim/act-rehersal';
+import { Document, Markdown } from '@lukekaalim/act-rehersal'
+
 
 const text = `
-# Quickstart
+# Web Quickstart
 
 Follow this guide to create a act-powered website quickly without much fuss.
 
@@ -14,7 +15,7 @@ Follow this guide to create a act-powered website quickly without much fuss.
 Find a nice space to work with on your computer.
 Maybe \`~/projects/my-first-act\`?
 
-Initialize our npm package.
+Inside that direction, initialize our npm package.
 
 ${'```'}
 npm init
@@ -102,9 +103,7 @@ Then, update our main function.
 
 ${'```'}
 const main = () => {
-  const { body } = document;
-  if (body)
-    render(h(Application), body);
+  render(h(Application), document.body);
 };
 
 main();
@@ -169,12 +168,14 @@ const ApplicationExample = () => {
 
 export const quickstartPage/*: Page*/ = {
   link: {
-    name: 'Quickstart',
+    name: 'Web Quickstart',
     href: '/quickstart',
     children: [],
   },
   content: [
-    h(Document, { text }),
-    h(ApplicationExample)
+    h(Document, {}, [
+      h(Markdown, { text }),
+      h(ApplicationExample)
+    ]),
   ]
 };

@@ -2,7 +2,7 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Page } from '../entry.js'; */
 import { h } from '@lukekaalim/act';
-import { Document } from '@lukekaalim/act-rehersal';
+import { Document, Markdown } from '@lukekaalim/act-rehersal';
 
 const text = `
 # Creating Elements
@@ -27,5 +27,7 @@ export const elementsPage/*: Page*/ = {
     href: '/elements',
     children: [],
   },
-  content: h(Document, { text }),
+  content: h(Document, {}, [
+    h(Markdown, { text })
+  ]),
 };

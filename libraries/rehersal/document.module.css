@@ -4,6 +4,8 @@
   font-family: 'Roboto', sans-serif;
   max-width: 40em;
   font-size: 18px;
+
+  line-height: 26px;
 }
 
 .document p {
@@ -24,17 +26,21 @@
   border-radius: 5px;
   font-size: 16px;
   padding: 1em;
-  background-color: #260951;
-  color: white;
+  background-color: #dfeeff;
+  color: black;
 
   white-space: pre-wrap;
+  display: block;
+  margin: 0 8px 0 8px;
 }
 .document pre:global(.inline) {
+  display: inline;
+
   border-radius: 5px;
   font-size: 16px;
   padding: 0 8px 0 8px;
-  background-color: #260951;
-  color: white;
+  background-color: #ffdfdf;
+  color: black;
 }
 
 .document img {
@@ -43,11 +49,8 @@
 
 .document blockquote {
   padding: 17px;
-  background-color: rgb(200, 222, 240);
+  background-color: #dfeeff;
   border-radius: 8px;
-}
-.document blockquote > p {
-  margin: 0;
 }
 
 .document a {

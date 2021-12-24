@@ -8,7 +8,8 @@ import {
 } from "../../../libraries/curve/bezier";
 import { createId, h, useMemo, useState } from '@lukekaalim/act';
 import { getCubicPoint, getBerenstienCubicPoint, getBezierWeights, getBezierVelocity, getBezierAcceleration } from '@lukekaalim/act-curve';
-import { Document, TabbedToolbox, Workspace, TextInput, GridBench, NumberInput, BooleanInput } from '@lukekaalim/act-rehersal';
+import { Document, TabbedToolbox, Workspace, TextInput, GridBench, NumberInput, BooleanInput, Markdown } from '@lukekaalim/act-rehersal';
+import rehersalReadmeText from '@lukekaalim/act-rehersal/README.md?raw';
 
 const primitiveText = `
 # Input Components
@@ -144,32 +145,8 @@ export const primitivesPage/*: Page*/ = {
   })
 }
 
-const text = `
-# @lukekaalim/act-rehersal.
 
-A component library for building documentation websites. You may even be using it right now.
-
-This library relies css modules, so it cannot be imported in a regular node context -
-you must use a bundler like vite, rollup, webpack, parcel or esbuild.
-
-> More specicially, it uses \`import\` against css files suffixed with the extension ".module.css".
-
-Rehersal provides an overall visual app structure with the Layout components like
-_Rehersal_, _Workspace_, _GridMount_ and so on.
-
-It also provides a set
-of standard input elements in the Tool components like _TextInput_, _NumberInput_ and so on.
-
-Finally, it also provides a markdown renderer in the _Document_ component, so you can embed
-markdown into your documentation.
-
-## Install
-${'```'}bash
-npm install @lukekaalim/act-rehersal
-${'```'}
-`;
-
-const BezierPolyline = ({ bezier = [0, 20, 50, 100], samples = 100 }) => {
+export const BezierPolyline/*: Component<{ bezier: CubicBezier, samples?: number }>*/ = ({ bezier, samples = 100 }) => {
   const polylinePositionPoints = useMemo(() => {
     const points = sampleGraphFunction(t => getBerenstienCubicPoint(bezier, t), samples);
     return toPolylinePoints(points.map((p, i) => [p, i]));
@@ -440,6 +417,7 @@ export const rehersalPage/*: Page*/ = {
       const p2 = getBezierP2ForVelocity([point, dest, dest], 0, velocity);
       
       return [
+        h(Markdown, { text: rehersalReadmeText }),
         h('div', { style: { display: 'flex', flexDirection: 'column' }}, [
           h('input', { type: 'range', min: 0, max: 1, step: 0.01, value: t, onInput: onITnput }),
           h('div', { style: { display: 'flex' } }, [
