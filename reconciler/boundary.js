@@ -2,7 +2,7 @@
 /*:: import type { Element } from '@lukekaalim/act'; */
 /*:: import type { Change, TraversalResult, CommitDiff, Commit, BranchState, ElementChange, CommitRef } from './commit2.js'; */
 import { createId, h } from '@lukekaalim/act';
-import { calculateChanges, emptyCommit } from './commit2';
+import { calculateChanges, emptyCommit } from './commit2.js';
 
 /*::
 export type BoundaryService = {
