@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Component library for @lukekaalim/act-reconciler",
   "type": "module",
   "main": "main.js",
