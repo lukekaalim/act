@@ -62,7 +62,7 @@ export const testComponentService = ()/*: Assertion*/ => {
     for (const i of [10, 30])
       increment(i)
   
-    const prev = { ...ref, children: [], element, pruned: false, version: '0' };
+    const prev = { ...ref, children: [], element, pruned: false, version: '0', suspension: null };
     const updateChange = { prev, ref };
     const updateResult = component.traverse(ref, updateChange, branch);
     const updatedValue = (updateResult.children[0].props.value/*: any*/);
@@ -99,7 +99,7 @@ export const testComponentService = ()/*: Assertion*/ => {
     const element = h(Subscriber, { id: 100 });
     const ref = { id: 'A', path: [] };
     const branch = { path: [], context: new Map() };
-    const prev = { ...ref, children: [], element, pruned: false, version: '0' };
+    const prev = { ...ref, children: [], element, pruned: false, version: '0', suspension: null };
 
     const createChange = { prev, ref };
     component.traverse(ref, createChange, branch);
