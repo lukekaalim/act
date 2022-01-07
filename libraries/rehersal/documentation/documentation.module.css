@@ -8,6 +8,10 @@
   background-color: #ffffff;
 }
 
+.fragmentAnchor {
+  color: black;
+}
+
 .fragmentAnchor a:visited {
   color: black;
 }
@@ -28,7 +32,7 @@
 
 .exportType code {
   border: 2px white solid;
-  background-color: #1f1b4f;
+  background-color: #2b2b2b;
   color: white;
   padding: 1em;
   box-sizing: border-box;
@@ -57,6 +61,13 @@
 
 .typeFunctionArgument {
   margin-left: 1em;
+}
+.functionTypeArgumentsDescriptionList dt {
+  font-weight: bold;
+}
+.functionTypeArgumentsDescriptionList dd {
+  margin-left: 2em;
+  margin-right: 2em;
 }
 .typeFunctionArgument.unary {
   margin-left: 0;

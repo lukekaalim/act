@@ -10,6 +10,8 @@ nav.pageNavigation {
   flex-shrink: 0;
   flex-grow: 0;
   overflow: auto;
+  position: absolute;
+  left: 0;
 }
 nav.pageNavigation menu {
   padding: 0;

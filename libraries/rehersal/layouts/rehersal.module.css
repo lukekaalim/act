@@ -16,7 +16,7 @@
 
 .rehersalContent {
   flex-grow: 1;
-  width: 10px;
+  width: 100%;
 
   overflow: auto;
 }

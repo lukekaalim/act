@@ -5,7 +5,7 @@
 
 A generic rendering library for hierarchical elements.
 
-(A react knockoff)
+Basically, a react knockoff.
 
 Render to HTML with `@lukekaalim/act-web`
 or use 3D capabilites with [threejs](https://threejs.org/) using `@lukekaalim/act-three`
@@ -21,3 +21,7 @@ npm install @lukekaalim-act
 
 ## Usage
 Take a look at the [Web Quickstart Guide](https://act.luke.kaal.im/quickstart).
+
+## Why?
+
+I wanted to understand how react worked, and also how I could write my own custom renderer. I ended up with a really bare-bones react clone with a smaller interface, so I thought it would be fun to share.

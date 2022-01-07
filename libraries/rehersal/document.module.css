@@ -2,14 +2,16 @@
 
 .document {
   font-family: 'Roboto', sans-serif;
-  max-width: 40em;
+  max-width: 45em;
   font-size: 18px;
 
   line-height: 26px;
+  margin: auto;
 }
 
 .document p {
   font-size: 18px;
+  text-align: justify;
 }
 
 .document p,
@@ -26,8 +28,8 @@
   border-radius: 5px;
   font-size: 16px;
   padding: 1em;
-  background-color: #dfeeff;
-  color: black;
+  background-color: #2b2b2b;
+  color: white;
 
   white-space: pre-wrap;
   display: block;

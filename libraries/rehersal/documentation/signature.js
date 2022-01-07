@@ -10,6 +10,7 @@ import linkIconSrc from './icons8-link-30.png';
 type FunctionTypeArgument = {
   name?: string,
   description?: Node,
+  optional?: boolean,
   type: Type
 }
 export type FunctionType = {
@@ -20,10 +21,15 @@ export type FunctionType = {
 export type ObjectType = {
   type: 'object'
 }
+export type OpaqueType = {
+  type: 'opaque',
+  name: string,
+}
 export type Type =
   | string
   | ObjectType
   | FunctionType
+  | OpaqueType
 
 export type TypeDescriptionProps = {
   type: Type,
@@ -38,10 +44,10 @@ export type FunctionTypeDescriptionProps = {
 
 export type ExportDescriptionProps = {
   name: string,
-  aliases?: Node[],
-  type: Type,
-  summary: Node,
-  usage: Node,
+  source: string,
+  aliases?: string[],
+  type?: Type,
+  summary?: Node,
 }
 
 export type FunctionExportProps = {
@@ -69,7 +75,7 @@ const FunctionTypeNamedArgumentDescription = ({ fragment = null, argument, inden
     h('strong', {},
       href ? h('a', { href }, argument.name) : argument.name
     ),
-    ': ',
+    argument.optional ? '?: ' : ': ',
     h(TypeDescription, { type: argument.type, indent }),
   ];
 }
@@ -118,10 +124,10 @@ export const FunctionTypeDescription/*: Component<FunctionTypeDescriptionProps>*
 }
 
 const FunctionTypeArgumentsDescriptionList = ({ name, type }) => {
-  return h('dl', {}, [
+  return h('dl', { className: styles.functionTypeArgumentsDescriptionList }, [
     type.arguments.map(argument => {
       return argument.name ? [
-        h('dt', { id: `${name}.${argument.name}`}, h('strong', {}, argument.name)),
+        h('dt', { id: `${name}.${argument.name}`}, argument.name),
         h('dd', {}, argument.description || null),
       ] : null;
     })
@@ -138,15 +144,34 @@ const FunctionDescription = ({ name, type }) => {
   ]
 };
 
-export const ExportDescription/*: Component<ExportDescriptionProps>*/ = ({ name, summary, type, aliases = [], usage }) => {
+const AliasDescription = ({ name, aliases = [], source = 'module' }) => {
+  return [
+    h('p', {}, [
+      `Import as `,
+      h('strong', {}, `"${name}"`),
+      aliases.length > 0 ? [
+        ` or as alias `,
+        h('strong', {}, aliases.map(alias =>`"${alias}"`).join(', ')),
+      ] : null,
+      `.`
+    ]),
+  ]
+};
+
+export const ExportDescription/*: Component<ExportDescriptionProps>*/ = ({ name, source, summary = null, type = null, aliases = [] }) => {
   return h('section', { className: styles.signature }, [
     h(FragmentAnchorHeading, { fragment: name }, name),
-    aliases.length > 0 && h('span', { className: styles.aliases }, aliases),
-    h('div', { className: styles.exportType }, h('code', {}, h('pre', {}, h(TypeDescription, { type, indent: 0, fragment: name })))),
-    typeof type !== 'string' && type.type === 'function' && h(FunctionTypeArgumentsDescriptionList, { type, name }),
-    h('hr'),
+    h(AliasDescription, { name, source, aliases }),
+    type && typeof type === 'object' && type.type === 'function' && [
+      h('div', { className: styles.exportType },
+        h('code', {},
+          h('pre', {}, [
+            `export ${name} = `,
+            h(TypeDescription, { type, indent: 0, fragment: name })
+          ]))),
+      h(FunctionTypeArgumentsDescriptionList, { type, name })
+    ],
+    summary && h('hr'),
     summary,
-    usage && h('h4', {}, 'Usage'),
-    usage,
   ]);
 };
