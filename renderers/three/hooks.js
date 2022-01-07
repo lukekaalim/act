@@ -6,6 +6,7 @@ import { TextureLoader, Vector2, WebGLRenderer } from "three";
 import { useEffect, useState } from "@lukekaalim/act";
 import { useRef } from "@lukekaalim/act";
 
+
 /*::
 export type WebGLOptions = {
   antialias?: boolean,
@@ -19,14 +20,18 @@ export type WebGLOptions = {
 };
 */
 
-export const useWebGLRenderer = (canvas/*: ?HTMLCanvasElement*/, options/*: WebGLOptions*/ = {}, deps/*: mixed[]*/ = [])/*: ?WebGLRenderer*/ => {
+export const useWebGLRenderer = (
+  canvas/*: ?HTMLCanvasElement*/,
+  options/*: WebGLOptions*/ = {},
+  deps/*: mixed[]*/ = []
+)/*: ?WebGLRenderer*/ => {
   const [renderer, setRenderer] = useState/*:: <?WebGLRenderer>*/(null);
   useEffect(() => {
     if (!canvas)
       return;
     
     const renderer = new WebGLRenderer({ ...options, canvas });
-    renderer.shadowMap.enabled = options?.shadowMap?.enabled;
+    renderer.shadowMap.enabled = options.shadowMap?.enabled || false;
     setRenderer(renderer);
 
     return () => {

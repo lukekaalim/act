@@ -8,11 +8,7 @@
   background-color: #ffffff;
 }
 
-.fragmentAnchor {
-  color: black;
-}
-
-.fragmentAnchor a:visited {
+.fragmentAnchor a {
   color: black;
 }
 

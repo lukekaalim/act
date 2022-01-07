@@ -1038,6 +1038,9 @@ declare module three {
     clear(color?: boolean, depth?: boolean, stencil?: boolean): null;
     setSize(width: number, height: number, updateStyle: boolean): void;
     domElement: Element;
+    shadowMap: {
+        enabled: boolean,
+    }
   }
 
   // declare var Geometry: Geometry
