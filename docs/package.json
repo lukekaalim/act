@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/lukekaalim/act#readme",
   "dependencies": {
-    "@lukekaalim/act-three": "^4.0.0"
+    "@lukekaalim/act-three": "^4.0.0",
+    "flow-parser": "^0.169.0",
+    "json5": "^2.2.0"
   }
 }

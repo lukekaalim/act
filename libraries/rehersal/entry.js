@@ -10,5 +10,6 @@ export * from './page.js';
 
 export * from './documentation/signature.js';
 export * from './documentation/syntax.js';
+export * from './documentation/typedoc.js';
 
 export * from './three/diorama.js';

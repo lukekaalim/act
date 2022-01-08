@@ -20,6 +20,7 @@ import { curvePage, curvePages } from './pages/libraries/curve.js';
 import { SuspensionTest } from './examples/suspension.js';
 import { conceptsPage, conceptsPages } from './pages/concepts';
 import { CurveCubeDemo } from './pages/libraries/rehersal/demos';
+import { TodoManager } from './examples/todo.js';
 
 
 /*::
@@ -31,9 +32,10 @@ export type Page = {
 
 const directives = {
   demos: () => {
-    return [
-      h(CurveCubeDemo)
-    ];
+    return h('div', { style: { display: 'flex' } }, [
+      h(CurveCubeDemo),
+      h(TodoManager, { initialTasks: ['Write Documentation', 'Finish D&D Prep', 'Cook Dinner'] })
+    ]);
   }
 };
 

@@ -1,6 +1,6 @@
 .signature {
   border: 1px solid #c4c4c4;
-  margin: 2em auto 2em auto;
+  margin: 2em -1em 2em -1em;
   border-radius: 4px;
   padding: 1em;
 
@@ -26,22 +26,27 @@
   margin-top: 0;
 }
 
-.exportType code {
-  border: 2px white solid;
+code pre {
+  margin: 0;
+  tab-size: 1em;
+}
+
+code {
+  font-size: 16px;
   background-color: #2b2b2b;
   color: white;
   padding: 1em;
   box-sizing: border-box;
   display: block;
-  border-radius: 1em;
+  border-radius: 5px;
 
   white-space: normal;
   overflow-wrap: break-word;
 }
-.exportType code a {
+code a {
   color: white;
 }
-.exportType code a:visited {
+code a:visited {
   color: white;
 }
 
@@ -72,4 +77,21 @@
 
 .syntaxHighlighted {
   border: 1px dotted black;
+}
+
+code.documentation .identifier,
+code.documentation .identifier a {
+  color: var(--identifier_color, rgb(172, 199, 240));
+}
+
+code.documentation .keyword {
+  color: var(--keyword_color, rgb(255, 122, 122));
+}
+code.documentation .literal {
+  color: var(--literal_color, rgb(255, 167, 34));
+}
+
+code.documentation .name,
+code.documentation .name a {
+  color: var(--name_color, rgb(240, 191, 172));
 }

@@ -5,6 +5,18 @@ import { directive } from 'micromark-extension-directive'
 import { h, useEffect, useState, useMemo, createContext, useContext } from '@lukekaalim/act';
 import { directiveFromMarkdown } from 'mdast-util-directive';
 
+/*::
+export type MarkdownASTNode = {
+  [string]: any,
+};
+
+export type MarkdownDirectiveASTNode = {
+  type: 'containerDirective' | 'leafDirective' | 'inlineDirective',
+  attributes: { [string]: mixed },
+  children: MarkdownASTNode[],
+};
+*/
+
 const MarkdownRoot = ({ node }) => {
   return h(MarkdownChildren, { node });
 }
@@ -56,9 +68,6 @@ const MarkdownListItem = ({ node }) => {
 const MarkdownLink = ({ node }) => {
   return h('a', { href: node.url, title: node.title || node.url }, h(MarkdownChildren, { node }));
 };
-const MarkdownChildren = ({ node }) => {
-  return node.children.map(node => h(MarkdownNode, { node }));
-}
 const MarkdownCode = ({ node }) => {
   return h('pre', { className: 'block' }, node.value);
 }
@@ -75,21 +84,22 @@ const MarkdownImage = ({ node }) => {
 const MarkdownBlockquote = ({ node }) => {
   return h('blockquote', { }, h(MarkdownChildren, { node }))
 }
-const MarkdownLeafDirective = ({ node }) => {
+const MarkdownDirective = ({ node }) => {
   const { directiveComponents } = useContext(markdownContext);
 
-  const { name, attributes } = node;
-
-  const component = directiveComponents[name];
+  const component = directiveComponents[node.name];
   if (!component) {
-    console.warn(`Directive component "${name}" not found in map!`);
+    console.warn(`Directive component "${node.name}" not found in map!`);
     return null;
   }
 
-  return h(component, { attributes }, h(MarkdownChildren, { node }))
+  return h(component, { node }, h(MarkdownChildren, { node }))
 }
 
-const MarkdownNode = ({ node }) => {
+export const MarkdownChildren/*: Component<{ node: MarkdownASTNode }>*/ = ({ node }) => {
+  return node.children.map(node => h(MarkdownNode, { node }));
+}
+export const MarkdownNode/*: Component<{ node: MarkdownASTNode }>*/ = ({ node }) => {
   switch (node.type) {
     case 'root':
       return h(MarkdownRoot, { node });
@@ -120,7 +130,8 @@ const MarkdownNode = ({ node }) => {
     case 'strong':
       return h(MarkdownStrong, { node });
     case 'leafDirective':
-      return h(MarkdownLeafDirective, { node });
+    case 'containerDirective':
+      return h(MarkdownDirective, { node });
     default:
       console.warn(`Unsupported markdown node type`);
       console.warn(node);
@@ -137,7 +148,7 @@ const mdastExtensions = [
 
 /*::
 export type DirectiveComponentMap = {
-  [string]: Component<{ attributes: { [string]: string } }>
+  [string]: Component<{ node: MarkdownASTNode }>
 };
 
 export type MarkdownContext = {
@@ -158,7 +169,8 @@ export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
   markdownText,
   directiveComponents = {}
 }) => {
-  const root = fromMarkdown(markdownText, { extensions, mdastExtensions });
+  const root = useMemo(() =>
+    fromMarkdown(markdownText, { extensions, mdastExtensions }), [markdownText]);
 
   return [
     h(markdownContext.Provider, { value: { directiveComponents } },

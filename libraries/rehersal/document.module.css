@@ -33,7 +33,6 @@
 
   white-space: pre-wrap;
   display: block;
-  margin: 0 8px 0 8px;
 }
 .document pre:global(.inline) {
   display: inline;

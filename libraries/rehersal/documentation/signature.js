@@ -5,6 +5,8 @@ import { h } from '@lukekaalim/act';
 import styles from './documentation.module.css';
 import { FragmentAnchorHeading } from './headings';
 import linkIconSrc from './icons8-link-30.png';
+import { TypeDocumentation } from "./typedoc.js";
+/*:: import type { TypeExpression } from "./typedoc"; */
 
 /*::
 type FunctionTypeArgument = {
@@ -24,9 +26,13 @@ export type ObjectType = {
 export type OpaqueType = {
   type: 'opaque',
   name: string,
+  referenceLink: URL,
 }
+export type UnionType = {
+  type: 'union',
+  subtypes: Type[],
+};
 export type Type =
-  | string
   | ObjectType
   | FunctionType
   | OpaqueType
@@ -44,9 +50,9 @@ export type FunctionTypeDescriptionProps = {
 
 export type ExportDescriptionProps = {
   name: string,
-  source: string,
+  source?: string,
   aliases?: string[],
-  type?: Type,
+  type?: TypeExpression,
   summary?: Node,
 }
 
@@ -144,8 +150,17 @@ const FunctionDescription = ({ name, type }) => {
   ]
 };
 
-const AliasDescription = ({ name, aliases = [], source = 'module' }) => {
+const AliasDescription = ({ name, aliases = [], source = null }) => {
   return [
+    source && h('div', { className: styles.exportType }, h('code', { className: styles.documentation }, h('pre', {}, [
+      h('span', { className: styles.keyword }, 'import'),
+      ' { ',
+      h('span', { className: styles.name }, 
+        [name, ...aliases].join(', ')),
+      ' } ',
+      h('span', { className: styles.keyword }, 'from '),
+      h('span', { className: styles.literal },  `"${source}"`),
+    ]))),
     h('p', {}, [
       `Import as `,
       h('strong', {}, `"${name}"`),
@@ -158,20 +173,32 @@ const AliasDescription = ({ name, aliases = [], source = 'module' }) => {
   ]
 };
 
-export const ExportDescription/*: Component<ExportDescriptionProps>*/ = ({ name, source, summary = null, type = null, aliases = [] }) => {
+const DetailedTypeDescription = ({ type, name }) => {
+  switch (type.type) {
+    case 'function':
+      return h(TypeDocumentation, { expression: type });
+    case 'object':
+    default:
+      throw new Error();
+  }
+};
+
+/**
+ * @param {*} param0 
+ * @returns Element
+ */
+export const ExportDescription/*: Component<ExportDescriptionProps>*/ = ({
+  name, source = null, summary = null, type = null, aliases = [],
+  children,
+}) => {
   return h('section', { className: styles.signature }, [
     h(FragmentAnchorHeading, { fragment: name }, name),
-    h(AliasDescription, { name, source, aliases }),
-    type && typeof type === 'object' && type.type === 'function' && [
-      h('div', { className: styles.exportType },
-        h('code', {},
-          h('pre', {}, [
-            `export ${name} = `,
-            h(TypeDescription, { type, indent: 0, fragment: name })
-          ]))),
-      h(FunctionTypeArgumentsDescriptionList, { type, name })
+    source && h(AliasDescription, { name, source, aliases }),
+    type && h(DetailedTypeDescription, { type, name }),
+    summary && [
+      h('hr'),
+      summary,
     ],
-    summary && h('hr'),
-    summary,
+    children,
   ]);
 };
