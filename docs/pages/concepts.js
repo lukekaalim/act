@@ -23,7 +23,7 @@ const HelloExample = () => {
   return h('button', { id: 'hello', onClick: () => greet() }, 'Hello, World!');
 }
 
-const LabeledCircle = ({ x, y, children, r = 30 }) => {
+const LabeledCircle/*: Component<{ x: string, y: string, r?: number }>*/ = ({ x, y, children, r = 30 }) => {
   return [
     h('circle', { cx: x, cy: y, r: `${r}px`, stroke: 'black', fill: 'none' }),
     h('text', { x: x, y: y, 'text-anchor': 'middle', 'dominant-baseline': 'middle' }, children),
