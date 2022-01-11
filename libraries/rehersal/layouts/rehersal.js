@@ -15,12 +15,19 @@ export type RehersalProps = {
 };
 */
 
+const PageError = ({ value }) => {
+  return h('div', { style: { margin: 'auto', maxWidth: '45em' }}, [
+    h('h2', {}, (value/*: any*/).message),
+    h('pre', {}, (value/*: any*/).stack),
+  ])
+}
+
 export const Rehersal/*: Component<RehersalProps>*/ = ({ children, rootLink, selectedLink, onLinkClick }) => {
   return h('div', { className: style.rehersal }, [
     h(Header),
     h('div', { className: style.rehersalHorizontalContainer  }, [
       h(NavigationColumn, { rootLink, selectedLink, onLinkClick }),
-      h('div', { className: style.rehersalContent }, h(Boundary, { fallback: h('p', {}, `There was an unexpected error loading this page.`)}, children))
+      h('div', { className: style.rehersalContent }, h(Boundary, { fallback: PageError }, children))
     ])
   ]);
 }

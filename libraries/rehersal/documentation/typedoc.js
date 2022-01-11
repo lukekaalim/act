@@ -16,6 +16,7 @@ export type ObjectTypeExpression = {
 
   entries: {
     key: string,
+    optional?: boolean,
     value: TypeExpression,
     referenceURL?: URL,
   }[],
@@ -23,10 +24,17 @@ export type ObjectTypeExpression = {
 
 export type FunctionTypeExpression = {
   type: 'function',
+  genericArguments?: {
+    name: string,
+    restriction?: TypeExpression,
+    fallback?: TypeExpression,
+    referenceURL?: URL,
+  }[],
 
   returns: TypeExpression,
   arguments: {
     name: string,
+    optional?: boolean,
     value: TypeExpression,
     referenceURL?: URL,
   }[]
@@ -43,6 +51,10 @@ export type ArrayTypeExpression = {
 
   element: TypeExpression,
 }
+export type TupleTypeExpression = {
+  type: 'tuple',
+  elements: TypeExpression[],
+}
 
 export type TypeExpression =
   | OpaqueTypeExpression
@@ -50,6 +62,7 @@ export type TypeExpression =
   | FunctionTypeExpression
   | UnionTypeExpression
   | ArrayTypeExpression
+  | TupleTypeExpression
 */
 
 const NewLine = ({ indentationLevel }) => {
@@ -80,32 +93,55 @@ const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
       case 'object':
         return [
           '{',
-          h(NewLine, { indentationLevel }),
           expression.entries.map(entry => [
+            h(NewLine, { indentationLevel: indentationLevel + 1 }),
             h(LinkWrapper, { href: entry.referenceURL },
               h('span', { className: styles.name }, entry.key)),
-            ': ',
+            entry.optional ? '?: ' : ': ',
             h(TypeExpressionRenderer, { indentationLevel: indentationLevel + 1, expression: entry.value }),
             ',',
-            h(NewLine, { indentationLevel }),
           ]),
+          h(NewLine, { indentationLevel }),
           '}',
         ]
       case 'function':
         const singleLineFunction = expression.arguments.length <= 1;
         return [
+          expression.genericArguments && expression.genericArguments.length > 0 && ([
+            '<',
+            expression.genericArguments.map((generic, index) => [
+              h(LinkWrapper, { href: generic.referenceURL },
+                h('span', { className: styles.name }, generic.name)),
+              generic.restriction ?
+                [
+                  ': ',
+                  h(TypeExpressionRenderer, { indentationLevel: indentationLevel + 1, expression: generic.restriction })
+                ] : null,
+              index === (expression.genericArguments || []).length - 1 ? null : ', ',
+            ]),
+            '>'
+          ]) || null,
           '(',
           expression.arguments.map(argument => [
             singleLineFunction ? null : h(NewLine, { indentationLevel: indentationLevel + 1 }),
             h(LinkWrapper, { href: argument.referenceURL },
               h('span', { className: styles.name }, argument.name)),
-            ': ',
+            argument.optional ? '?: ' : ': ',
             h(TypeExpressionRenderer, { indentationLevel: indentationLevel + 1, expression: argument.value }),
             singleLineFunction ? null : ',',
           ]),
           singleLineFunction ? null : h(NewLine, { indentationLevel }),
           ') => ',
           h(TypeExpressionRenderer, { indentationLevel, expression: expression.returns })
+        ]
+      case 'tuple':
+        return [
+          '[',
+            expression.elements.map((element, index) => [
+              h(TypeExpressionRenderer, { indentationLevel, expression: element }),
+              index === expression.elements.length - 1 ? null : ', ',
+            ]),
+          ']'
         ]
       case 'array':
         return [

@@ -22,6 +22,7 @@
     "@lukekaalim/act-navigation": "^1.0.0",
     "@lukekaalim/cast": "^4.1.1",
     "highlight.js": "^11.3.1",
+    "json5": "^2.2.0",
     "mdast-util-from-markdown": "^1.0.4"
   }
 }

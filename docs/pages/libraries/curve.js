@@ -2,8 +2,9 @@
 /*:: import type { Page } from '@lukekaalim/act-rehersal'; */
 import { useCurve, useChangeList } from '@lukekaalim/act-curve';
 import { h, useEffect, useRef, useState } from '@lukekaalim/act';
-import { Document, ExportDescription, Markdown, MarkdownRenderer, SyntaxCode } from '@lukekaalim/act-rehersal';
+import { Document, ExportDescription, Markdown, SyntaxCode } from '@lukekaalim/act-rehersal';
 import readmeText from '@lukekaalim/act-curve/README.md?raw';
+import curveHooksText from './curve_hooks.md?raw';
 
 
 import beachBallSrc from './beach_ball.png';
@@ -47,104 +48,10 @@ const useCurveType = {
   return: 'void',
 };
 
-const hooksContent = h(Document, {}, [
-  h('h1', {}, 'Hooks'),
-  h('p', {}, [
-    `The easiest way to get animating a property is to use a curve hook. `,
-    `These hooks allow you to interpolate between values, creating a smooth blending experience.`
-  ]),
-  h('p', {}, [
-    `Without needing to get into the complexities of custom animators, you can `,
-    `achieve some nice effects with just the useCurve hook.`
-  ]),
-  h('act:boundary', { fallback: ({ value }) => h('pre', {}, value.stack) }, [
-    h('div', { style: { display: 'flex', flexDirection: 'row' } }, [
-      h(CurveCubeDemo),
-      h(CurveScrollingNumbersDemo),
-    ]),
-    h('div', { style: { display: 'flex', flexDirection: 'row' } }, [
-      h(FlippingButtonDemo),
-      h(SlideShowDemo)
-    ])
-  ]),
-  h(ExportDescription, {
-    name: 'useCurve',
-    type: useCurveType,
-    summary: [
-      h('p', {}, [
-        `A fairly basic hook, composed of a pre-built animator that converges to the target `,
-        `over the course of 1000 milliseconds at most.`
-      ]),
-      h('p', {}, [
-        `Internally, it uses a bezier animator `,
-        `to maintain velocity when changing targets, and uses the Animator context to register `,
-        `it's updates. `,
-        /*
-        `The "useCurve" hook contains a pre-built animator, interpolating between `,
-        `the values you pick with a fixed duration. It's the simplest way to get started with your `,
-        `animations.`
-      ]),
-      h('p', {}, [
-        `"useCurve" has a couple built-in features: it will smoothly switch to a new target if the `,
-        `values change quickly: so connecting it to continous user input (like a mouse or touchpad) `,
-        `should still provide a smooth animation. This is because it will preserve the velocity of the `,
-        `value (how quickly it is changing) and keeps track of it in the animator's internal state.`
-      ]),
-      h('p', {}, [
-        `"onUpdate" is called every animation frame (as per requestAnimationFrame) - but only as long as `,
-        `there is something to interpolate. Once the transition is complete - onUpdate won't be called until `,
-        `value changes.`
-      */
-      ]),
-      h('p', {}, [
-        `For more control over the timing, consider using the Advanced Hooks.`
-      ]),
-    ],
-    usage: [
-      h(SyntaxCode, { code:
-`import { h, useRef, useState } from '@lukekaalim/act';
-import { useCurve } from '@lukekaalim/act-curves';
-
-const MyComponent = () => {
-  const ref = useRef();
-  const [target, setTarget] = useState(50);
-  useCurve(target, currentTarget => {
-    ref.current.value = currentTarget;
-  });
-
-  return [
-    h('pre', {}, \`Target: \${target}\`),
-    h('progress', { ref, min: 0, max: 100 }),
-    h('input', {
-      min: 0,
-      max: 100,
-      type: 'range',
-      value: target,
-      onInput: e => setTarget(e.target.value)
-    }),
-  ];
-};`
-      }),
-      h(() => {
-        const ref = useRef();
-        const [target, setTarget] = useState(50);
-        useCurve(target, currentTarget => {
-          ref.current.value = currentTarget;
-        });
-      
-        return h('div', { style: { display: 'flex', flexDirection: 'column' } }, [
-          h('pre', {}, `Target: ${target}`),
-          h('progress', { ref, min: 0, max: 100, style: { display: 'block', width: '100%' } }),
-          h('input', { type: 'range', value: target, onInput: e => setTarget(e.target.value) }),
-        ]);
-      }),
-    ]
-  })
-]);
 
 export const hooksPage/*: Page*/ = {
   link: { href: '/libraries/curve/hooks', name: 'Hooks', children: [] },
-  content: hooksContent
+  content: h(Document, {}, h(Markdown, { text: curveHooksText, directives: {} })),
 }
 export const animatorsPage/*: Page*/ = {
   link: { href: '/libraries/curve/animators', name: 'Animators', children: [] },
@@ -255,19 +162,21 @@ type ElementState<T> = {
 */
 
 
-const FadingElement = ({ change, render }) => {
+const FadingElement = ({ change, render, onDone }) => {
   const elementRef = useRef/*:: <?HTMLElement>*/(null);
 
-  useCurve(change.removed ? 1 : 0, v => {
+  useCurve(change === 'exiting' ? 1 : 0, (p) => {
     const { current: element } = elementRef;
     if (!element)
       return;
   
-    element.style.opacity = (1 - Math.abs(v)).toString();
-    element.style.maxHeight = ((1 - Math.abs(v)) * 100).toString() + 'px';
-    if (v === 1)
-      element.style.display = 'none';
-  }, { start: -1 })
+    element.style.opacity = (1 - Math.abs(p)).toString();
+    element.style.maxHeight = ((1 - Math.abs(p)) * 1.5).toString() + 'em';
+    element.style.zIndex = p === 0 ? '1' : '0';
+    if (p === 1) {
+      onDone()
+    }
+  }, { start: change === 'entering' ? -1 : 0, duration: 1000 })
 
   return render(elementRef);
 }
@@ -288,13 +197,7 @@ const TransitionDemo = () => {
     setNextColor(e.target.value)
   }
 
-  const colorListChanges = useChangeList(
-    colorList,
-    v => v,
-    t => (t.removed && console.log(t.removed, performance.now()), !!t.removed && (t.removed + 1000) < performance.now())
-  )
-
-  console.log(colorListChanges);
+  const [colorListChanges, animator] = useChangeList(colorList, { initialArray: colorList })
 
   return [
     h('form', { onSubmit }, [
@@ -302,13 +205,13 @@ const TransitionDemo = () => {
       h('button', { type: 'submit' }, 'Add New Color'),
     ]),
     h('ul', {}, [
-      colorListChanges.map(change =>
-        h(FadingElement, { change, key: change.value, render: (ref) => [
-          h('li', { ref },
-            h('button', {
-              style: { backgroundColor: change.value, color: 'white' },
-              onClick: onColorClick(change.value)
-            }, change.value))
+      colorListChanges.map(([color, change]) =>
+        h(FadingElement, { change, onDone: () => animator.remove(color), key: color, render: (ref) => [
+          h('li', { ref, style: { position: 'relative' } },
+            h('button', { 
+              style: { backgroundColor: color, color: 'white' },
+              onClick: onColorClick(color)
+            }, color))
         ] }))
     ])
   ];
