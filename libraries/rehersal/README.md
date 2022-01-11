@@ -1,4 +1,6 @@
-# @lukekaalim/act-rehersal.
+# @lukekaalim/act-rehersal
+
+![npm (scoped)](https://img.shields.io/npm/v/@lukekaalim/act-rehersal)
 
 A component library for building documentation websites. You may even be using it right now.
 
