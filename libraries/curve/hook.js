@@ -1,8 +1,10 @@
 // @flow strict
 /*:: import type { BezierAnimator, BezierAnimatorOptions } from "./bezier.js"; */
-import { useEffect, useRef, useState } from "@lukekaalim/act";
-import { useAnimation } from "./animation";
-import { createBezierAnimator } from "./bezier";
+/*:: import type { ArrayAnimator, ArrayElementState } from "./array.js"; */
+import { useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
+import { useAnimation } from "./animation.js";
+import { createKeyedArrayAnimator } from "./array.js";
+import { createBezierAnimator } from "./bezier.js";
 
 /*::
 export type CurveOptions = {
@@ -17,7 +19,8 @@ export const useCurve = (
   onUpdate/*: (position: number, velocity: number, acceleration: number) => mixed*/,
   { duration = 500, impulse = 0, start = target }/*: CurveOptions */ = {}
 )/*: BezierAnimator*/ => {
-  const [animator] = useState(createBezierAnimator({ initial: { to: target, from: start, velocity: 0 }, impulse, duration }));
+  const [animator] = useState/*:: <BezierAnimator>*/(() =>
+    createBezierAnimator({ initial: { to: target, from: start, velocity: 0 }, impulse, duration }));
   useEffect(() => {
     const now = performance.now();
     if (animator.getPosition(now) !== target)
@@ -35,53 +38,24 @@ export const useCurve = (
 };
 
 /*::
-type ValueChange<T> = {
-  key: mixed,
-  value: T,
-  added: DOMHighResTimeStamp,
-  removed: null | DOMHighResTimeStamp,
+export type UseChangeListOptions<T> = {
+  calculateKey?: T => mixed,
+  initialArray?: T[],
 };
 */
 
 export const useChangeList = /*:: <T>*/(
   values/*: T[]*/,
-  getKey/*: T => mixed*/ = v => v,
-  isDone/*: ValueChange<T> => boolean*/ = () => false
-)/*: ValueChange<T>[]*/ => {
-  const keys = values.map(getKey);
+  { calculateKey = v => v, initialArray = [] }/*: UseChangeListOptions<T> */ = {}
+)/*: [[T, ArrayElementState][], ArrayAnimator<T>]*/ => {
+  const [animator] = useState/*:: <ArrayAnimator<T>>*/(
+    () => createKeyedArrayAnimator(initialArray, calculateKey)
+  );
 
-  const allElementsRef = useRef/*:: <ValueChange<T>[]>*/([]);
-  const removedElements = allElementsRef.current.filter(e => {
-    if (e.removed != null)
-      return false;
-    return !keys.includes(e.key);
-  });
-  const removedKeys = removedElements.map(e => e.key);
-  const addedKeys = keys.filter(key => {
-    const value = allElementsRef.current.find(e => e.key === key)
-    if (!value)
-      return true;
-    return !!value.removed;
-  });
+  const changeList = useMemo(() => {
+    animator.update(values);
+    return animator.getElements();
+  }, [...values]);
 
-  const now = performance.now();
-
-  console.log({ removedElements, addedKeys });
-
-  allElementsRef.current = [
-    // change previous states
-    ...allElementsRef.current.map(element => {
-      if (!removedKeys.includes(element.key))
-        return element;
-      if (addedKeys.includes(element.key))
-        return null;
-      return { ...element, removed: now };
-    }).filter(Boolean),
-    // add new states
-    ...addedKeys.map(key =>
-      ({ value: values[keys.indexOf(key)], key, added: now, removed: null }))
-    // cull "done" states
-  ].filter(entry => !isDone(entry));
-
-  return allElementsRef.current;
+  return [changeList, animator];
 }
