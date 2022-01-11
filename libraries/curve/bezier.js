@@ -116,7 +116,8 @@ export const createBezierAnimator = ({
     const p1 = getPosition(start);
     const distance = nextTo - p1;
     const direction = Math.abs(distance) / distance;
-    const p2 = getBezierP2ForVelocity([p1, nextTo, nextTo], 0, velocity + (direction * impulse));
+    const impulseForce = distance === 0 ? 0 : (direction * impulse);
+    const p2 = getBezierP2ForVelocity([p1, nextTo, nextTo], 0, velocity + impulseForce);
 
     curve = [p1, p2, nextTo, nextTo];
     progressAnimator.update(start, duration);
