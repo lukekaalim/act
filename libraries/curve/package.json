@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-curve",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Hooks for fast-updating easing function for DOM nodes",
   "main": "main.js",
   "type": "module",
