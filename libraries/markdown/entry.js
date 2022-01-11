@@ -5,6 +5,11 @@ import { directive } from 'micromark-extension-directive'
 import { h, useEffect, useState, useMemo, createContext, useContext } from '@lukekaalim/act';
 import { directiveFromMarkdown } from 'mdast-util-directive';
 
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import remarkDirective from 'remark-directive';
+
 /*::
 export type MarkdownASTNode = {
   [string]: any,
@@ -20,7 +25,9 @@ export type MarkdownDirectiveASTNode = {
 const MarkdownRoot = ({ node }) => {
   return h(MarkdownChildren, { node });
 }
-const MarkdownParagraph = ({ node }) => {
+const MarkdownParagraph = ({ node, spread }) => {
+  if (!spread)
+    return h(MarkdownChildren, { node });
   return h('p', {}, h(MarkdownChildren, { node }));
 }
 const MarkdownText = ({ node }) => {
@@ -60,10 +67,16 @@ const getListElementType = (node) => {
 }
 const MarkdownList = ({ node }) => {
   const elementType = getListElementType(node);
+  console.log(node);
   return h(elementType, {}, h(MarkdownChildren, { node }));
 };
 const MarkdownListItem = ({ node }) => {
-  return h('li', {}, h(MarkdownChildren, { node }));
+  return h('li', {}, [
+    node.checked !== null && [
+      h('input', { type: 'checkbox', disabled: true, checked: node.checked }),
+    ],
+    h(MarkdownChildren, { node, spread: node.spread })
+  ]);
 };
 const MarkdownLink = ({ node }) => {
   return h('a', { href: node.url, title: node.title || node.url }, h(MarkdownChildren, { node }));
@@ -96,15 +109,15 @@ const MarkdownDirective = ({ node }) => {
   return h(component, { node }, h(MarkdownChildren, { node }))
 }
 
-export const MarkdownChildren/*: Component<{ node: MarkdownASTNode }>*/ = ({ node }) => {
-  return node.children.map(node => h(MarkdownNode, { node }));
+export const MarkdownChildren/*: Component<{ node: MarkdownASTNode, spread?: boolean }>*/ = ({ node, spread }) => {
+  return node.children.map(node => h(MarkdownNode, { node, spread }));
 }
-export const MarkdownNode/*: Component<{ node: MarkdownASTNode }>*/ = ({ node }) => {
+export const MarkdownNode/*: Component<{ node: MarkdownASTNode, spread?: boolean }>*/ = ({ node, spread }) => {
   switch (node.type) {
     case 'root':
       return h(MarkdownRoot, { node });
     case 'paragraph':
-      return h(MarkdownParagraph, { node });
+      return h(MarkdownParagraph, { node, spread });
     case 'text':
       return h(MarkdownText, { node });
     case 'heading':
@@ -169,8 +182,16 @@ export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
   markdownText,
   directiveComponents = {}
 }) => {
-  const root = useMemo(() =>
-    fromMarkdown(markdownText, { extensions, mdastExtensions }), [markdownText]);
+  const root = useMemo(
+    () => {
+      return unified()
+      .use(remarkParse)
+      .use(remarkDirective)
+      .use(remarkGfm)
+      .parse(markdownText)
+    },
+    [markdownText]
+  );
 
   return [
     h(markdownContext.Provider, { value: { directiveComponents } },

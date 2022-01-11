@@ -9,6 +9,7 @@ export type OpaqueTypeExpression = {
   name: string,
 
   referenceURL?: URL,
+  genericArguments?: TypeExpression[],
 };
 
 export type ObjectTypeExpression = {
@@ -81,8 +82,20 @@ const LinkWrapper = ({ href, children }) => {
 const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
   switch (expression.type) {
     case 'opaque':
-      return h(LinkWrapper, { href: expression.referenceURL },
-        h('span', { className: styles.identifier }, expression.name));
+      const { genericArguments = null } = expression;
+      return [
+        h(LinkWrapper, { href: expression.referenceURL },
+          h('span', { className: styles.identifier }, expression.name)),
+        genericArguments && [
+          '<',
+          genericArguments.map((genericArgument, index) => [
+            h(TypeExpressionRenderer, { indentationLevel, expression: genericArgument }),
+            index === genericArguments .length - 1 ? null : ', ',
+          ])
+          ,
+          '>'
+        ]
+      ];
     case 'union':
       return expression.values.map((value, index) =>
         index === 0 ?
@@ -105,7 +118,7 @@ const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
           '}',
         ]
       case 'function':
-        const singleLineFunction = expression.arguments.length <= 1;
+        const singleLineFunction = expression.arguments.length === 0;
         return [
           expression.genericArguments && expression.genericArguments.length > 0 && ([
             '<',

@@ -19,7 +19,8 @@ const MarkdownAPI = ({ node: { attributes: { name, source, aliases = '' } }, chi
   return h(ExportDescription, { name, source, aliases: aliases.split(',').filter(Boolean) }, children);
 };
 const MarkdownTypeDoc = ({ node }) => {
-  const expression = JSON5.parse(node.children[0].children[0].value);
+  const jsonContent = node.children[0].value || node.children[0].children[0].value;
+  const expression = JSON5.parse(jsonContent);
   return h(TypeDocumentation, { expression });
 };
 

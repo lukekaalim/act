@@ -21,6 +21,10 @@
     "@lukekaalim/act": "^2.3.0",
     "mdast-util-directive": "^2.2.0",
     "mdast-util-from-markdown": "^1.1.0",
-    "micromark-extension-directive": "^2.1.1"
+    "micromark-extension-directive": "^2.1.1",
+    "remark": "^14.0.2",
+    "remark-directive": "^2.0.1",
+    "remark-gfm": "^3.0.1",
+    "unified": "^10.1.1"
   }
 }

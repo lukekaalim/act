@@ -184,8 +184,11 @@ and you typically don't need to worry about it directly.
 :::type{format=json5}
 {
   type: "function",
+  genericArguments: [
+    { name: "T", restriction: { type: "opaque", name: "Object" } }
+  ],
   arguments: [
-    { name: 'props', value: { type: 'opaque', name: 'Object' } }
+    { name: 'props', value: { type: 'opaque', name: 'T' } }
   ],
   returns: { type: 'opaque', name: 'Element', referenceURL: '#Element' }
 }
