@@ -25,7 +25,7 @@ export type MarkdownDirectiveASTNode = {
 const MarkdownRoot = ({ node }) => {
   return h(MarkdownChildren, { node });
 }
-const MarkdownParagraph = ({ node, spread }) => {
+const MarkdownParagraph = ({ node, spread = true }) => {
   if (!spread)
     return h(MarkdownChildren, { node });
   return h('p', {}, h(MarkdownChildren, { node }));
@@ -67,7 +67,6 @@ const getListElementType = (node) => {
 }
 const MarkdownList = ({ node }) => {
   const elementType = getListElementType(node);
-  console.log(node);
   return h(elementType, {}, h(MarkdownChildren, { node }));
 };
 const MarkdownListItem = ({ node }) => {

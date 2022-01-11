@@ -24,12 +24,6 @@ npm install @lukekaalim/act-markdown
   - [ ] Most CommonMark things
   - [X] Some [Github Flavored Markdown (GFM)](https://github.github.com/gfm) featues
   - [ ] [Directives proposal](https://talk.commonmark.org/t/generic-directives-plugins-syntax/444)
-  - [X] A more complicated
-    And Multiline
-
-    And Muli-Paragraph
-
-    Thing
 
 It does not support:
   - Embedded HTML elements
