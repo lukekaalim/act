@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-three",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "description": "Render threejs content using act",
   "main": "entry.js",
   "type": "module",
@@ -18,6 +18,6 @@
     "@lukekaalim/act": "^2.2.0",
     "@lukekaalim/act-renderer-core": "^3.0.0",
     "@lukekaalim/act-reconciler": "^2.1.0",
-    "@lukekaalim/act-web": "^1.0.0"
+    "@lukekaalim/act-web": "^1.1.0"
   }
 }
