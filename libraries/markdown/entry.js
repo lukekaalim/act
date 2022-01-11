@@ -1,9 +1,6 @@
 // @flow strict
 /*:: import type { Component, ElementNode } from '@lukekaalim/act'; */
-import { fromMarkdown } from 'mdast-util-from-markdown';
-import { directive } from 'micromark-extension-directive'
 import { h, useEffect, useState, useMemo, createContext, useContext } from '@lukekaalim/act';
-import { directiveFromMarkdown } from 'mdast-util-directive';
 
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
@@ -150,13 +147,6 @@ export const MarkdownNode/*: Component<{ node: MarkdownASTNode, spread?: boolean
       return null;
   }
 };
-
-const extensions = [
-  directive()
-];
-const mdastExtensions = [
-  directiveFromMarkdown
-];
 
 /*::
 export type DirectiveComponentMap = {
