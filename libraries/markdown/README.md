@@ -21,9 +21,11 @@ npm install @lukekaalim/act-markdown
 
 ## Features
 **@lukekaalim/act-markdown** supports the following markdown features:
-  - [ ] Most CommonMark things
-  - [X] Some [Github Flavored Markdown (GFM)](https://github.github.com/gfm) featues
-  - [ ] [Directives proposal](https://talk.commonmark.org/t/generic-directives-plugins-syntax/444)
+  - [X] [CommonMark](https://commonmark.org/)
+  - [ ] [Github Flavored Markdown (GFM)](https://github.github.com/gfm)
+    - [X] Checkboxes
+    - [ ] Everything else
+  - [X] [Directives proposal](https://talk.commonmark.org/t/generic-directives-plugins-syntax/444)
 
 It does not support:
   - Embedded HTML elements
