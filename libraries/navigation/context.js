@@ -14,24 +14,3 @@ export type History = {
 */
 
 export const navigationContext/*: Context<?Navigation>*/ = createContext();
-
-export const useRootNavigation = (initialHref/*: string*/ = '', history/*: History*/ = window.history)/*: Navigation*/ => {
-  const [location, setLocation] = useState(new URL(initialHref || document.location.href))
-
-  const navigate = useMemo(() => (destination, title = '') => {
-    history.pushState(null, title, destination.href);
-    setLocation(destination);
-  }, []);
-
-  const navigation = {
-    navigate,
-    location,
-  };
-
-  return navigation;
-};
-
-export const NavigationProvider/*: Component<{ history?: History, initialHref?: string  }>*/ = ({ children, history, initialHref }) => {
-  const navigation = useRootNavigation(initialHref, history);
-  return h(navigationContext.Provider, { value: navigation }, children);
-};
