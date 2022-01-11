@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { NavigationLink } from "../navigation.js"; */
-import { h } from '@lukekaalim/act';
+import { Boundary, h } from '@lukekaalim/act';
 import { Header } from '../header';
 import { NavigationColumn } from "../navigation";
 
@@ -20,7 +20,7 @@ export const Rehersal/*: Component<RehersalProps>*/ = ({ children, rootLink, sel
     h(Header),
     h('div', { className: style.rehersalHorizontalContainer  }, [
       h(NavigationColumn, { rootLink, selectedLink, onLinkClick }),
-      h('div', { className: style.rehersalContent }, children)
+      h('div', { className: style.rehersalContent }, h(Boundary, { fallback: h('p', {}, `There was an unexpected error loading this page.`)}, children))
     ])
   ]);
 }
