@@ -15,8 +15,6 @@ The elements you create can also be other components - so your application often
 
 What your elements represent is decided by which **Renderer** you use. A renderer to get started with (and what we'll use in most examples) is the **[@lukekaalim/act-web](/web)** renderer, which uses the element's type to decide which DOM node to create.
 
-::component_diagram
-
 An element is created by the [**createElement()**](#createElement) function (otherwise known as **h()**).
 
 To use a renderer, you typically pick your **Root Component** and pass it as an
