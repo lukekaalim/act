@@ -6,3 +6,4 @@ export * from './bezier.js';
 export * from './progress.js';
 export * from './math.js';
 export * from './array.js';
+export * from './animation.js';
