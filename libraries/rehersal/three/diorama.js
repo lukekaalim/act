@@ -2,7 +2,6 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { MeshProps, OrthographicCameraProps } from '@lukekaalim/act-three'; */
 import { h, useState } from "@lukekaalim/act";
-import { useCurve, Vector2 } from "@lukekaalim/act-curve";
 import { LookAtGroup, useDisposable, useRenderLoop, useWebGLRenderer } from "@lukekaalim/act-three";
 
 import * as THREE from "@lukekaalim/act-three";
@@ -12,6 +11,7 @@ import {
   OrthographicCamera,
   PlaneGeometry,
   Vector3,
+  Vector2,
   Color,
 } from "three";
 
