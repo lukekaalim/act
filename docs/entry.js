@@ -11,7 +11,6 @@ import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation
 import { Document, Rehersal, GridBench, Markdown } from '@lukekaalim/act-rehersal';
 import { componentPage } from './pages/components.js';
 import { TabbedToolbox } from "../libraries/rehersal/tools/tabs";
-import { Workspace } from '../libraries/rehersal/layouts/workspace.js';
 import { rehersalPage, rehersalPages } from './pages/libraries/rehersal.js';
 import { markdownPage, markdownRendererPage } from "./pages/libraries/markdown";
 import { elementsPage } from './pages/elements.js';
@@ -75,8 +74,37 @@ const DocsApp = () => {
   if (!page)
     return null;
 
+  const onClick = (e) => {
+    const anchor = e.composedPath().find(e => e.tagName === 'A');
+    if (!e.defaultPrevented && anchor && anchor.href) {
+      const url = new URL(anchor.href);
+      if (url.origin !== document.location.origin)
+        return;
+      e.preventDefault();
+      if (navigation.location.href === url.href) {
+        if (!url.hash)
+          return;
+        const target = document.getElementById(url.hash.substring(1));
+        if (!target)
+          return;
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+      navigation.navigate(url)
+    }
+  };
+
+  useEffect(() => {
+    if (!navigation.location.hash)
+      return;
+    const target = document.getElementById(navigation.location.hash.substring(1));
+    if (!target)
+      return;
+    target.scrollIntoView({ behavior: 'smooth' });
+  }, [navigation.location.hash])
+
   return h('act:boundary', { fallback: ErrorFallback },
-    h(Rehersal, { rootLink: rootPage.link, selectedLink: page.link, onLinkClick }, page.content)
+    h(Rehersal, { rootLink: rootPage.link, selectedLink: page.link, onLinkClick },
+        h('div', { onClick }, page.content))
   );
 };
 
