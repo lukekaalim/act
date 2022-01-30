@@ -12,8 +12,8 @@ import { createId, normalizeElement, setRegistry } from '@lukekaalim/act';
 export type ComponentState = {
   ref: CommitRef,
   values: Map<mixed, {|
-    value: mixed,
-    setValue: SetValue<mixed>,
+    value: any,
+    setValue: SetValue<any>,
   |}>,
   effects: Map<mixed, {|
     id: EffectID,
@@ -64,7 +64,7 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
       return hook;
     };
   
-    const useState = /*:: <T>*/(initialValue) => {
+    const useState/*: UseState*/ = /*:: <T>*/(initialValue) => {
       const hook = state.values.get(key) || createUseStateHook(initialValue);
       key++;
       return [hook.value, hook.setValue];
