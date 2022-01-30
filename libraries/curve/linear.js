@@ -1,8 +1,25 @@
 // @flow strict
 /*:: import type { ProgressAnimator } from "./progress.js"; */
+/*:: import type { TimeSpan } from "./schedule.js";*/
 
 import { lerp } from "./math.js";
 import { createProgressAnimator } from "./progress.js";
+import { calculateSpanProgress } from "./schedule.js";
+
+/*::
+export type Line = [number, number];
+
+export type LineAnimation = {
+  type: 'linear',
+  shape: Line,
+  span: TimeSpan
+}
+*/
+
+export const calculateLinePosition = (animation/*: LineAnimation*/, now/*: DOMHighResTimeStamp*/)/*: number*/  => {
+  const progress = calculateSpanProgress(animation.span, now);
+  return lerp(animation.shape[0], animation.shape[1], progress);
+}
 
 /*::
 export type LinearAnimator = {

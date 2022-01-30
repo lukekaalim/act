@@ -4,6 +4,28 @@ export const lerp = (v1/*: number*/, v2/*: number*/, t/*: number*/)/*: number*/ 
   return v1 + (t * (v2 - v1));
 }
 
+/*::
+export type VectorOperations<V> = {
+  add(a: V, b: V): V,
+  multiplyScalar(a: V, b: number): V,
+  magnitude(a: V): number,
+  interpolate(a: V, b: V, t: number): V,
+};
+*/
+
+export const vector1Operations/*: VectorOperations<[number]>*/ = {
+  add: (a, b) => [a[0] + b[0]],
+  multiplyScalar: (a, b) => [a[0] * b],
+  magnitude: (a) => Math.abs(a[0]),
+  interpolate: (a, b, t) => [lerp(a[0], b[0], t)],
+}
+export const vector2Operations/*: VectorOperations<[number, number]>*/ = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1]],
+  multiplyScalar: (a, b) => [a[0] * b, a[1] * b],
+  magnitude: (a) => Math.sqrt(Math.pow(a[0], 2) + Math.pow(a[1], 2)),
+  interpolate: (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t)],
+}
+
 export class Vector2 {
   /*:: x: number*/
   /*:: y: number*/

@@ -1,5 +1,7 @@
 // @flow strict
-/*:: import type { Context } from '@lukekaalim/act'; */
+/*:: import type { CubicBezierAnimation } from "./bezier";
+import type { LineAnimation } from "./linear";
+import type { Context } from '@lukekaalim/act'; */
 import { createContext, useContext, useEffect, useState } from "@lukekaalim/act";
 
 /*::
@@ -36,3 +38,9 @@ export const useAnimation = (animation/*: ?(now: DOMHighResTimeStamp) => ?boolea
     refresh: () => setStart(performance.now()),
   }
 };
+
+/*::
+export type AnimationSpan =
+  | CubicBezierAnimation
+  | LineAnimation
+*/
