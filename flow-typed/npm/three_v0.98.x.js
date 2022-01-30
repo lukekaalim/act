@@ -225,8 +225,6 @@ declare module three {
 
   declare class Vector4 {}
 
-  declare class Euler {}
-
   declare export class Quaternion {
     constructor(x?: number, y?: number, z?: number, w?: number): this;
 
