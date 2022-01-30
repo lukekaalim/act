@@ -35,17 +35,27 @@ let registry/*: Hooks*/ = {
   useContext: () => { throw new Error(`Unset global hook`); },
 };
 
-export const useState/*: UseState*/ = /*:: <T>*/(initialValue) => registry.useState(initialValue);
+export const useState/*: UseState*/ = /*:: <T>*/(initialValue)/*: [T, SetValue<T>]*/ => registry.useState(initialValue);
 export const useEffect/*: UseEffect*/ = (effect, deps) => registry.useEffect(effect, deps);
-export const useContext/*: UseContext*/ = /*:: <T>*/(context) => registry.useContext(context);
+export const useContext/*: UseContext*/ = /*:: <T>*/(context)/*: T*/ => registry.useContext(context);
 
 export const useRef/*: UseRef*/ = /*:: <T>*/(initialValue/*: T*/)/*: { current: T }*/ => {
   const [value] = useState/*:: <{ current: T }>*/({ current: initialValue })
   return value;
 };
 
+export const depsAreEqual = (prev/*: null | mixed[]*/, next/*: null | mixed[]*/)/*: boolean*/ => {
+  if (prev && next)
+    return (
+      prev.length !== next.length &&
+      next.every((dep, i) => dep === prev[i])
+    );
+
+  return prev === next;
+};
+
 export const useMemo/*: UseMemo*/ = /*:: <T>*/(calc/*: () => T*/, deps/*: Deps*/ = [])/*: T*/ => {
-  const { current: memoState } = useRef/*:: <{ isSet: boolean, value: T, oldDeps: Deps }>*/({
+  const { current: memoState } = useRef({
     isSet: false,
     value: (null/*: any*/),
     oldDeps: deps
@@ -56,10 +66,7 @@ export const useMemo/*: UseMemo*/ = /*:: <T>*/(calc/*: () => T*/, deps/*: Deps*/
     return memoState.value;
   }
   const { oldDeps } = memoState;
-  if ((deps && oldDeps) && (
-    deps.length !== oldDeps.length ||
-    !deps.every((dep, i) => dep === oldDeps[i])
-  )) {
+  if (!depsAreEqual(deps, oldDeps)) {
     memoState.value = calc();
     memoState.oldDeps = deps;
   }

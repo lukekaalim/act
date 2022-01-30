@@ -8,9 +8,13 @@ A generic rendering library for hierarchical elements.
 Basically, a react knockoff.
 
 Render to HTML with `@lukekaalim/act-web`
-or use 3D capabilites with [threejs](https://threejs.org/) using `@lukekaalim/act-three`
+or use 3D capabilites with [threejs](https://threejs.org/) using `@lukekaalim/act-three`.
 
-Provides a simple interface to implement custom renderers, and a very lightweight set of default renderers.
+Writing declarative user interfaces using components, state and side effects.
+
+Pull the library apart and take a look at the modular
+insides - develop your own renderer, reconciler, scheduler or any other core part
+of act.
 
 ::demos
 
