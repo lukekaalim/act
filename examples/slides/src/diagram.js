@@ -12,7 +12,7 @@ export type Box = {|
 |};
 */
 
-export const rootSVGNodeContext/*: Context<?SVGSVGElement>*/ = createContext(null);
+export const rootSVGNodeContext/*: Context<?SVGElement>*/ = createContext(null);
 
 /*::
 export type UseDrag = (ref: ?HTMLElement) => [Vector2, (Vector2 | (Vector2 => Vector2)) => void];
