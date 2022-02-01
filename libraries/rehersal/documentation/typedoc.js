@@ -85,7 +85,7 @@ const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
       const { genericArguments = null } = expression;
       return [
         h(LinkWrapper, { href: expression.referenceURL },
-          h('span', { className: styles.identifier }, expression.name)),
+          h('span', { className: ['hljs-built_in'].join(' ') }, expression.name)),
         genericArguments && [
           '<',
           genericArguments.map((genericArgument, index) => [
@@ -109,7 +109,7 @@ const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
           expression.entries.map(entry => [
             h(NewLine, { indentationLevel: indentationLevel + 1 }),
             h(LinkWrapper, { href: entry.referenceURL },
-              h('span', { className: styles.name }, entry.key)),
+              h('span', { className: [].join('') }, entry.key)),
             entry.optional ? '?: ' : ': ',
             h(TypeExpressionRenderer, { indentationLevel: indentationLevel + 1, expression: entry.value }),
             ',',
@@ -124,7 +124,7 @@ const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
             '<',
             expression.genericArguments.map((generic, index) => [
               h(LinkWrapper, { href: generic.referenceURL },
-                h('span', { className: styles.name }, generic.name)),
+                h('span', { className: [].join() }, generic.name)),
               generic.restriction ?
                 [
                   ': ',
@@ -138,7 +138,7 @@ const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
           expression.arguments.map(argument => [
             singleLineFunction ? null : h(NewLine, { indentationLevel: indentationLevel + 1 }),
             h(LinkWrapper, { href: argument.referenceURL },
-              h('span', { className: styles.name }, argument.name)),
+              h('span', { className: [].join(' ') }, argument.name)),
             argument.optional ? '?: ' : ': ',
             h(TypeExpressionRenderer, { indentationLevel: indentationLevel + 1, expression: argument.value }),
             singleLineFunction ? null : ',',
@@ -167,7 +167,7 @@ const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
 }
 
 export const TypeDocumentation/*: Component<{ expression: TypeExpression }>*/ = ({ expression }) => {
-  return h('code', { className: styles.documentation }, h('pre', {}, [
+  return h('code', { className: [styles.documentation].join(' ') }, h('pre', { className: 'hljs' }, [
     h(TypeExpressionRenderer, { indentationLevel: 0, expression })
   ]));
 }

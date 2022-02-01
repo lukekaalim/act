@@ -30,7 +30,6 @@ code pre {
   margin: 0;
   tab-size: 1em;
 }
-
 code {
   font-size: 16px;
   background-color: #2b2b2b;
@@ -42,6 +41,8 @@ code {
 
   white-space: normal;
   overflow-wrap: break-word;
+
+  margin: 18px 0 18px 0;
 }
 code a {
   color: white;
