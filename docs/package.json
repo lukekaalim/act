@@ -4,6 +4,7 @@
   "type": "module",
   "main": "index.js",
   "devDependencies": {
+    "rollup-plugin-analyzer": "^4.0.0",
     "vite": "^2.6.14"
   },
   "scripts": {
@@ -21,7 +22,11 @@
   },
   "homepage": "https://github.com/lukekaalim/act#readme",
   "dependencies": {
-    "@lukekaalim/act-three": "^5.1.0",
+    "@lukekaalim/act": "*",
+    "@lukekaalim/act-three": "*",
+    "@lukekaalim/act-rehersal": "*",
+    "@lukekaalim/act-curve": "*",
+    "@lukekaalim/act-navigation": "*",
     "flow-parser": "^0.169.0",
     "json5": "^2.2.0"
   }

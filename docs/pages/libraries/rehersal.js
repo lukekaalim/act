@@ -3,7 +3,6 @@
 /*:: import type { Page } from '@lukekaalim/act-rehersal'; */
 /*:: import type { CubicBezier } from '@lukekaalim/act-curve'; */
 import {
-  getBezierP2ForVelocity,
   getBezierVelocityWeights,
 } from "../../../libraries/curve/bezier";
 import { createId, h, useMemo, useState } from '@lukekaalim/act';
@@ -393,31 +392,9 @@ export const rehersalPage/*: Page*/ = {
   ] },
   content: h(Document, {}, [
     h(() => {
-      const [curves, setCurves] = useState/*:: <{ controls: CubicBezier, distance: number }[]>*/([
-        { controls: [0, 0, 0, 0], distance: 0 }
-      ]);
-
-      const [t, setT] = useState(0);
-      const [dest, setDest] = useState(100);
-
-      const onITnput = (e) => {
-        setT(e.target.valueAsNumber);
-      }
-      const onDestInput = (e) => {
-        setDest(e.target.valueAsNumber - 100);
-      }
-
-      const {
-        controls: currentCurveControls,
-        distance: currentCurveDistance
-      } = curves[curves.length - 1];
-
-      const point = getBerenstienCubicPoint(currentCurveControls, t);
-      const velocity = getBezierVelocity(currentCurveControls, t);
-      const p2 = getBezierP2ForVelocity([point, dest, dest], 0, velocity);
-      
       return [
         h(Markdown, { text: rehersalReadmeText }),
+        /*
         h('div', { style: { display: 'flex', flexDirection: 'column' }}, [
           h('input', { type: 'range', min: 0, max: 1, step: 0.01, value: t, onInput: onITnput }),
           h('div', { style: { display: 'flex' } }, [
@@ -442,6 +419,7 @@ export const rehersalPage/*: Page*/ = {
             ]),
           ]),
         ]),
+        */
       ];
     }),
   ])

@@ -1,9 +1,10 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
-import { h, useState } from '@lukekaalim/act';
+import { h, useRef, useState } from '@lukekaalim/act';
+import { useAnimatedList, useBezierAnimation } from '@lukekaalim/act-curve';
 
 export const TodoManager/*: Component<{ initialTasks: string[] }>*/ = ({ initialTasks }) => {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState/*:: <string[]>*/(initialTasks);
 
   const onTaskComplete = (task) => () => {
     setTasks(tasks => tasks.filter(t => t !== task))
@@ -11,6 +12,8 @@ export const TodoManager/*: Component<{ initialTasks: string[] }>*/ = ({ initial
   const onTaskCreate = (newTask) => {
     setTasks(tasks => [...tasks, newTask]);
   }
+
+  const [taskAnimations] = useAnimatedList(tasks, initialTasks);
 
   return [
     h('div', { style: {
@@ -22,32 +25,53 @@ export const TodoManager/*: Component<{ initialTasks: string[] }>*/ = ({ initial
       flexDirection: 'column'
     } }, [
       h('h3', { style: { margin: 0 }}, 'TODO'),
-      h(NewTaskForm, { onCreate: onTaskCreate }),
-      h('ul', { style: { overflow: 'auto', flexGrow: 1, margin: 0 }}, tasks.map(task =>
-        h('li', {}, h(Task, { task, onComplete: onTaskComplete(task) }))))
+      h(NewTaskForm, { onCreate: onTaskCreate, tasks }),
+      h('ul', { style: { overflow: 'auto', flexGrow: 1, margin: 0 }},
+        taskAnimations
+          .sort((a, b) => a.value.localeCompare(b.value))
+          .map(animation =>
+            h(Task, {
+              status: animation.status,
+              task: animation.value,
+              onComplete: onTaskComplete(animation.value)
+            })))
     ])
   ]
 };
 
-const NewTaskForm = ({ onCreate }) => {
+const NewTaskForm = ({ onCreate, tasks }) => {
   const [task, setTask] = useState('');
 
   const onSubmit = (event) => {
     event.preventDefault();
-    onCreate(task);
+    onCreate(task.trim());
     setTask('');
   }
 
+  const disabled = task.trim() === '' || tasks.includes(task.trim());
+
   return h('form', { onSubmit }, [
-    h('input', { type: 'text', value: task, onChange: e => setTask(e.target.value) }),
-    h('button', { type: 'submit' }, '➕ Add Task'),
+    h('input', { type: 'text', value: task, onInput: e => setTask(e.target.value) }),
+    h('button', { type: 'submit', disabled }, '➕ Add Task'),
   ]);
 }
 
-const Task = ({ task, onComplete }) => {
-  return h('div', {}, [
+const Task = ({ task, onComplete, status }) => {
+  const liRef = useRef/*:: <?HTMLLIElement>*/(null);
+
+  useBezierAnimation(status, status => {
+    const { current: li } = liRef;
+    if (!li)
+      return;
+    
+    li.style.opacity = `${1 - Math.abs(status)}`;
+    li.style.maxHeight = `${(1 - Math.abs(status)) * 40}px`;
+    li.style.pointerEvents = status === 0 ? 'auto' : 'none';
+  });
+
+  return h('li', { ref: liRef }, h('div', {}, [
     h('button', { onClick: () => onComplete() }, '✅'),
     ' ',
     task,
-  ]);
+  ]));
 }

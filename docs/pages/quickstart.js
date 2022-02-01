@@ -51,7 +51,7 @@ ${'```'}
 Lets drop in our entrypoints.
 Vite uses html as an entrypoint, so we'll create a file called index.html.
 
-${'```'}
+${'```'}html
 <!DOCTYPE html>
 <html>
   <head>
@@ -67,7 +67,7 @@ ${'```'}
 You can see we also reference a script called entry.js, so lets make that as well.
 
 
-${'```'}
+${'```'}js
 const main = () => {
   // application logic
 };
@@ -83,7 +83,7 @@ Alright, now we have a good basis for making an application. Lets add the act bi
 
 Inside that entry.js, lets create our application component. Lets import "h" to create some basic elements.
 
-${'```'}
+${'```'}js
 import { h } from '@lukekaalim/act';
 
 const Application = () => {

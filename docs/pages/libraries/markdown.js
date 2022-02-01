@@ -67,3 +67,7 @@ export const markdownPage/*: Page*/ = {
     h(Document, { text: usageText })
   ]
 }
+
+export const markdownPages/*: Page[]*/ = [
+  markdownPage,
+];

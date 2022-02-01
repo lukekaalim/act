@@ -5,6 +5,7 @@ import { h, useEffect, useState } from '@lukekaalim/act';
 
 import actReadmeText from '@lukekaalim/act/README.md?raw';
 
+
 import { render } from '@lukekaalim/act-three';
 import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation';
 
@@ -18,8 +19,9 @@ import { quickstartPage } from './pages/quickstart.js';
 import { curvePage, curvePages } from './pages/libraries/curve.js';
 import { SuspensionTest } from './examples/suspension.js';
 import { conceptsPage, conceptsPages } from './pages/concepts';
-import { CurveCubeDemo } from './pages/libraries/rehersal/demos';
+import { CurveCubeDemo } from './examples/demos.js';
 import { TodoManager } from './examples/todo.js';
+import { librariesPage, librariesPages } from './pages/libraries.js';
 
 
 /*::
@@ -43,7 +45,7 @@ const rootPage = {
     quickstartPage.link,
     conceptsPage.link,
     { name: 'Renderers', children: [], href: null },
-    { name: 'Libraries', children: [rehersalPage.link, markdownPage.link, curvePage.link], href: null },
+    librariesPage.link,
     { name: 'Internals', children: [], href: null },
   ] },
   content: h(Document, {}, h(Markdown, { text: actReadmeText, directives }))
@@ -54,10 +56,7 @@ const pages = [
   rootPage,
   quickstartPage,
   ...conceptsPages,
-  ...rehersalPages,
-  ...curvePages,
-  markdownPage,
-  markdownRendererPage
+  ...librariesPages,
 ];
 
 const DocsApp = () => {

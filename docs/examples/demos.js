@@ -1,17 +1,18 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 
-import { h, useState } from "@lukekaalim/act";
+import { h, useRef, useState } from "@lukekaalim/act";
 import { CubeMesh, OrthographicDiorama, PlaneMesh } from "@lukekaalim/act-rehersal";
-import { useAnimatedNumber, useBezierAnimation, Vector2 } from "@lukekaalim/act-curve";
+import { useAnimatedNumber, useBezierAnimation } from "@lukekaalim/act-curve";
 import {
   Vector3,
+  Vector2,
   Color,
   Euler,
 } from "three";
-import cat from './cat.png';
+import cat from './assets/cat.png';
 
-import styles from './demos.module.css';
+import styles from './examples.module.css';
 
 export const CurveCubeDemo/*: Component<>*/ = ({ }) => {
   const [active, setActive] = useState(false)
@@ -53,12 +54,14 @@ export const CurveCubeDemo/*: Component<>*/ = ({ }) => {
 
 
 const ScrollingDigit = ({ value }) => {
-  const [container, setContainer] = useState(); 
+  const [container, setContainer] = useState();
 
-  useCurve(value, value => {
+  const [anim] = useAnimatedNumber(value, 0, { duration: 1000, impulse: 1 });
+
+  useBezierAnimation(anim, value => {
     if (container)
       container.style.transform = `translate(0px, ${-(value % 10) * 20}px)`;
-  })
+  });
 
   return h('div', { className: styles.scrollingDigitWindow }, [
     h('div', { ref: setContainer, className: styles.scrollingDigitContainer }, [
@@ -92,34 +95,35 @@ export const CurveScrollingNumbersDemo/*: Component<>*/ = () => {
 
 
 export const FlippingButtonDemo/*: Component<>*/ = () => {
-  const [value, setValue] = useState(false);
+  const [value, setValue] = useState/*:: <number>*/(0);
 
-  const [onButton, setOnButton] = useState(null);
-  const [offButton, setOffButton] = useState(null);
+  const buttonRef = useRef/*::<?HTMLButtonElement>*/(null);
   const [container, setContainer] = useState(null)
 
-  useCurve(value ? 1 : 0, (value) => {
-    if (!onButton || !offButton || !container)
+  const [anim] = useAnimatedNumber(value, 0, { duration: 500, impulse: 3 });
+  
+  useBezierAnimation(anim, (value) => {
+    const { current: button } = buttonRef;
+    if (!button || !container)
       return;
 
-    onButton.style.opacity = 1-value;
-    offButton.style.opacity = value;
-    onButton.style.pointerEvents = value < 0.5 ? 'all' : 'none';
-    offButton.style.pointerEvents = value > 0.5 ? 'all' : 'none';
-    onButton.style.transform = `rotate3d(0, 1, 0, ${value * 180}deg)`;
-    offButton.style.transform = `rotate3d(0, 1, 0, ${(1-value) * -180}deg)`;
+    button.style.transform = `rotate3d(0, 1, 0, ${(((value * 180) + 90) % 180) - 90}deg)`;
+    button.textContent = Math.round(value).toString();
 
-    container.style.background = `linear-gradient(${180 * value}deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%)`
+    const colorA = `hsl(${Math.floor(value * 20)}, 70%, 70%)`;
+    const colorB = `hsl(${Math.floor((value * 20) + 20)}, 70%, 70%)`;
+    const colorC = `hsl(${Math.floor((value * 20) + 40)}, 70%, 70%)`;
+
+    container.style.background = `linear-gradient(0deg, ${colorA} 0%, ${colorB} 50%, ${colorC} 100%)`
   });
 
   const onClick = () => {
-    setValue(v => !v);
+    setValue(v => v + 1);
   }
 
   return [
     h('div', { ref: setContainer, style: { position: 'relative', width: '360px', height: '190px' }, className: styles.flippingButtonDemo }, [
-      h('button', { ref: setOnButton, className: styles.flippingButton, style: { pointerEvents: value ? 'none' : 'all' }, onClick }, 'Up'),
-      h('button', { ref: setOffButton, className: styles.flippingButton, onClick }, 'Down'),
+      h('button', { ref: buttonRef, className: styles.flippingButton, onClick }),
     ]),
   ]
 };
@@ -135,11 +139,13 @@ export const SlideShowDemo/*: Component<>*/ = () => {
   const [slide, setSlide] = useState(0);
   const [container, setContainer] = useState(null);
 
-  useCurve(slide, (slide) => {
+  const [anim] = useAnimatedNumber(slide, 0, { duration: 1000, impulse: 3 });
+
+  useBezierAnimation(anim, (slide) => {
     if (!container)
       return;
     container.style.transform = `translate(${-slide * 360}px)`;
-  }, { duration: 1000, impulse: 3 })
+  })
 
   return [
     h('div', { className: styles.slideShow, onClick: () => setSlide((slide + 1) % slides.length) }, [
@@ -149,3 +155,18 @@ export const SlideShowDemo/*: Component<>*/ = () => {
     ])
   ]
 };
+
+export const DemosContainer/*: Component<>*/ = () => {
+  return [
+    h('div', { style: { display: 'flex', flexDirection: 'column' } }, [
+      h('div', { style: { display: 'flex', flexDirection: 'row' } }, [
+        h(CurveCubeDemo),
+        h(CurveScrollingNumbersDemo),
+      ]),
+      h('div', { style: { display: 'flex', flexDirection: 'row' } }, [
+        h(FlippingButtonDemo),
+        h(SlideShowDemo),
+      ])
+    ])
+  ]
+}
