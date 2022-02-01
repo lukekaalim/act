@@ -12,6 +12,9 @@ export type MarkdownASTNode = {
   [string]: any,
 };
 
+export type MarkdownComponent<T = MarkdownASTNode> = Component<{ node: T }>
+export type SpreadableMarkdownComponent<T = MarkdownASTNode> = Component<{ node: T, spread?: boolean }>
+
 export type MarkdownDirectiveASTNode = {
   type: 'containerDirective' | 'leafDirective' | 'inlineDirective',
   attributes: { [string]: mixed },
@@ -22,18 +25,18 @@ export type MarkdownDirectiveASTNode = {
 const MarkdownRoot = ({ node }) => {
   return h(MarkdownChildren, { node });
 }
-const MarkdownParagraph = ({ node, spread = true }) => {
+export const MarkdownParagraph/*: SpreadableMarkdownComponent<>*/ = ({ node, spread = true }) => {
   if (!spread)
     return h(MarkdownChildren, { node });
   return h('p', {}, h(MarkdownChildren, { node }));
 }
-const MarkdownText = ({ node }) => {
+export const MarkdownText/*: MarkdownComponent<>*/ = ({ node }) => {
   return node.value;
 }
-const MarkdownEmphasis = ({ node }) => {
+export const MarkdownEmphasis/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('i', {}, h(MarkdownChildren, { node }));
 }
-const MarkdownStrong = ({ node }) => {
+export const MarkdownStrong/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('strong', { }, h(MarkdownChildren, { node }))
 }
 const getHeadingElementType = (node) => {
@@ -49,7 +52,7 @@ const getHeadingElementType = (node) => {
       return 'h4';
   }
 }
-const MarkdownHeading = ({ node }) => {
+export const MarkdownHeading/*: MarkdownComponent<>*/ = ({ node }) => {
   const elementType = getHeadingElementType(node);
   return h(elementType, {}, h(MarkdownChildren, { node }));
 }
@@ -62,11 +65,11 @@ const getListElementType = (node) => {
       return 'ul';
   }
 }
-const MarkdownList = ({ node }) => {
+export const MarkdownList/*: MarkdownComponent<>*/ = ({ node }) => {
   const elementType = getListElementType(node);
   return h(elementType, {}, h(MarkdownChildren, { node }));
 };
-const MarkdownListItem = ({ node }) => {
+export const MarkdownListItem/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('li', {}, [
     node.checked !== null && [
       h('input', { type: 'checkbox', disabled: true, checked: node.checked }),
@@ -74,26 +77,26 @@ const MarkdownListItem = ({ node }) => {
     h(MarkdownChildren, { node, spread: node.spread })
   ]);
 };
-const MarkdownLink = ({ node }) => {
+export const MarkdownLink/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('a', { href: node.url, title: node.title || node.url }, h(MarkdownChildren, { node }));
 };
-const MarkdownCode = ({ node }) => {
-  return h('pre', { className: 'block' }, node.value);
+export const MarkdownCode/*: MarkdownComponent<>*/ = ({ node }) => {
+  return h('code', { className: 'block' }, h('pre', {}, node.value));
 }
-const MarkdownInlineCode = ({ node }) => {
+export const MarkdownInlineCode/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('pre', { className: 'inline', style: { display: 'inline' }}, node.value);
 }
 
-const MarkdownThematicBreak = ({ node }) => {
+export const MarkdownThematicBreak/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('hr', {});
 }
-const MarkdownImage = ({ node }) => {
+export const MarkdownImage/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('img', { src: node.url, alt: node.alt, title: node.title });
 }
-const MarkdownBlockquote = ({ node }) => {
+export const MarkdownBlockquote/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('blockquote', { }, h(MarkdownChildren, { node }))
 }
-const MarkdownDirective = ({ node }) => {
+export const MarkdownDirective/*: MarkdownComponent<>*/ = ({ node }) => {
   const { directiveComponents } = useContext(markdownContext);
 
   const component = directiveComponents[node.name];
@@ -109,6 +112,12 @@ export const MarkdownChildren/*: Component<{ node: MarkdownASTNode, spread?: boo
   return node.children.map(node => h(MarkdownNode, { node, spread }));
 }
 export const MarkdownNode/*: Component<{ node: MarkdownASTNode, spread?: boolean }>*/ = ({ node, spread }) => {
+  const { externalComponents } = useContext(markdownContext);
+  const externalComponent = externalComponents[node.type];
+
+  if (externalComponent)
+    return h(externalComponent, { node });
+  
   switch (node.type) {
     case 'root':
       return h(MarkdownRoot, { node });
@@ -149,27 +158,30 @@ export const MarkdownNode/*: Component<{ node: MarkdownASTNode, spread?: boolean
 };
 
 /*::
-export type DirectiveComponentMap = {
+export type ComponentMap = {
   [string]: Component<{ node: MarkdownASTNode }>
 };
 
 export type MarkdownContext = {
-  directiveComponents: DirectiveComponentMap
+  directiveComponents: ComponentMap,
+  externalComponents: ComponentMap,
 };
 */
 
-const markdownContext = createContext/*:: <MarkdownContext>*/({ directiveComponents: {} });
+const markdownContext = createContext/*:: <MarkdownContext>*/({ directiveComponents: {}, externalComponents: {} });
 
 /*::
 export type MarkdownRendererProps = {
   markdownText: string,
-  directiveComponents?: DirectiveComponentMap
+  directiveComponents?: ComponentMap,
+  externalComponents?: ComponentMap,
 };
 */
 
 export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
   markdownText,
-  directiveComponents = {}
+  directiveComponents = {},
+  externalComponents = {}
 }) => {
   const root = useMemo(
     () => {
@@ -183,7 +195,7 @@ export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
   );
 
   return [
-    h(markdownContext.Provider, { value: { directiveComponents } },
+    h(markdownContext.Provider, { value: { directiveComponents, externalComponents } },
       h(MarkdownNode, { node: root })
     ),
   ];

@@ -19,7 +19,7 @@ of act.
 ::demos
 
 ## Install
-```
+```bash
 npm install @lukekaalim-act
 ```
 
