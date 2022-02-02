@@ -17,7 +17,8 @@
     "url": "https://github.com/lukekaalim/act/issues"
   },
   "homepage": "https://github.com/lukekaalim/act#readme",
-  "dependencies": {
+  "dependencies": {},
+  "peerDependencies": {
     "@lukekaalim/act": "^2.3.0",
     "@lukekaalim/act-reconciler": "^3.0.0"
   }
