@@ -5,7 +5,6 @@
 
 import { createInitialCubicBezierAnimation, interpolateCubicBezierAnimation } from "./bezier.js";
 import { useMemo, useRef } from "@lukekaalim/act";
-import { componentsPage } from "../../docs/pages/libraries/curve.js";
 
 /*::
 export type IndexChangeset = {
