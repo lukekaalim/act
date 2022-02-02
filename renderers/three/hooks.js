@@ -21,12 +21,13 @@ export type WebGLOptions = {
 */
 
 export const useWebGLRenderer = (
-  canvas/*: ?HTMLCanvasElement*/,
+  canvasRef/*: Ref<?HTMLCanvasElement>*/,
   options/*: WebGLOptions*/ = {},
   deps/*: mixed[]*/ = []
 )/*: ?WebGLRenderer*/ => {
   const [renderer, setRenderer] = useState/*:: <?WebGLRenderer>*/(null);
   useEffect(() => {
+    const { current: canvas } = canvasRef; 
     if (!canvas)
       return;
     
@@ -38,7 +39,7 @@ export const useWebGLRenderer = (
       setRenderer(null);
       renderer.dispose();
     }
-  }, [canvas, ...deps]);
+  }, deps);
 
   return renderer;
 };
@@ -46,9 +47,13 @@ export const useWebGLRenderer = (
 // Resize the canvas's resolution whenever it changes size
 // useful for when the canvas is some percentage of the screen
 // like: width: 100%
-export const useResizingRenderer = (canvas/*: ?HTMLCanvasElement*/, renderer/*: ?WebGLRenderer*/)/*: ?Vector2*/ => {
+export const useResizingRenderer = (
+  canvasRef/*: Ref<?HTMLCanvasElement>*/,
+  renderer/*: ?WebGLRenderer*/
+)/*: ?Vector2*/ => {
   const [size, setSize] = useState(null)
   useEffect(() => {
+    const { current: canvas } = canvasRef; 
     if (!canvas || !renderer)
       return null;
     
@@ -67,16 +72,19 @@ export const useResizingRenderer = (canvas/*: ?HTMLCanvasElement*/, renderer/*: 
       observer.unobserve(canvas);
       setSize(null);
     }
-  }, [canvas, renderer]);
+  }, [renderer]);
 
   return size;
 }
 
 export const useAnimationFrame = (
-  onAnimate/*: (now: DOMHighResTimeStamp, delta: number) => mixed*/,
+  onAnimate/*: ?(now: DOMHighResTimeStamp, delta: number) => mixed*/ = null,
   deps/*: mixed[]*/ = []
 ) => {
   useEffect(() => {
+    if (!onAnimate)
+      return;
+    
     let lastFrame = performance.now();
     const animate = (now) => {
       const delta = now - lastFrame;
@@ -96,22 +104,23 @@ export const useAnimationFrame = (
 
 export const useRenderLoop = (
   renderer/*: ?WebGLRenderer*/,
-  camera/*: ?Camera*/,
-  scene/*: ?Scene*/,
+  camera/*: Ref<?Camera>*/,
+  scene/*: Ref<?Scene>*/,
   onAnimate/*: (now: DOMHighResTimeStamp, delta: number) => mixed*/ = (_, __) => {},
   deps/*: mixed[]*/ = []
 ) => {
-  const renderFunction = renderer && camera && scene ? (now, delta) => {
+  const renderFunction = renderer && ((now, delta) => {
     onAnimate(now, delta);
-    renderer.render(scene, camera);
-  } : () => {};
+    if (camera.current && scene.current)
+      renderer.render(scene.current, camera.current);
+  });
 
   useEffect(() => {
-    if (scene && camera && renderer)
-      renderer.render(scene, camera);
-  }, [renderer, camera, scene, ...deps])
+    if (renderFunction)
+      renderFunction(performance.now(), 0);
+  }, [renderer, ...deps])
 
-  useAnimationFrame(renderFunction, [renderer, camera, scene, ...deps])
+  useAnimationFrame(renderFunction, [renderer, ...deps])
 }
 
 /*::
@@ -163,3 +172,6 @@ export const useTexture = (url/*: string*/)/*: Texture*/ => {
   
   return texture;
 };
+
+
+export * from './hooks/matrix.js';
