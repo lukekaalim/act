@@ -8,14 +8,6 @@ import JSON5 from 'json5';
 
 import conceptsText from './concepts.md?raw';
 
-const MarkdownAPI = ({ node: { attributes: { name, source, aliases = '' } }, children }) => {
-  return h(ExportDescription, { name, source, aliases: aliases.split(',').filter(Boolean) }, children);
-};
-const MarkdownTypeDoc = ({ node }) => {
-  const expression = JSON5.parse(node.children[0].children[0].value);
-  return h(TypeDocumentation, { expression });
-};
-
 const HelloExample = () => {
   const greet = () => {
     alert('Hello!');
@@ -58,8 +50,8 @@ export const conceptsPage/*: Page*/ = {
   },
   content: h(Document, {}, [
     h(Markdown, { text: conceptsText, directives: {
-      'api': MarkdownAPI,
-      'type': MarkdownTypeDoc,
+      //'api': MarkdownAPI,
+      //'type': MarkdownTypeDoc,
       'hello_example': HelloExample,
       //'component_diagram': ComponentDiagram,
     } }),

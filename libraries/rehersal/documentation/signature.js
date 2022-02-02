@@ -6,7 +6,7 @@ import styles from './documentation.module.css';
 import { FragmentAnchorHeading } from './headings';
 import linkIconSrc from './icons8-link-30.png';
 import { TypeDocumentation } from "./typedoc.js";
-/*:: import type { TypeExpression } from "./typedoc"; */
+/*:: import type { TypeExpression, TypeStatement } from "./typedoc"; */
 
 /*::
 type FunctionTypeArgument = {
@@ -52,7 +52,7 @@ export type ExportDescriptionProps = {
   name: string,
   source?: string,
   aliases?: string[],
-  type?: TypeExpression,
+  type?: TypeStatement,
   summary?: Node,
 }
 
@@ -176,8 +176,8 @@ const AliasDescription = ({ name, aliases = [], source = null }) => {
 const DetailedTypeDescription = ({ type, name }) => {
   switch (type.type) {
     case 'function':
-      return h(TypeDocumentation, { expression: type });
-    case 'object':
+    case 'expression':
+      return h(TypeDocumentation, { statement: type });
     default:
       throw new Error();
   }
@@ -193,7 +193,7 @@ export const ExportDescription/*: Component<ExportDescriptionProps>*/ = ({
 }) => {
   return h('section', { className: styles.signature }, [
     h(FragmentAnchorHeading, { fragment: name }, name),
-    source && h(AliasDescription, { name, source, aliases }),
+    //source && h(AliasDescription, { name, source, aliases }),
     type && h(DetailedTypeDescription, { type, name }),
     summary && [
       h('hr'),

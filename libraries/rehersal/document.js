@@ -21,8 +21,8 @@ const MarkdownAPI = ({ node: { attributes: { name, source, aliases = '' } }, chi
 };
 const MarkdownTypeDoc = ({ node }) => {
   const jsonContent = node.children[0].value || node.children[0].children[0].value;
-  const expression = JSON5.parse(jsonContent);
-  return h(TypeDocumentation, { expression });
+  const statement = JSON5.parse(jsonContent);
+  return h(TypeDocumentation, { statement });
 };
 
 const SyntaxMarkdownCode = ({ node }) => {

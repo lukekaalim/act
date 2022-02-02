@@ -1,8 +1,8 @@
 // @flow strict
-/*:: import type { Component } from '@lukekaalim/act'; */
+/*:: import type { Component, ElementNode } from '@lukekaalim/act'; */
 /*:: import type { MeshProps, OrthographicCameraProps } from '@lukekaalim/act-three'; */
-import { h, useState } from "@lukekaalim/act";
-import { LookAtGroup, useDisposable, useRenderLoop, useWebGLRenderer } from "@lukekaalim/act-three";
+import { h, useRef, useState } from "@lukekaalim/act";
+import { LookAtGroup, useDisposable, useLookAt, useRenderLoop, useWebGLRenderer } from "@lukekaalim/act-three";
 
 import * as THREE from "@lukekaalim/act-three";
 import {
@@ -57,34 +57,42 @@ export const PlaneMesh/*: Component<{ ...MeshProps, size: Vector2, color: Color 
 export type OrthographicDioramaProps = {
   cameraProps?: OrthographicCameraProps,
   canvasProps?: { [string]: mixed },
+  canvasChildren?: ElementNode,
 };
 */
 
-export const OrthographicDiorama/*: Component<OrthographicDioramaProps>*/ = ({ children, cameraProps = {}, canvasProps = {} }) => {
-  const [scene, setScene] = useState(null);
-  const [camera, setCamera] = useState(null);
-  const [canvas, setCanvas] = useState(null);
+export const OrthographicDiorama/*: Component<OrthographicDioramaProps>*/ = ({
+  children,
+  cameraProps = {},
+  canvasProps = {},
+  canvasChildren = null
+}) => {
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const canvasRef = useRef(null);
 
-  const renderer = useWebGLRenderer(canvas, { clearColor: 'white', antialias: true, shadowMap: { enabled: true } });
-  useRenderLoop(renderer, camera, scene);
+  const renderer = useWebGLRenderer(canvasRef, { clearColor: 'white', antialias: true, shadowMap: { enabled: true } });
+  useRenderLoop(renderer, cameraRef, sceneRef, () => {}, [renderer]);
+
+  useLookAt(cameraRef, new Vector3(0, 0, 0), [renderer]);
 
   return [
-    h('canvas', { ...canvasProps, ref: setCanvas }),
-    h(THREE.scene, { ref: setScene, }, [
-      h(LookAtGroup, { target: new Vector3(0, 0, 0), position: new Vector3(50, 50, 50) }, [
-        h(THREE.orthographicCamera, {
-          ...cameraProps,
-          ref: setCamera,
-          
-          zoom: 3,
-          aspect: 380/190,
+    h('canvas', { ...canvasProps, ref: canvasRef }),
+    // dont bother loading the scene if the renderer isn't loaded
+    !!renderer && h(THREE.scene, { ref: sceneRef }, [
+      h(THREE.orthographicCamera, {
+        ...cameraProps,
+        position: new Vector3(50, 60, 50),
+        ref: cameraRef,
+        
+        zoom: 3,
+        aspect: 380/190,
 
-          left: -100,
-          right: 100,
-          top: 50,
-          bottom: -50,
-        }),
-      ]),
+        left: -100,
+        right: 100,
+        top: 50,
+        bottom: -50,
+      }),
       h(THREE.ambientLight, { intensity: 0.8 }),
       h(THREE.directionalLight, {
         position: new Vector3(20, 100, 80),

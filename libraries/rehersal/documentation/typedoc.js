@@ -41,6 +41,20 @@ export type FunctionTypeExpression = {
   }[]
 }
 
+export type FunctionDeclarationStatement = {
+  ...FunctionTypeExpression,
+  name: string,
+};
+export type ExpressionDeclarationStatement = {
+  type: 'expression',
+  expression: TypeExpression
+};
+export type AssignmentStatement = {
+  type: 'assignment',
+  name: string,
+  value: TypeExpression,
+};
+
 export type UnionTypeExpression = {
   type: 'union',
 
@@ -64,6 +78,11 @@ export type TypeExpression =
   | UnionTypeExpression
   | ArrayTypeExpression
   | TupleTypeExpression
+
+export type TypeStatement =
+  | FunctionDeclarationStatement
+  | ExpressionDeclarationStatement
+  | AssignmentStatement
 */
 
 const NewLine = ({ indentationLevel }) => {
@@ -166,8 +185,56 @@ const TypeExpressionRenderer = ({ indentationLevel, expression }) => {
   }
 }
 
-export const TypeDocumentation/*: Component<{ expression: TypeExpression }>*/ = ({ expression }) => {
-  return h('code', { className: [styles.documentation].join(' ') }, h('pre', { className: 'hljs' }, [
-    h(TypeExpressionRenderer, { indentationLevel: 0, expression })
+const TypeStatementRenderer = ({ indentationLevel, statement }) => {
+  switch (statement.type) {
+    case 'function':
+      const singleLineFunction = statement.arguments.length === 0;
+      return [
+        h('span', { className: 'hljs-keyword' }, 'function'),
+        ' ',
+        h('span', { className: 'hljs-title function' }, statement.name),
+        statement.genericArguments && statement.genericArguments.length > 0 && ([
+          '<',
+          statement.genericArguments.map((generic, index) => [
+            h(LinkWrapper, { href: generic.referenceURL },
+              h('span', { className: [].join() }, generic.name)),
+            generic.restriction ?
+              [
+                ': ',
+                h(TypeExpressionRenderer, { indentationLevel: indentationLevel + 1, expression: generic.restriction })
+              ] : null,
+            index === (statement.genericArguments || []).length - 1 ? null : ', ',
+          ]),
+          '>'
+        ]) || null,
+        '(',
+        statement.arguments.map(argument => [
+          singleLineFunction ? null : h(NewLine, { indentationLevel: indentationLevel + 1 }),
+          h(LinkWrapper, { href: argument.referenceURL },
+            h('span', { className: [].join(' ') }, argument.name)),
+          argument.optional ? '?: ' : ': ',
+          h(TypeExpressionRenderer, { indentationLevel: indentationLevel + 1, expression: argument.value }),
+          singleLineFunction ? null : ',',
+        ]),
+        singleLineFunction ? null : h(NewLine, { indentationLevel }),
+        '): ',
+        h(TypeExpressionRenderer, { indentationLevel, expression: statement.returns })
+      ]
+    case 'expression':
+      return h(TypeExpressionRenderer, { indentationLevel, expression: statement.expression })
+    case 'assignment':
+      return [
+        h('span', { className: 'hljs-keyword' }, 'type'),
+        ' ',
+        h('span', { className: 'hljs-title class_' }, statement.name),
+        ' = ',
+        h(TypeExpressionRenderer, { indentationLevel, expression: statement.value })
+      ]
+  }
+}
+
+export const TypeDocumentation/*: Component<{ statement: TypeStatement }>*/ = ({ statement }) => {
+  return h('code', { className: styles.documentation }, h('pre', { className: 'hljs' }, [
+    h(TypeStatementRenderer, { indentationLevel: 0, statement })
   ]));
 }

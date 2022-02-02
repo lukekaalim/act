@@ -14,19 +14,14 @@ For greater control, take a look a writing your own reducers or editing animatio
 
 ::::api{name=useAnimatedNumber}
 ```ts
-import { useCurve } from '@lukekaalim/act-curve';
-
-declare function useCurve(
-  value: number,
-  inital?: number,
-  options?: AnimatedNumberOptions
-): CubicBezierAnimation
+import { useAnimatedNumber } from '@lukekaalim/act-curve';
 ```
 
 :::type
 ```
 {
   type: "function",
+  name: "useAnimatedNumber",
   arguments: [
     { name: "value", value: { type: "opaque", name: "number" } },
     { name: "initial", optional: true, value: { type: "opaque", name: "number" } },
@@ -57,6 +52,7 @@ import { useAnimatedList } from '@lukekaalim/act-curve';
 ```
 {
   type: "function",
+  name: "useAnimatedList",
   genericArguments: [
     { name: "T" },
   ],

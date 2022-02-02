@@ -27,20 +27,19 @@
 }
 
 code pre {
-  margin: 0;
+  padding: 1em;
   tab-size: 1em;
+  overflow: auto;
+  margin: 0;
 }
 code {
   font-size: 16px;
-  background-color: #2b2b2b;
-  color: white;
-  padding: 1em;
+
   box-sizing: border-box;
   display: block;
-  border-radius: 5px;
 
-  white-space: normal;
-  overflow-wrap: break-word;
+  border-radius: 5px;
+  overflow: hidden;
 
   margin: 18px 0 18px 0;
 }
@@ -76,10 +75,6 @@ code a:visited {
   display: inline;
 }
 
-.syntaxHighlighted {
-  border: 1px dotted black;
-}
-
 code.documentation .identifier,
 code.documentation .identifier a {
   color: var(--identifier_color, rgb(172, 199, 240));
@@ -95,4 +90,8 @@ code.documentation .literal {
 code.documentation .name,
 code.documentation .name a {
   color: var(--name_color, rgb(240, 191, 172));
+}
+
+code.documentation :global(.hljs-comment) {
+  color: white;
 }

@@ -61,6 +61,11 @@ As mentioned, there is one main function that act exports for element creation.
 
 ::::api{source=@lukekaalim/act aliases=h name=createElement}
 
+```ts
+import { h, createElement } from '@lukekaalim/act';
+// aliases: h
+```
+
 > #### Why the `h()` alias?
 >
 > It's just shorter, and kind of conventional to [Preact](https://preactjs.com/),
@@ -131,14 +136,18 @@ asks for an Element.
 
 :::type{format=json5}
 {
-  type: "union",
-  values: [
-    { type: 'opaque', name: 'string' },
-    { type: 'opaque', name: 'number' },
-    { type: 'opaque', name: 'null' },
-    { type: 'opaque', name: 'ElementNode' },
-    { type: 'array', element: { type: 'opaque', name: 'Element', referenceURL: '#Element' } },
-  ]
+  type: "assignment",
+  name: "Element",
+  value: {
+    type: "union",
+    values: [
+      { type: 'opaque', name: 'string' },
+      { type: 'opaque', name: 'number' },
+      { type: 'opaque', name: 'null' },
+      { type: 'opaque', name: 'ElementNode' },
+      { type: 'array', element: { type: 'opaque', name: 'Element', referenceURL: '#Element' } },
+    ]
+  }
 }
 :::
 
@@ -148,7 +157,7 @@ argument to the [createElement](#createElement) function.
 As to what an `Element` literally is, you can put a string literal, number, null, or even a recursive array of those previous values.
 
 A valid "Element" using this logic can look like:
-```
+```ts
 const exampleElement = [
   'A standard string',
   `Then we have this template ${value}`,

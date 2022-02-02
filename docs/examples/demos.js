@@ -1,5 +1,6 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
+/*:: import type { Mesh } from "three"; */
 
 import { h, useRef, useState } from "@lukekaalim/act";
 import { CubeMesh, OrthographicDiorama, PlaneMesh } from "@lukekaalim/act-rehersal";
@@ -15,31 +16,33 @@ import cat from './assets/cat.png';
 import styles from './examples.module.css';
 
 export const CurveCubeDemo/*: Component<>*/ = ({ }) => {
+  const meshRef = useRef/*:: <?Mesh>*/(null)
   const [active, setActive] = useState(false)
-  const [mesh, setMesh] = useState(null);
+  const [showInstruction, setShowInstruction] = useState(true);
 
   const [animation] = useAnimatedNumber(active ? 1 : 0, 0, { duration: 1000, impulse: 3 });
 
   useBezierAnimation(animation, y => {
+    const { current: mesh } = meshRef;
     if (!mesh)
       return;
-    mesh.position.set(0, 5 + (y * 15), 0);
+    mesh.position.set(10, 5 + (y * 15), 10);
     mesh.rotation.set(0, y * Math.PI * 2, 0);
   })
 
   const onCanvasClick = () => {
     setActive(!active);
+    //setShowInstruction(false);
   };
   
   return [
     h(OrthographicDiorama, {
       canvasProps: { width: 360, height: 190, onClick: onCanvasClick },
-      cameraProps: { position: new Vector3(0, 10, 0) }
     }, [
       h(CubeMesh, {
         size: 10,
         color: new Color('rgb(128, 179, 238)'),
-        ref: setMesh,
+        ref: meshRef,
         castShadow: true
       }),
       h(PlaneMesh, {

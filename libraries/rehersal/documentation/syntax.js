@@ -23,6 +23,8 @@ const getLanguageName = (languageKey) => {
 }
 
 const registerAndHighlight = async (element, languageName) => {
+  const id = Math.floor(Math.random() * 1000).toString();
+  performance.mark(`${id} - ${languageName} - start`);
   if (languageName && languageName !== '' && !hljs.getLanguage(languageName)) {
     try {
       // $FlowFixMe
@@ -38,13 +40,12 @@ const registerAndHighlight = async (element, languageName) => {
   } catch (error) {
     console.error(error);
   }
-  console.log('CODE BLOCK HIGHLIGHT DONE')
+  performance.mark(`${id} - ${languageName} - end`);
+  performance.measure(id, `${id} - ${languageName} - start`, `${id} - ${languageName} - end`);
 };
 
 export const useSyntaxHighlight = (ref/*: Ref<?HTMLElement>*/, code/*: string*/, language/*: string*/ = '') => {
   useEffect(() => {
-    console.log('HIGHLIGHT CODE BLOCK');
-
     const parent = ref.current;
     if (!parent)
       return;
@@ -72,7 +73,6 @@ export const useSyntaxHighlight = (ref/*: Ref<?HTMLElement>*/, code/*: string*/,
 
 export const SyntaxCode/*: Component<{ code: string, language: string }>*/ = ({ code, language }) => {
   const ref = useRef/*:: <?HTMLElement>*/();
-
   useSyntaxHighlight(ref, code, language);
 
   return h('code', { className: [styles.syntaxHighlighted].join(' '), ref });
