@@ -5,6 +5,8 @@
 /*:: import type { BoundaryService } from './boundary.js'; */
 import { createElement, createId } from '@lukekaalim/act';
 
+import { calculateIndexChanges } from './util.js';
+
 /*::
 export type CommitID = string;
 export type CommitPath = CommitID[];
@@ -28,15 +30,6 @@ export type Commit = {
   children: $ReadOnlyArray<Commit>,
 };
 */
-export const emptyCommit/*: Commit*/ = {
-  id: createId(),
-  path: [],
-  version: createId(),
-  element: createElement('act:dead'),
-  children: [],
-  pruned: true,
-  suspension: null,
-};
 
 /*::
 export type CommitDiff = {|
@@ -44,144 +37,192 @@ export type CommitDiff = {|
   +next: Commit,
   +diffs: $ReadOnlyArray<CommitDiff>,
 |}
-*/
 
-/*::
 export type BranchState = {|
   path: CommitPath,
-  context: Map<ContextID, ContextState<mixed>>,
+  context: { [id: ContextID]: ContextState<any> },
 |};
 
-export type StateChange =
-  | {| +ref: CommitRef, +prev: Commit |};
-export type CreateElementChange = {| +element: Element, +prev: null |};
-export type UpdateElementChange = {| +element: Element, +prev: Commit |};
-export type RemoveElementChange = {| +element: null, +prev: Commit |};
-export type ElementChange =
-  | CreateElementChange
-  | UpdateElementChange
-  | RemoveElementChange
-export type Change =
-  | ElementChange
-  | StateChange
-
-export type TraversalResult = {
-  suspension: null | Suspension,
-  children: $ReadOnlyArray<Element>,
-  branch: BranchState,
+export type Change = {
+  targets: CommitRef[],
+  prev: Commit,
+  element?: ?Element
 };
 
 export type CommitService = {|
   render: (change: Change, branch?: BranchState) => CommitDiff,
 |};
 */
+
 export const emptyBranchState/*: BranchState*/ = {
   path: [],
-  context: new Map(),
+  context: {}
 };
-export const emptyTraversalResult/*: TraversalResult*/ = {
+export const createEmptyCommit = (branch/*: BranchState*/ = emptyBranchState)/*: Commit*/ => ({
+  id: createId(),
+  path: branch.path,
+  version: createId(),
+  element: deadElement,
   children: [],
-  branch: emptyBranchState,
+  pruned: true,
   suspension: null,
-};
+});
+const deadElement = createElement('act:dead');
 
-export const calculateChanges = (
-  change/*: Change*/,
-  { children }/*: TraversalResult*/,
-)/*: Change[]*/ => {
-  if (!change.prev)
-    return children.map(element => ({ element, prev: null }));
-  // assume no changes if we're just doing a state climb
-  if (change.ref && change.ref.id !== change.prev.id)
-    return change.prev.children.map(prev => ({ ...change, prev }));
-  if (change.element === null)
-    return change.prev.children.map(prev => ({ element: null, prev }));
-
-  const keyIndices = new Map(children.filter(t => t.props.key).map((t, i) => [t.props.key, i]));
-
-  const nextCommits = new Map();
-  const removedChanges = [];
-
-  for (let index = 0; index < change.prev.children.length; index++) {
-    const prev = change.prev.children[index];
-    const keyIndex = keyIndices.get(prev.element.props.key);
-    const elementByKey = (keyIndex !== undefined) && children[keyIndex];
-    const elementByIndex = !prev.element.props.key && children[index];
-
-    if (elementByKey && !nextCommits.has(keyIndex) && elementByKey.type === prev.element.type)
-      nextCommits.set(keyIndex, prev);
-    else if (elementByIndex && !nextCommits.has(index) && elementByIndex.type === prev.element.type)
-      nextCommits.set(index, prev);
-    else
-      removedChanges.push({ element: null, prev });
-  }
-
-  const changes = [
-    ...removedChanges,
-    ...children.map((element, index) => ({ element, prev: nextCommits.get(index) || null }/*: any*/)),
-  ]
-
-  return changes;
-};
 
 export const createCommitService = (
   componentService/*: ComponentService*/,
   contextService/*: ContextService*/,
   boundaryService/*: BoundaryService*/,
 )/*: CommitService*/ => {
-  const traverse = (ref/*: CommitRef*/, change/*: Change*/, branch/*: BranchState*/)/*: TraversalResult*/ => {
-    const { type } = change.element || change.prev.element;
-    const childrenTraversalResult = {
-      children: change.element ? change.element.children : [],
-      suspension: null,
-      branch: { ...branch, path: [...branch.path, ref.id] }
-    };
-    switch (type) {
-      case 'act:boundary':
-        return childrenTraversalResult;
-      case 'act:context':
-        return contextService.traverse(ref, change, branch);
-      case 'act:string':
-      case 'act:null':
-        return emptyTraversalResult;
-    }
-    switch (typeof type) {
-      case 'string':
-        return childrenTraversalResult;
-      case 'function':
-        return componentService.traverse(ref, change, branch);
-    }
-    throw new Error('Don\'t know how to traverse element of this type');
+
+  const elementHasKey = (element) => {
+    return (
+      typeof element.props.key !== 'undefined' &&
+      element.props.key !== null
+    )
+  }
+  
+  const isEqual = ([commitIndex, commit], [elementIndex, element]) => {
+    const prevHasKey = elementHasKey(commit.element);
+    const nextHasKey = elementHasKey(element);
+  
+    const isSameElement = commit.element.id === element.id;
+    const isSameType = commit.element.type === element.type;
+    const isSameKey = commit.element.props.key === element.props.key;
+    const isSameIndex = commitIndex === elementIndex;
+  
+    return (
+      isSameType && (
+        isSameElement ||
+        (prevHasKey && nextHasKey) ?
+          isSameKey : (prevHasKey || nextHasKey) ?
+            false : isSameIndex
+      )
+    );
   };
-  const render = (change/*: Change*/, branch/*: BranchState*/ = emptyBranchState)/*: CommitDiff*/ => {
-    const ref = change.prev || { id: createId(), path: branch.path };
+
+  const calculateChanges = (prev, next)/*: [Element, ?Commit][]*/ => {
+    const { moved, persisted, removed } = calculateIndexChanges(
+      prev.map((c, i) => [i, c]),
+      next.map((e, i) => [i, e]),
+      isEqual
+    );
+    const nextCommitByIndex = new Map([
+      ...persisted.map(nextIndex => [nextIndex, prev[nextIndex]]),
+      ...moved.map(([prevIndex, nextIndex]) => [nextIndex, prev[prevIndex]])
+    ])
+  
+    return [
+      ...next.map((next, index) => [next, nextCommitByIndex.get(index) || null]),
+      ...removed.map(index => [deadElement, prev[index]])
+    ];
+  };
+
+  const calculateNextBranch = (prevBranch, prevCommit, element) => {
+    if (!element)
+      return prevBranch;
     
-    if (change.ref && change.ref.id !== ref.id && !change.ref.path.includes(ref.id))
-      return { prev: change.prev, next: change.prev, diffs: [] };
+    const path = [...prevBranch.path, prevCommit.id];
+    const branchWithPath = { ...prevBranch, path };
+    switch (element.type) {
+      case 'act:context':
+        return contextService.calculateNextBranch(element, branchWithPath);
+      default:
+        return branchWithPath;
+    }
+  };
+  const calculateNextChildren = (commit, element, branch) => {
+    const type = element ? element.type : commit.element.type;
+  
+    switch (typeof type) {
+      case 'function':
+        return componentService.calculateNextChildren(commit, element, branch);
+      case 'string':
+        if (!element)
+          return [[], null];
+        return [element.children, null];
+      default:
+        throw new Error(`Don't know how to traverse element of this type`);
+    }
+  };
 
-    if (change.element && change.prev && change.prev.element.id === change.element.id)
-      return { prev: change.prev, next: change.prev, diffs: [] };
+  const remove = (prev) => {
+    if (typeof prev.element.type === 'function')
+      componentService.teardownComponent(prev);
+  
+    const diffs = prev.children.map(remove);
 
-    const result = traverse(ref, change, branch);
+    const next = {
+      ...prev,
+      version: createId(),
+      pruned: true,
+      children: [],
+    };
+    return { prev, next, diffs };
+  }
+  const skip = (prev) => {
+    return { prev, next: prev, diffs: [] };
+  }
+  const climb = (prev, targets, branch) => {
+    const nextBranch = calculateNextBranch(branch, prev, prev.element);
+    const diffs = prev.children.map(prev =>
+      render({ prev, targets }, nextBranch));
 
-    const changes = calculateChanges(change, result);
-    const diffs = changes.map(change =>
-      render(change, { ...result.branch, path: [...result.branch.path, ref.id] }));
+    const commit = {
+      ...prev,
+      version: createId(),
+      children: diffs.map(d => d.next).filter(c => !c.pruned),
+    };
+    return { prev, next: commit, diffs };
+  };
 
+  const render = ({ prev, element, targets }/*: Change*/, branch/*: BranchState*/ = emptyBranchState)/*: CommitDiff*/ => {
+    
+    const depth = branch.path.length;
+    const isTarget = targets.find(target => target.id === prev.id);
+
+    const newElement = element && (element.id !== prev.element.id);
+    const destroyingElement = element && element.type === 'act:dead';
+
+    const validTargets = targets.filter(ref => ref.path[depth] === prev.id);
+
+    const requiresRender = newElement || destroyingElement || isTarget;
+
+    if (!requiresRender)
+      if (validTargets.length === 0)
+        return skip(prev);
+      else
+        return climb(prev, validTargets, branch);
+
+    if (destroyingElement)
+      return remove(prev);
+
+    const nextElement = element || prev.element;
+
+    const nextBranch = calculateNextBranch(branch, prev, nextElement);
+    const [nextChildren, nextSuspension] = calculateNextChildren(prev, nextElement, nextBranch);
+
+    const prevChildren = calculateChanges(prev.children, nextChildren)
+
+    const diffs = prevChildren.map(([element, commit]) =>
+      render({ element, prev: commit || createEmptyCommit(nextBranch), targets: validTargets }, nextBranch));
+
+      /*
     const boundaryDiff = boundaryService.tryBoundaryCommit(ref, change, diffs, branch, render);
     if (boundaryDiff)
       return boundaryDiff;
-
+*/
     const next = {
-      ...ref,
+      ...prev,
+      pruned: false,
       version: createId(),
-      element: change.element || change.prev.element,
-      // $FlowFixMe[prop-missing]
-      pruned: change.element === null,
-      suspension: result.suspension || diffs.map(d => d.next.suspension).find(Boolean) || null,
+      element: nextElement,
+      //suspension: result.suspension || diffs.map(d => d.next.suspension).find(Boolean) || null,
       children: diffs.map(d => d.next).filter(c => !c.pruned)
     };
-    return { prev: change.prev || emptyCommit, next, diffs };
+
+    return { prev, next, diffs };
   };
 
   return {

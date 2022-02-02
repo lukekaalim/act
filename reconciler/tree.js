@@ -3,46 +3,52 @@
 
 /*:: import type { ContextState } from './context.js'; */
 /*:: import type { ComponentState } from './component.js'; */
-/*:: import type { CommitID, CommitDiff, UpdateElementChange } from './commit2.js'; */
-/*:: import type { ScheduleFunction } from './schedule.js'; */
+/*:: import type { CommitID, CommitDiff } from './commit2.js'; */
+/*:: import type { ScheduleFunction, CancelFunction } from './schedule.js'; */
 
 import { createBoundaryService } from "./boundary.js";
-import { createCommitService } from "./commit2.js";
+import { createCommitService, createEmptyCommit } from "./commit2.js";
 import { createComponentService } from "./component.js";
 import { createContextService } from "./context.js";
 import { createScheduler } from "./schedule.js";
 
 /*::
-
-export type TreeOptions = {
+export type TreeOptions<T> = {
   onDiff?: CommitDiff => mixed,
-  scheduleWork?: ScheduleFunction,
+  scheduleWork: ScheduleFunction<T>,
+  cancelWork: CancelFunction<T>,
 };
 */
 
-export const createTree = (
+export const createTree = /*:: <T>*/(
   element/*: Element*/,
-  options/*: TreeOptions*/ = {}
+  options/*: TreeOptions<T>*/ = {}
 ) => {
   const {
     onDiff = (d) => {},
-    scheduleWork = (s) => setTimeout(s, 0)
+    scheduleWork,
+    cancelWork,
   } = options;
 
-  const render = (ref) => {
-    const renderDiff = commit.render({ ref, prev });
+  const render = (targets) => {
+    const renderDiff = commit.render({ targets, prev });
     prev = renderDiff.next;
+    
+    if (prev.suspension)  
+      throw prev.suspension.value;
+
     onDiff(renderDiff);
   };
 
-  const schedule = createScheduler(render, scheduleWork);
+  const schedule = createScheduler(render, scheduleWork, cancelWork);
   const component = createComponentService(schedule);
   const context = createContextService(schedule);
   const boundary = createBoundaryService();
   const commit = createCommitService(component, context, boundary);
 
-  const initDiff = commit.render({ element, prev: null });
+  const initDiff = commit.render({ element, prev: createEmptyCommit(), targets: [] });
   let prev = initDiff.next;
   onDiff(initDiff);
+
   schedule.flushSync();
 };

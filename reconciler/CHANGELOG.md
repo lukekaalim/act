@@ -2,6 +2,10 @@
 
 ## [Unreleased]
   - Update internal hook types to be more permissible
+  - [Major] Require "cancelWork" for tree constructor
+  - Internal refactor to simplify context rendering and state climbing
+  - Use "act:dead" as special internal component for signifying elements to delete.
+  - Rollback boundary support for now
 
 ## [2.1.0]
  - Started Changelog Tracking

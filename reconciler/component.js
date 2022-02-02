@@ -2,7 +2,7 @@
 /*:: import type { Element, FunctionComponent, Props, UseState, Context } from '@lukekaalim/act'; */
 /*:: import type { SetValue, Updater, Deps, Hooks, ContextID } from '@lukekaalim/act'; */
 
-/*:: import type { BranchState, TraversalResult, Commit, Change, CommitRef, CommitID, CommitPath } from './commit2.js'; */
+/*:: import type { BranchState, Commit, Change, CommitRef, CommitID, CommitPath, Suspension } from './commit2.js'; */
 /*:: import type { Scheduler, EffectID } from './schedule.js'; */
 /*:: import type { ContextState } from './context.js'; */
 
@@ -24,7 +24,8 @@ export type ComponentState = {
 };
 
 export type ComponentService = {
-  traverse: (ref: CommitRef, change: Change, branch: BranchState) => TraversalResult,
+  calculateNextChildren: (commit: Commit, element: Element, branch: BranchState) => [Element[], ?Suspension],
+  teardownComponent: (commit: Commit) => void,
 };
 */
 
@@ -53,6 +54,7 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
           return;
         hook.value = nextHookValue;
         scheduler.scheduleChange(state.ref);
+        scheduler.scheduleFlush();
       };
     
       const hook = {
@@ -83,29 +85,29 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
       };
       effect.deps = newDeps;
       scheduler.scheduleEffect({ id: effect.id, priority: 'sync', run });
+      scheduler.scheduleFlush();
       key++;
       return;
     }
     const useContext = /*:: <T>*/(context/*: Context<T>*/)/*: T*/ => {
-      const contextState = branch.context.get(context.contextId);
-      if (!contextState)
+      const state = branch.context[context.contextId];
+
+      if (!state)
         return context.defaultValue;
 
-      state.subscriptions.set(context.contextId, contextState);
-      contextState.subscribers.set(state.ref.id, state.ref);
-  
-      return (contextState.value/*: any*/);
+      return state.value;
     };
   
     // $FlowFixMe[prop-missing]
     return { useState, useEffect, useContext };
   }
-  const teardownHooks = (state/*: ComponentState*/, branch) => {
+  const teardownHooks = (state) => {
     for (const [, { id, cleanup }] of state.effects)
-      if (cleanup)
-        scheduler.scheduleEffect({ id, priority: 'sync', run: () => void cleanup() })
-    for (const [, s] of state.subscriptions)
-      s.subscribers.delete(state.ref.id);
+      if (cleanup) {
+        scheduler.scheduleEffect({ id, priority: 'sync', run: () => void cleanup() });
+      }
+    if (state.effects.size > 0)
+      scheduler.scheduleFlush();
     
     componentStates.delete(state.ref.id);
   }
@@ -137,7 +139,7 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
   const traverse = (ref, change, branch) => {
     const state = componentStates.get(ref.id) || createNewComponentState(ref);
     if (change.element === null) {
-      teardownHooks(state, branch);
+      teardownHooks(state);
       return { children: [], branch, suspension: null };
     }
     const [children, error] = renderComponent(state, change.element || change.prev.element, branch);
@@ -155,7 +157,24 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
     };
   };
 
+  const calculateNextChildren = (commit, element, branch) => {
+    const state = componentStates.get(commit.id) || createNewComponentState(commit);
+    if (element.type === 'act:dead') {
+      teardownHooks(state);
+      return [[], null];
+    }
+    const [children, error] = renderComponent(state, element, branch);
+
+    return [children || [], { ref: commit, value: error }];
+  }
+  const teardownComponent = (commit) => {
+    const state = componentStates.get(commit.id);
+    if (state)
+      teardownHooks(state);
+  }
+
   return {
-    traverse,
+    calculateNextChildren,
+    teardownComponent,
   };
 };

@@ -13,57 +13,59 @@ export type Effect = {
   run: () => void,
 };
 
-export type ScheduleFunction = (callback: () => mixed) => mixed
+export type ScheduleFunction<TCancelToken> = (callback: () => mixed) => TCancelToken;
+export type CancelFunction<TCancelToken> = (token: TCancelToken) => mixed;
 
 export type Scheduler = {
   scheduleEffect: (effect: Effect) => void,
   scheduleChange: (ref: CommitRef) => void,
   flushSync: () => void,
+  scheduleFlush: () => void,
 };
 */
 
-export const createScheduler = (
-  render/*: CommitRef => void*/,
-  schedule/*: ScheduleFunction*/
+export const createScheduler = /*:: <T>*/(
+  render/*: (targets: CommitRef[]) => void*/,
+  schedule/*: ScheduleFunction<T>*/,
+  cancel/*: CancelFunction<T>*/,
 )/*: Scheduler*/ => {
-  let state/*: 'idle' | 'working' | 'pending'*/ = 'idle';
+  let token = null;
 
   const pendingChanges = new Map();
+  const pendingEffects = new Map();
+
   const scheduleChange = (ref) => {
     pendingChanges.set(ref.id, ref);
-    if (state === 'pending')
-      return;
-    schedule(flushSync);
-    if (state === 'idle')
-      state = 'pending';
   };
-  const pendingEffects = new Map();
   const scheduleEffect = (effect) => {
     pendingEffects.set(effect.id, effect);
-    if (state === 'idle') {
-      state = 'pending';
-      schedule(flushSync);
-    }
   };
 
+  const scheduleFlush = () => {
+    if (token === null) {
+      token = schedule(flushSync);
+    }
+  }
+
   const flushSync = () => {
-    state = 'working';
+    if (token)
+      cancel(token);
+    token = null;
     
-    const changes = [...pendingChanges];
+    const changes = [...pendingChanges.values()];
     pendingChanges.clear();
-    for (const [id, ref] of changes)
-      render(ref)
-      
-    const effects = [...pendingEffects];
+    render(changes);
+
+    const effects = [...pendingEffects.values()];
     pendingEffects.clear();
-    for (const [id, effect] of effects)
+    for (const effect of effects)
       effect.run();
-    state = 'idle';
   };
 
   return {
     scheduleChange,
     scheduleEffect,
+    scheduleFlush,
     flushSync,
   };
 };
