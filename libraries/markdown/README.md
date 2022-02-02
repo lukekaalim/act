@@ -32,26 +32,29 @@ It does not support:
 
 ## Usage
 
-::::api{name=MarkdownRenderer source=@lukekaalim/act-markdown}
+::::api{name=MarkdownRenderer}
 
 :::type
 ```
 {
-  type: "opaque",
-  name: "Component",
-  referenceURL: "/concepts#Component",
-  genericArguments: [
-    { type: "object", entries: [
-      { key: "markdownText", value: { type: "opaque", name: "string" } },
-      { key: "directiveComponents", optional: true, value: { type: "object", entries: [
-        { key: "[directiveKey: string]", value: { type: "opaque", name: "Component", referenceURL: "/concepts#Component", genericArguments: [
-          { type: "object", entries: [
-            { key: "node", value: { type: "opaque", name: "MarkdownASTNode", referenceURL: "https://github.com/syntax-tree/mdast", } }
-          ] }
+  type: "expression",
+  expression: {
+    type: "opaque",
+    name: "Component",
+    referenceURL: "/concepts#Component",
+    genericArguments: [
+      { type: "object", entries: [
+        { key: "markdownText", value: { type: "opaque", name: "string" } },
+        { key: "directiveComponents", optional: true, value: { type: "object", entries: [
+          { key: "[directiveKey: string]", value: { type: "opaque", name: "Component", referenceURL: "/concepts#Component", genericArguments: [
+            { type: "object", entries: [
+              { key: "node", value: { type: "opaque", name: "MarkdownASTNode", referenceURL: "https://github.com/syntax-tree/mdast", } }
+            ] }
+          ] } }
         ] } }
-      ] } }
-    ] }
-  ]
+      ] }
+    ]
+  }
 }
 ```
 :::

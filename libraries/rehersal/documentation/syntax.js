@@ -4,7 +4,7 @@ import hljs from 'highlight.js/lib/core';
 import { h, useEffect, useRef } from '@lukekaalim/act';
 
 import styles from './documentation.module.css';
-import 'highlight.js/styles/atom-one-dark.css';
+import 'highlight.js/styles/atom-one-dark-reasonable.css';
 
 hljs.registerAliases(['js'], { languageName: 'javascript' });
 hljs.registerAliases(['ts'], { languageName: 'typescript' });

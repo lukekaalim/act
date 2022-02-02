@@ -92,6 +92,6 @@ code.documentation .name a {
   color: var(--name_color, rgb(240, 191, 172));
 }
 
-code.documentation :global(.hljs-comment) {
+code :global(.hljs-comment) {
   color: white;
 }

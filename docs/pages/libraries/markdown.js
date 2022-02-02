@@ -11,7 +11,7 @@ const usageText = `
 Import the renderer components, and provide it the markdown text as a prop.
 The component will render the elements internally.
 
-${'```'}
+${'```'}ts
 import { MarkdownRenderer } from '@lukekaalim/act-markdown';
 
 const markdownText = \`# My Title\\n\\nMy Text\`
@@ -63,8 +63,6 @@ export const markdownPage/*: Page*/ = {
     h(Document, {}, [
       h(Markdown, { text: readme }),
     ]),
-    h(Document, { text: readme }),
-    h(Document, { text: usageText })
   ]
 }
 

@@ -75,6 +75,7 @@ import { h, createElement } from '@lukekaalim/act';
 :::type{format=json5}
 {
   type: "function",
+  name: "createElement",
   arguments: [
     { name: "type", value: { type: "union", values: [
       { type: "opaque", name: "string" },
@@ -158,7 +159,7 @@ As to what an `Element` literally is, you can put a string literal, number, null
 
 A valid "Element" using this logic can look like:
 ```ts
-const exampleElement = [
+const exampleElement: Element = [
   'A standard string',
   `Then we have this template ${value}`,
   [
@@ -193,6 +194,7 @@ and you typically don't need to worry about it directly.
 :::type{format=json5}
 {
   type: "function",
+  name: "Component",
   genericArguments: [
     { name: "T", restriction: { type: "opaque", name: "Object" } }
   ],
