@@ -19,6 +19,6 @@
   "homepage": "https://github.com/lukekaalim/act#readme",
   "dependencies": {
     "@lukekaalim/act": "^2.3.0",
-    "@lukekaalim/act-reconciler": "^2.0.5"
+    "@lukekaalim/act-reconciler": "^3.0.0"
   }
 }
