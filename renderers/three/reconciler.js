@@ -21,6 +21,7 @@ export const render = (element/*: Element*/, node/*: HTMLElement*/) => {
   const options = {
     onDiff,
     scheduleWork: (c) => requestAnimationFrame(() => void c()),
+    cancelWork: (t) => cancelAnimationFrame(t),
   };
   const tree = createTree(element, options);
 };
