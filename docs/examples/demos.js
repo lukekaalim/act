@@ -22,12 +22,12 @@ export const CurveCubeDemo/*: Component<>*/ = ({ }) => {
 
   const [animation] = useAnimatedNumber(active ? 1 : 0, 0, { duration: 1000, impulse: 3 });
 
-  useBezierAnimation(animation, y => {
+  useBezierAnimation(animation, ({ position }) => {
     const { current: mesh } = meshRef;
     if (!mesh)
       return;
-    mesh.position.set(10, 5 + (y * 15), 10);
-    mesh.rotation.set(0, y * Math.PI * 2, 0);
+    mesh.position.set(10, 5 + (position * 15), 10);
+    mesh.rotation.set(0, position * Math.PI * 2, 0);
   })
 
   const onCanvasClick = () => {
@@ -61,9 +61,9 @@ const ScrollingDigit = ({ value }) => {
 
   const [anim] = useAnimatedNumber(value, 0, { duration: 1000, impulse: 1 });
 
-  useBezierAnimation(anim, value => {
+  useBezierAnimation(anim, ({ position }) => {
     if (container)
-      container.style.transform = `translate(0px, ${-(value % 10) * 20}px)`;
+      container.style.transform = `translate(0px, ${-(position % 10) * 20}px)`;
   });
 
   return h('div', { className: styles.scrollingDigitWindow }, [
@@ -105,17 +105,17 @@ export const FlippingButtonDemo/*: Component<>*/ = () => {
 
   const [anim] = useAnimatedNumber(value, 0, { duration: 500, impulse: 3 });
   
-  useBezierAnimation(anim, (value) => {
+  useBezierAnimation(anim, ({ position }) => {
     const { current: button } = buttonRef;
     if (!button || !container)
       return;
 
-    button.style.transform = `rotate3d(0, 1, 0, ${(((value * 180) + 90) % 180) - 90}deg)`;
-    button.textContent = Math.round(value).toString();
+    button.style.transform = `rotate3d(0, 1, 0, ${(((position * 180) + 90) % 180) - 90}deg)`;
+    button.textContent = Math.round(position).toString();
 
-    const colorA = `hsl(${Math.floor(value * 20)}, 70%, 70%)`;
-    const colorB = `hsl(${Math.floor((value * 20) + 20)}, 70%, 70%)`;
-    const colorC = `hsl(${Math.floor((value * 20) + 40)}, 70%, 70%)`;
+    const colorA = `hsl(${Math.floor(position * 20)}, 70%, 70%)`;
+    const colorB = `hsl(${Math.floor((position * 20) + 20)}, 70%, 70%)`;
+    const colorC = `hsl(${Math.floor((position * 20) + 40)}, 70%, 70%)`;
 
     container.style.background = `linear-gradient(0deg, ${colorA} 0%, ${colorB} 50%, ${colorC} 100%)`
   });
@@ -144,10 +144,10 @@ export const SlideShowDemo/*: Component<>*/ = () => {
 
   const [anim] = useAnimatedNumber(slide, 0, { duration: 1000, impulse: 3 });
 
-  useBezierAnimation(anim, (slide) => {
+  useBezierAnimation(anim, ({ position }) => {
     if (!container)
       return;
-    container.style.transform = `translate(${-slide * 360}px)`;
+    container.style.transform = `translate(${-position * 360}px)`;
   })
 
   return [

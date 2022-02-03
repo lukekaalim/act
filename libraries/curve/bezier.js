@@ -2,10 +2,7 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { TimeSpan } from "./schedule"; */
 
-import { createProgressAnimator } from "./progress.js";
 import { lerp } from "./math.js";
-import { useAccumulatedState, useReducer } from "./state.js";
-import { calculateProgress } from "./progress";
 import { useAnimation } from "./animation.js";
 import { calculateSpanProgress } from "./schedule.js";
 import { useMemo, useRef } from "@lukekaalim/act";
@@ -20,11 +17,24 @@ export type CubicBezierAnimation = {
 };
 
 export type CubicBezierPoint = {
+  progress: number,
+
   position: number,
   velocity: number,
   acceleration: number,
 };
 */
+
+export const calculateCubicBezierAnimationPoint = (
+  anim/*: CubicBezierAnimation*/,
+  now/*: DOMHighResTimeStamp*/
+)/*: CubicBezierPoint*/ => {
+  const progress = calculateSpanProgress(anim.span, now);
+  const position = getBerenstienCubicPoint(anim.shape, progress);
+  const velocity = getBezierVelocity(anim.shape, now);
+  const acceleration = getBezierAcceleration(anim.shape, now);
+  return { progress, position, velocity, acceleration };
+};
 
 export const getCubicPoint = (
   a/*: number*/,
@@ -109,40 +119,13 @@ export const calculateP3ForEndVelocity = (endPosition/*: number*/, velocity/*: n
 
 export const useBezierAnimation = (
   bezier/*: CubicBezierAnimation*/,
-  animate/*: (
-    position: number,
-    velocity: number,
-    acceleration: number,
-    progress: number
-  ) => mixed*/,
+  animate/*: (CubicBezierPoint) => mixed*/,
 ) => {
   useAnimation((now) => {
-    const progress = calculateSpanProgress(bezier.span, now);
-    const position = getBerenstienCubicPoint(bezier.shape, progress);
-    const velocity = getBezierVelocity(bezier.shape, progress);
-    const acceleration = getBezierAcceleration(bezier.shape, progress);
-    
-    animate(position, velocity, acceleration, progress);
-    return progress === 1;
+    const point = calculateCubicBezierAnimationPoint(bezier, now);
+    animate(point);
+    return point.progress === 1;
   }, [bezier, animate]);
-}
-
-export const getBezierWeights = (t/*: number*/)/*: [number, number, number, number]*/ => {
-  return [
-    ((-t) ** 3) + (3 * (t ** 2)) - (3 * t) + 1,
-    3 * (t ** 3) - (6 * (t ** 2)) + (3 * t),
-    -3 * (t ** 3) + (3 * (t ** 2)),
-    t ** 3,
-  ]
-}
-
-export const getBezierVelocityWeights = (t/*: number*/)/*: [number, number, number, number]*/ => {
-  return [
-    -3 * ((t - 1) ** 2),
-    3 - (12 * t) + (9 * (t ** 2)),
-    3 * (2 - (3 * t)) * t,
-    3 * (t * t),
-  ];
 }
 
 export const getBezierVelocity = ([a, b, c, d]/*: CubicBezier*/, t/*: number*/)/*: number*/ => {

@@ -2,11 +2,8 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Page } from '@lukekaalim/act-rehersal'; */
 /*:: import type { CubicBezier } from '@lukekaalim/act-curve'; */
-import {
-  getBezierVelocityWeights,
-} from "../../../libraries/curve/bezier";
 import { createId, h, useMemo, useState } from '@lukekaalim/act';
-import { getCubicPoint, getBerenstienCubicPoint, getBezierWeights, getBezierVelocity, getBezierAcceleration } from '@lukekaalim/act-curve';
+import { getCubicPoint, getBerenstienCubicPoint, getBezierVelocity, getBezierAcceleration } from '@lukekaalim/act-curve';
 import { Document, TabbedToolbox, Workspace, TextInput, GridBench, NumberInput, BooleanInput, Markdown } from '@lukekaalim/act-rehersal';
 import rehersalReadmeText from '@lukekaalim/act-rehersal/README.md?raw';
 
