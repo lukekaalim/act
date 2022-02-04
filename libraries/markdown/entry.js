@@ -178,17 +178,16 @@ export type MarkdownRendererProps = {
 };
 */
 
-const useMarkdownAST = (text) => {
-  return useMemo(
-    () => {
-      return unified()
-      .use(remarkParse)
-      .use(remarkDirective)
-      .use(remarkGfm)
-      .parse(text)
-    },
-    [text]
-  );
+export const parseMarkdown = (text/*: string*/)/*: MarkdownASTNode*/ => {
+  return unified()
+    .use(remarkParse)
+    .use(remarkDirective)
+    .use(remarkGfm)
+    .parse(text)
+}
+
+export const useMarkdownAST = (text/*: string*/)/*: MarkdownASTNode*/ => {
+  return useMemo(() => parseMarkdown(text), [text]);
 }
 
 export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
@@ -200,6 +199,7 @@ export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
 
   return h(MarkdownASTRenderer, { root, directiveComponents, externalComponents });
 };
+
 /*::
 type MarkdownASTRendererProps = {
   root: MarkdownASTNode,
@@ -215,26 +215,4 @@ export const MarkdownASTRenderer/*: Component<MarkdownASTRendererProps>*/ = ({
       h(MarkdownNode, { node: root })
     ),
   ];
-}
-
-export const AsyncMarkdownRenderer/*: Component<{ getMarkdownText: () => Promise<string> }>*/ = ({ getMarkdownText }) => {
-  const [markdownText, setMarkdownText] = useState(null);
-  useEffect(() => {
-    getMarkdownText()
-      .then(markdownText => setMarkdownText(markdownText))
-  }, [getMarkdownText]);
-
-  return markdownText && h(MarkdownRenderer, { markdownText });
-}
-
-export const RemoteMarkdownRenderer/*: Component<{ markdownURL: string }>*/ = ({ markdownURL }) => {
-  const getMarkdownText = useMemo(() => {
-    return async () => {
-      const response = await fetch(markdownURL);
-      const text = await response.text();
-      return text;
-    };
-  }, [markdownURL])
-
-  return h(AsyncMarkdownRenderer, { getMarkdownText });
 }
