@@ -178,28 +178,44 @@ export type MarkdownRendererProps = {
 };
 */
 
-export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
-  markdownText,
-  directiveComponents = {},
-  externalComponents = {}
-}) => {
-  const root = useMemo(
+const useMarkdownAST = (text) => {
+  return useMemo(
     () => {
       return unified()
       .use(remarkParse)
       .use(remarkDirective)
       .use(remarkGfm)
-      .parse(markdownText)
+      .parse(text)
     },
-    [markdownText]
+    [text]
   );
+}
 
+export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
+  markdownText,
+  directiveComponents = {},
+  externalComponents = {}
+}) => {
+  const root = useMarkdownAST(markdownText)
+
+  return h(MarkdownASTRenderer, { root, directiveComponents, externalComponents });
+};
+/*::
+type MarkdownASTRendererProps = {
+  root: MarkdownASTNode,
+  directiveComponents?: ComponentMap,
+  externalComponents?: ComponentMap,
+};
+*/
+export const MarkdownASTRenderer/*: Component<MarkdownASTRendererProps>*/ = ({
+  root, directiveComponents = {}, externalComponents = {}
+}) => {
   return [
     h(markdownContext.Provider, { value: { directiveComponents, externalComponents } },
       h(MarkdownNode, { node: root })
     ),
   ];
-};
+}
 
 export const AsyncMarkdownRenderer/*: Component<{ getMarkdownText: () => Promise<string> }>*/ = ({ getMarkdownText }) => {
   const [markdownText, setMarkdownText] = useState(null);
