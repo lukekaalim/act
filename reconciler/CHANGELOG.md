@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [3.0.1]
 -  Fix context not updating subscribers when changed
 
 ## [3.0.0]
