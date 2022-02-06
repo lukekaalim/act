@@ -4,7 +4,7 @@
 
 /*:: import type { BranchState, Commit, Change, CommitRef, CommitID, CommitPath, Suspension } from './commit2.js'; */
 /*:: import type { Scheduler, EffectID } from './schedule.js'; */
-/*:: import type { ContextState } from './context.js'; */
+/*:: import type { ContextState, ContextService } from './context.js'; */
 
 import { createId, normalizeElement, setRegistry } from '@lukekaalim/act';
 
@@ -20,7 +20,7 @@ export type ComponentState = {
     cleanup: ?(() => mixed),
     deps: Deps,
   |}>,
-  subscriptions: Map<ContextID, ContextState<mixed>>
+  contexts: Set<CommitRef>,
 };
 
 export type ComponentService = {
@@ -38,7 +38,10 @@ export const depsAreEqual = (depsA/*: Deps*/, depsB/*: Deps*/)/*: boolean*/ => {
   return depsA.every((value, index) => value === depsB[index]);
 }
 
-export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentService*/ => {
+export const createComponentService = (
+  scheduler/*: Scheduler*/,
+  contextService/*: ContextService*/
+)/*: ComponentService*/ => {
   const componentStates = new Map();
   
   const loadHooks = (state/*: ComponentState*/, branch)/*: Hooks*/ => {
@@ -90,12 +93,17 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
       return;
     }
     const useContext = /*:: <T>*/(context/*: Context<T>*/)/*: T*/ => {
-      const state = branch.context[context.contextId];
+      const contextState = branch.context[context.contextId];
 
-      if (!state)
+      if (!contextState)
         return context.defaultValue;
 
-      return state.value;
+      if (!state.contexts.has(contextState.ref)) {
+        contextService.attachSubscriber(contextState.ref, state.ref);
+        state.contexts.add(contextState.ref);
+      }
+
+      return contextState.value;
     };
   
     // $FlowFixMe[prop-missing]
@@ -117,7 +125,7 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
       ref,
       values: new Map(),
       effects: new Map(),
-      subscriptions: new Map(),
+      contexts: new Set(),
     };
     componentStates.set(ref.id, state);
     return state;
@@ -134,27 +142,6 @@ export const createComponentService = (scheduler/*: Scheduler*/)/*: ComponentSer
     } catch (error) {
       return [null, error];
     }
-  };
-
-  const traverse = (ref, change, branch) => {
-    const state = componentStates.get(ref.id) || createNewComponentState(ref);
-    if (change.element === null) {
-      teardownHooks(state);
-      return { children: [], branch, suspension: null };
-    }
-    const [children, error] = renderComponent(state, change.element || change.prev.element, branch);
-
-    if (!children || error) {
-      const previousChildren = change.prev && change.prev.children.map(c => c.element) || []
-      return { children: previousChildren, branch, suspension: { ref, value: error } }
-      
-    }
-
-    return {
-      children,
-      branch,
-      suspension: null,
-    };
   };
 
   const calculateNextChildren = (commit, element, branch) => {

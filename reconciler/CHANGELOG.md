@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+-  Fix context not updating subscribers when changed
 
 ## [3.0.0]
   - Update internal hook types to be more permissible

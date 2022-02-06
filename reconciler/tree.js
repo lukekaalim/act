@@ -41,8 +41,8 @@ export const createTree = /*:: <T>*/(
   };
 
   const schedule = createScheduler(render, scheduleWork, cancelWork);
-  const component = createComponentService(schedule);
-  const context = createContextService(schedule);
+  const context = createContextService();
+  const component = createComponentService(schedule, context);
   const boundary = createBoundaryService();
   const commit = createCommitService(component, context, boundary);
 
