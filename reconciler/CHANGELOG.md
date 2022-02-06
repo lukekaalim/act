@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [3.0.1]
+-  Fix context not updating subscribers when changed
+
 ## [3.0.0]
   - Update internal hook types to be more permissible
   - [Major] Require "cancelWork" for tree constructor

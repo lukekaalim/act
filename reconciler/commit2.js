@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Element, ElementType, ContextID } from '@lukekaalim/act'; */
 /*:: import type { ComponentService, ComponentState } from './component.js'; */
-/*:: import type { ContextState, ContextService } from './context.js'; */
+/*:: import type { BranchContext, ContextService } from './context.js'; */
 /*:: import type { BoundaryService } from './boundary.js'; */
 import { createElement, createId } from '@lukekaalim/act';
 
@@ -40,7 +40,7 @@ export type CommitDiff = {|
 
 export type BranchState = {|
   path: CommitPath,
-  context: { [id: ContextID]: ContextState<any> },
+  context: { [id: ContextID]: BranchContext<any> },
 |};
 
 export type Change = {
@@ -127,25 +127,41 @@ export const createCommitService = (
     const branchWithPath = { ...prevBranch, path };
     switch (element.type) {
       case 'act:context':
-        return contextService.calculateNextBranch(element, branchWithPath);
+        return contextService.calculateNextBranch(element, prevCommit, branchWithPath);
       default:
         return branchWithPath;
     }
   };
-  const calculateNextChildren = (commit, element, branch) => {
-    const type = element ? element.type : commit.element.type;
+  const calculateNextChildren = (commit, nextElement, branch) => {
+    const element = (nextElement || commit.element);
   
-    switch (typeof type) {
+    switch (typeof element.type) {
       case 'function':
         return componentService.calculateNextChildren(commit, element, branch);
       case 'string':
-        if (!element)
-          return [[], null];
-        return [element.children, null];
+        switch (element.type) {
+          case 'act:dead':
+            return [[], null];
+          default:
+            return [element.children, null];
+        }
       default:
         throw new Error(`Don't know how to traverse element of this type`);
     }
   };
+  const calculateNextTargets = (nextElement, commit, prevTargets, branch) => {
+    const element = (nextElement || commit.element);
+    const depth = branch.path.length;
+
+    const validTargets = prevTargets.filter(ref => ref.path[depth] === commit.id);
+
+    switch (element.type) {
+      case 'act:context':
+        return [...contextService.calculateNextTargets(element, commit), ...validTargets];
+      default:
+        return validTargets;
+    }
+  }
 
   const remove = (prev) => {
     if (typeof prev.element.type === 'function')
@@ -178,22 +194,20 @@ export const createCommitService = (
   };
 
   const render = ({ prev, element, targets }/*: Change*/, branch/*: BranchState*/ = emptyBranchState)/*: CommitDiff*/ => {
-    
-    const depth = branch.path.length;
     const isTarget = targets.find(target => target.id === prev.id);
 
     const newElement = element && (element.id !== prev.element.id);
     const destroyingElement = element && element.type === 'act:dead';
 
-    const validTargets = targets.filter(ref => ref.path[depth] === prev.id);
+    const nextTargets = calculateNextTargets(element, prev, targets, branch)
 
     const requiresRender = newElement || destroyingElement || isTarget;
 
     if (!requiresRender)
-      if (validTargets.length === 0)
+      if (nextTargets.length === 0)
         return skip(prev);
       else
-        return climb(prev, validTargets, branch);
+        return climb(prev, nextTargets, branch);
 
     if (destroyingElement)
       return remove(prev);
@@ -206,7 +220,7 @@ export const createCommitService = (
     const prevChildren = calculateChanges(prev.children, nextChildren)
 
     const diffs = prevChildren.map(([element, commit]) =>
-      render({ element, prev: commit || createEmptyCommit(nextBranch), targets: validTargets }, nextBranch));
+      render({ element, prev: commit || createEmptyCommit(nextBranch), targets: nextTargets }, nextBranch));
 
       /*
     const boundaryDiff = boundaryService.tryBoundaryCommit(ref, change, diffs, branch, render);
