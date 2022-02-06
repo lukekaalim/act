@@ -14,7 +14,9 @@ export type TimeSpan = {
 
 export const maxSpan = (spans/*: TimeSpan[]*/)/*: TimeSpan*/ => {
   const start = Math.min(...spans.map(s => s.start));
-  const durationMs = Math.max(...spans.map(s => s.start + s.durationMs));
+  const end = Math.max(...spans.map(s => s.start + s.durationMs));
+
+  const durationMs = end - start;
 
   return {
     start,
