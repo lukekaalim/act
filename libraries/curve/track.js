@@ -1,9 +1,5 @@
 // @flow strict
 
-/*md
-An animation track represents a set of animated
-
-*/
 /*::
 export type Frame<T> = {
   time: number,
@@ -11,7 +7,11 @@ export type Frame<T> = {
 };
 
 export type Track<T> = {
-  initial: Frame<T>,
+  initial: T,
   frames: Frame<T>[],
 };
+
+export type TrackInterpolation =
+  | 'step'
+  | 'linear'
 */

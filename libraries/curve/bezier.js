@@ -56,7 +56,10 @@ export const getCubicPoint = (
 };
 
 // same thing but more mathy
-export const getBerenstienCubicPoint = ([a, b, c, d]/*: CubicBezier*/, t/*: number*/)/*: number*/ => {
+export const getBerenstienCubicPoint = (
+  [a, b, c, d]/*: CubicBezier*/,
+  t/*: number*/
+)/*: number*/ => {
   return (
     a * (((-t) ** 3) + (3 * (t ** 2)) - (3 * t) + 1) +
     b * (3 * (t ** 3) - (6 * (t ** 2)) + (3 * t)) +
@@ -96,7 +99,6 @@ export const interpolateCubicBezierAnimation = (
   return { type: 'cubic-bezier', span, shape }
 }
 
-
 export const calculateBezierFromVelocity = (
   startPosition/*: number*/,
   startVelocity/*: number*/,
@@ -110,10 +112,16 @@ export const calculateBezierFromVelocity = (
     endPosition
   ]
 };
-export const calculateP2ForStartVelocity = (startPosition/*: number*/, velocity/*: number*/)/*: number*/ => {
+export const calculateP2ForStartVelocity = (
+  startPosition/*: number*/,
+  velocity/*: number*/
+)/*: number*/ => {
   return (startPosition * 3 + velocity) / 3
 };
-export const calculateP3ForEndVelocity = (endPosition/*: number*/, velocity/*: number*/)/*: number*/ => {
+export const calculateP3ForEndVelocity = (
+  endPosition/*: number*/,
+  velocity/*: number*/
+)/*: number*/ => {
   return (endPosition * 3 - velocity) / 3;
 };
 
