@@ -199,15 +199,15 @@ export const createCommitService = (
     const newElement = element && (element.id !== prev.element.id);
     const destroyingElement = element && element.type === 'act:dead';
 
-    const validTargets = calculateNextTargets(element, prev, targets, branch)
+    const nextTargets = calculateNextTargets(element, prev, targets, branch)
 
     const requiresRender = newElement || destroyingElement || isTarget;
 
     if (!requiresRender)
-      if (validTargets.length === 0)
+      if (nextTargets.length === 0)
         return skip(prev);
       else
-        return climb(prev, validTargets, branch);
+        return climb(prev, nextTargets, branch);
 
     if (destroyingElement)
       return remove(prev);
@@ -220,7 +220,7 @@ export const createCommitService = (
     const prevChildren = calculateChanges(prev.children, nextChildren)
 
     const diffs = prevChildren.map(([element, commit]) =>
-      render({ element, prev: commit || createEmptyCommit(nextBranch), targets: validTargets }, nextBranch));
+      render({ element, prev: commit || createEmptyCommit(nextBranch), targets: nextTargets }, nextBranch));
 
       /*
     const boundaryDiff = boundaryService.tryBoundaryCommit(ref, change, diffs, branch, render);
