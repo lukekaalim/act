@@ -59,14 +59,14 @@ const NewTaskForm = ({ onCreate, tasks }) => {
 const Task = ({ task, onComplete, status }) => {
   const liRef = useRef/*:: <?HTMLLIElement>*/(null);
 
-  useBezierAnimation(status, status => {
+  useBezierAnimation(status, ({ position }) => {
     const { current: li } = liRef;
     if (!li)
       return;
     
-    li.style.opacity = `${1 - Math.abs(status)}`;
-    li.style.maxHeight = `${(1 - Math.abs(status)) * 40}px`;
-    li.style.pointerEvents = status === 0 ? 'auto' : 'none';
+    li.style.opacity = `${1 - Math.abs(position)}`;
+    li.style.maxHeight = `${(1 - Math.abs(position)) * 40}px`;
+    li.style.pointerEvents = position === 0 ? 'auto' : 'none';
   });
 
   return h('li', { ref: liRef }, h('div', {}, [

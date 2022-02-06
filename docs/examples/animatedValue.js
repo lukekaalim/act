@@ -10,13 +10,13 @@ export const AnimatedNumberDemo/*: Component<>*/ = () => {
 
   const [anim] = useAnimatedNumber(value);
 
-  useBezierAnimation(anim, (interpolatedValue) => {
+  useBezierAnimation(anim, ({ position }) => {
     const { current: progress } = progressRef;
     const { current: sample } = sampleRef;
     if (!progress || !sample)
       return;
-    progress.value = interpolatedValue;
-    sample.textContent = interpolatedValue.toFixed(4);
+    progress.value = position;
+    sample.textContent = position.toFixed(4);
   });
 
   const onInput = (event) => {

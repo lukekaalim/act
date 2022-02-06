@@ -8,13 +8,13 @@ import * as uuid from 'uuid';
 const ListElement = ({ color, status, index, done }) => {
   const ref = useRef/*:: <HTMLLIElement>*/((null/*: any*/));
 
-  useBezierAnimation(status, status => {
-    ref.current.style.opacity = `${1 - Math.abs(status)}`;
+  useBezierAnimation(status, ({ position }) => {
+    ref.current.style.opacity = `${1 - Math.abs(position)}`;
   });
 
-  useBezierAnimation(index, index => {
-    ref.current.style.transform = `translate(0, ${index * 30}px)`;
-    ref.current.value = Math.round(index);
+  useBezierAnimation(index, ({ position }) => {
+    ref.current.style.transform = `translate(0, ${position * 30}px)`;
+    ref.current.value = Math.round(position);
   });
 
   useEffect(() => {
@@ -97,8 +97,8 @@ export const AnimatedListDemo/*: Component<>*/ = () => {
     ]),
     h('div', { style: { height: '200px', overflow: 'auto', border: '1px dotted black' }}, [
       h('ol', { style: { position: 'relative' } }, [
-        ...finalColors
-          .map(change => h(ListElement, { key: change.value, color: change.value, index: change.index, status: change.status, done: onDone(change.value) })),
+        ...finalColors.map(change =>
+          h(ListElement, { key: change.value, color: change.value, index: change.index, status: change.status, done: onDone(change.value) })),
       ])
     ])
   ]);

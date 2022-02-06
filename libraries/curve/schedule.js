@@ -1,6 +1,7 @@
 // @flow strict
 
-import { calculateProgress } from "./progress";
+import { useAnimation } from "./animation.js";
+import { calculateProgress } from "./progress.js";
 
 // A type that represents something that spans
 // a set of time
@@ -10,6 +11,27 @@ export type TimeSpan = {
   durationMs: number,
 }
 */
+
+export const maxSpan = (spans/*: TimeSpan[]*/)/*: TimeSpan*/ => {
+  const start = Math.min(...spans.map(s => s.start));
+  const durationMs = Math.max(...spans.map(s => s.start + s.durationMs));
+
+  return {
+    start,
+    durationMs
+  };
+}
+
+export const useTimeSpan = (
+  span/*: TimeSpan*/,
+  animate/*: (now: DOMHighResTimeStamp) => mixed*/,
+  deps/*: mixed[]*/ = []
+) => {
+  useAnimation((now) => {
+    animate(now);
+    return calculateSpanProgress(span, now) === 1;
+  }, deps)
+}
 
 export const calculateSpanProgress = (
   { start, durationMs }/*: TimeSpan*/,

@@ -178,47 +178,41 @@ export type MarkdownRendererProps = {
 };
 */
 
+export const parseMarkdown = (text/*: string*/)/*: MarkdownASTNode*/ => {
+  return unified()
+    .use(remarkParse)
+    .use(remarkDirective)
+    .use(remarkGfm)
+    .parse(text)
+}
+
+export const useMarkdownAST = (text/*: string*/)/*: MarkdownASTNode*/ => {
+  return useMemo(() => parseMarkdown(text), [text]);
+}
+
 export const MarkdownRenderer/*: Component<MarkdownRendererProps>*/ = ({
   markdownText,
   directiveComponents = {},
   externalComponents = {}
 }) => {
-  const root = useMemo(
-    () => {
-      return unified()
-      .use(remarkParse)
-      .use(remarkDirective)
-      .use(remarkGfm)
-      .parse(markdownText)
-    },
-    [markdownText]
-  );
+  const root = useMarkdownAST(markdownText)
 
+  return h(MarkdownASTRenderer, { root, directiveComponents, externalComponents });
+};
+
+/*::
+type MarkdownASTRendererProps = {
+  root: MarkdownASTNode,
+  directiveComponents?: ComponentMap,
+  externalComponents?: ComponentMap,
+};
+*/
+export const MarkdownASTRenderer/*: Component<MarkdownASTRendererProps>*/ = ({
+  root, directiveComponents = {}, externalComponents = {}
+}) => {
   return [
     h(markdownContext.Provider, { value: { directiveComponents, externalComponents } },
       h(MarkdownNode, { node: root })
     ),
   ];
-};
-
-export const AsyncMarkdownRenderer/*: Component<{ getMarkdownText: () => Promise<string> }>*/ = ({ getMarkdownText }) => {
-  const [markdownText, setMarkdownText] = useState(null);
-  useEffect(() => {
-    getMarkdownText()
-      .then(markdownText => setMarkdownText(markdownText))
-  }, [getMarkdownText]);
-
-  return markdownText && h(MarkdownRenderer, { markdownText });
-}
-
-export const RemoteMarkdownRenderer/*: Component<{ markdownURL: string }>*/ = ({ markdownURL }) => {
-  const getMarkdownText = useMemo(() => {
-    return async () => {
-      const response = await fetch(markdownURL);
-      const text = await response.text();
-      return text;
-    };
-  }, [markdownURL])
-
-  return h(AsyncMarkdownRenderer, { getMarkdownText });
 }
