@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { Ref } from '@lukekaalim/act'; */
-/*:: import type { Camera, Scene, Texture } from "three"; */
+/*:: import type { Camera, Scene, Texture, Object3D } from "three"; */
 import { TextureLoader, Vector2, WebGLRenderer } from "three";
 
 import { useEffect, useState } from "@lukekaalim/act";
@@ -102,10 +102,10 @@ export const useAnimationFrame = (
   }, deps);
 }
 
-export const useRenderLoop = (
+export const useRenderLoop = /*:: <TCamera: Camera, TScene: Object3D>*/(
   renderer/*: ?WebGLRenderer*/,
-  camera/*: Ref<?Camera>*/,
-  scene/*: Ref<?Scene>*/,
+  camera/*: Ref<?TCamera>*/,
+  scene/*: Ref<?TScene>*/,
   onAnimate/*: (now: DOMHighResTimeStamp, delta: number) => mixed*/ = (_, __) => {},
   deps/*: mixed[]*/ = []
 ) => {
