@@ -21,6 +21,8 @@ export const createObjectRenderer = ()/*: Renderer<Object3D>*/ => {
     add(diff) {
       if (typeof diff.next.element.type === 'function')
         return null;
+      if (diff.next.element.type === 'act:context')
+        return null;
       return createObject(diff.next.element.type);
     }
   });
