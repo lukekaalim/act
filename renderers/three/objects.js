@@ -13,9 +13,16 @@ import {
   DirectionalLight,
   HemisphereLight,
   AmbientLight,
+  Skeleton,
+  LineSegments,
+  Line,
+  LineLoop,
+  Bone,
+  Sprite,
+  LOD,
 } from "three";
 
-const threeObjectClasses/*: { [string]: Class<Object3D> }*/ = Object.fromEntries(Object.entries({
+export const threeObjectClasses/*: { [string]: Class<Object3D> }*/ = Object.fromEntries(Object.entries({
   // grouping
   Scene,
   Group,
@@ -32,10 +39,20 @@ const threeObjectClasses/*: { [string]: Class<Object3D> }*/ = Object.fromEntries
 
   // lines
   Points,
+  LineSegments,
+  Line,
+  LineLoop,
+
+  // skinning
+  Skeleton,
+  Bone,
+
+  Sprite,
 
   // mesh
   Mesh,
   InstancedMesh,
+  LOD,
 }).map(([key, value]) => [key.toLowerCase(), (value/*: any*/)]));
 
 export const createObject = (type/*: string*/)/*: null | Object3D*/ => {

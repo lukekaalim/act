@@ -16,6 +16,8 @@
   Scene,
   CubeTexture,
   Fog,
+  Line,
+  LineSegments,
   WebGLRenderer,
 } from "three"; */
 /*:: import * as Three from 'three'; */
@@ -110,8 +112,21 @@ export const orthographicCamera = ('orthographicCamera'/*: Component<Orthographi
 
 export const mesh = ('mesh'/*: Component<MeshProps>*/);
 export const sprite = ('sprite'/*: Component<SpriteProps>*/);
-export const points = ('points'/*: Component<PointsProps>*/);
 export const instancedMesh = ('instancedMesh'/*: Component<InstancedMeshProps>*/);
+
+
+export const points = ('points'/*: Component<PointsProps>*/);
+
+/*::
+export type LineProps = {
+  ...Object3DProps<Line>,
+  geometry?: BufferGeometry,
+  material?: Material,
+}
+*/
+export const line = ('line'/*: Component<LineProps>*/);
+export const lineLoop = ('lineLoop'/*: Component<LineProps>*/);
+export const lineSegments = ('lineSegments'/*: Component<LineProps>*/);
 
 export const pointLight = ('pointLight'/*: Component<PointLightsProps>*/);
 export const ambientLight = ('ambientLight'/*: Component<AmbientLightProps>*/);

@@ -430,6 +430,14 @@ declare module three {
     geometry: BufferGeometry;
     material: Material;
   }
+  declare export class Line extends Object3D {
+    geometry: BufferGeometry;
+    material: Material;
+  }
+  declare export class LineSegments extends Line {
+  }
+  declare export class LineLoop extends Line {
+  }
 
   declare export class Mesh extends Object3D {
     constructor(
