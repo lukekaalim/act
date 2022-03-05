@@ -1,8 +1,8 @@
 // @flow strict
 /*:: import type { Component, ElementNode } from '@lukekaalim/act'; */
 /*:: import type { MeshProps, OrthographicCameraProps } from '@lukekaalim/act-three'; */
-import { h, useRef, useState } from "@lukekaalim/act";
-import { LookAtGroup, useDisposable, useLookAt, useRenderLoop, useWebGLRenderer } from "@lukekaalim/act-three";
+import { h, useRef } from "@lukekaalim/act";
+import { useDisposable, useLookAt, useRenderLoop, useWebGLRenderer } from "@lukekaalim/act-three";
 
 import * as THREE from "@lukekaalim/act-three";
 import {
