@@ -58,7 +58,7 @@ export const setAttributeProp = (
 export const setDOMTokenList = (
   list/*: DOMTokenList*/,
   prop/*: PropDiff*/
-) => {
+)/*: void*/ => {
   const next = prop.next;
   if (typeof prop.next === 'string')
     // $FlowFixMe
@@ -82,7 +82,7 @@ export const setHTMLProp = (
     setStylesProp(element, prop);
   else if (prop.key in element && !propBlacklist.has(prop.key) && element instanceof HTMLElement) {
     const htmlElement = (element/*: Object*/);
-    if (typeof htmlElement[prop.key] === DOMTokenList)
+    if (htmlElement[prop.key] instanceof DOMTokenList)
       setDOMTokenList(htmlElement[prop.key], prop);
     else
       htmlElement[prop.key] = prop.next;
