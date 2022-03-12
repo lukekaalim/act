@@ -22,6 +22,7 @@ import { conceptsPage, conceptsPages } from './pages/concepts';
 import { CurveCubeDemo } from './examples/demos.js';
 import { TodoManager } from './examples/todo.js';
 import { librariesPage, librariesPages } from './pages/libraries.js';
+import { rendererPages, webRendererPage } from './pages/renderers.js';
 
 
 /*::
@@ -44,7 +45,9 @@ const rootPage = {
   link: { name: '@lukekaalim/act', href: '/', children: [
     quickstartPage.link,
     conceptsPage.link,
-    { name: 'Renderers', children: [], href: null },
+    { name: 'Renderers', children: [
+    //  webRendererPage.link,
+    ], href: null },
     librariesPage.link,
     { name: 'Internals', children: [], href: null },
   ] },
@@ -57,6 +60,7 @@ const pages = [
   quickstartPage,
   ...conceptsPages,
   ...librariesPages,
+  ...rendererPages
 ];
 
 const DocsApp = () => {

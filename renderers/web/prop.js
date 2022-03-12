@@ -55,6 +55,23 @@ export const setAttributeProp = (
     }
 };
 
+export const setDOMTokenList = (
+  list/*: DOMTokenList*/,
+  prop/*: PropDiff*/
+) => {
+  const next = prop.next;
+  if (typeof prop.next === 'string')
+    // $FlowFixMe
+    return list.value = prop.next;
+  else if (Array.isArray(next)) {
+    const removed = [...list].filter(e => !next.includes(e));
+    for (const item of removed)
+      list.remove(item);
+    for (const item of next)
+      typeof item === 'string' && list.add(item);
+  }
+}
+
 export const setHTMLProp = (
   element/*: HTMLElement | SVGElement*/,
   prop/*: PropDiff*/
@@ -63,9 +80,13 @@ export const setHTMLProp = (
     setEventListenerProp(element, prop);
   else if (prop.key === 'style')
     setStylesProp(element, prop);
-  else if (prop.key in element && !propBlacklist.has(prop.key) && element instanceof HTMLElement)
-    // literal property set
-    (element/*: Object*/)[prop.key] = prop.next;
+  else if (prop.key in element && !propBlacklist.has(prop.key) && element instanceof HTMLElement) {
+    const htmlElement = (element/*: Object*/);
+    if (typeof htmlElement[prop.key] === DOMTokenList)
+      setDOMTokenList(htmlElement[prop.key], prop);
+    else
+      htmlElement[prop.key] = prop.next;
+  }
   else
     setAttributeProp(element, prop);
 }
