@@ -31,8 +31,8 @@ export const calculateCubicBezierAnimationPoint = (
 )/*: CubicBezierPoint*/ => {
   const progress = calculateSpanProgress(anim.span, now);
   const position = getBerenstienCubicPoint(anim.shape, progress);
-  const velocity = getBezierVelocity(anim.shape, now);
-  const acceleration = getBezierAcceleration(anim.shape, now);
+  const velocity = getBezierVelocity(anim.shape, progress);
+  const acceleration = getBezierAcceleration(anim.shape, progress);
   return { progress, position, velocity, acceleration };
 };
 
