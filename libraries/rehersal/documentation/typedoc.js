@@ -54,6 +54,16 @@ export type AssignmentStatement = {
   name: string,
   value: TypeExpression,
 };
+export type ConstantAssignmentStatement = {
+  type: 'constant',
+  name: string,
+  value: TypeExpression,
+};
+export type ExportAssignmentStatement = {
+  type: 'constant',
+  alias?: ?string,
+  value: TypeExpression,
+};
 
 export type UnionTypeExpression = {
   type: 'union',

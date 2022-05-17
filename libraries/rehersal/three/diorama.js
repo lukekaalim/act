@@ -2,7 +2,7 @@
 /*:: import type { Component, ElementNode } from '@lukekaalim/act'; */
 /*:: import type { MeshProps, OrthographicCameraProps } from '@lukekaalim/act-three'; */
 import { h, useRef } from "@lukekaalim/act";
-import { useDisposable, useLookAt, useRenderLoop, useWebGLRenderer } from "@lukekaalim/act-three";
+import { useDisposable, useLookAt, useRenderLoop, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
 
 import * as THREE from "@lukekaalim/act-three";
 import {
@@ -72,6 +72,7 @@ export const OrthographicDiorama/*: Component<OrthographicDioramaProps>*/ = ({
   const canvasRef = useRef(null);
 
   const renderer = useWebGLRenderer(canvasRef, { clearColor: 'white', antialias: true, shadowMap: { enabled: true } });
+  useResizingRenderer(canvasRef, renderer);
   useRenderLoop(renderer, cameraRef, sceneRef, () => {}, [renderer]);
 
   useLookAt(cameraRef, new Vector3(0, 0, 0), [renderer]);
