@@ -54,7 +54,7 @@ export const useWebGLRenderer = (
 // Resize the canvas's resolution whenever it changes size
 // useful for when the canvas is some percentage of the screen
 // like: width: 100%
-export const useResizingRenderer = /*:: <TCam: (PerspectiveCamera | OrthographicCamera)>*/(
+export const useResizingRenderer = (
   canvasRef/*: Ref<?HTMLCanvasElement>*/,
   renderer/*: ?WebGLRenderer*/,
   cameraRef/*: ?Ref<?PerspectiveCamera>*/ = null,
