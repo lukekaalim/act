@@ -1,6 +1,13 @@
 // @flow strict
 /*:: import type { Ref } from '@lukekaalim/act'; */
-/*:: import type { Camera, Scene, Texture, Object3D } from "three"; */
+/*:: import type {
+  Camera,
+  Scene,
+  Texture,
+  Object3D,
+  PerspectiveCamera,
+  OrthographicCamera,
+} from "three"; */
 import { TextureLoader, Vector2, WebGLRenderer } from "three";
 
 import { useEffect, useState } from "@lukekaalim/act";
@@ -47,13 +54,15 @@ export const useWebGLRenderer = (
 // Resize the canvas's resolution whenever it changes size
 // useful for when the canvas is some percentage of the screen
 // like: width: 100%
-export const useResizingRenderer = (
+export const useResizingRenderer = /*:: <TCam: (PerspectiveCamera | OrthographicCamera)>*/(
   canvasRef/*: Ref<?HTMLCanvasElement>*/,
-  renderer/*: ?WebGLRenderer*/
+  renderer/*: ?WebGLRenderer*/,
+  cameraRef/*: ?Ref<?PerspectiveCamera>*/ = null,
 )/*: ?Vector2*/ => {
   const [size, setSize] = useState(null)
   useEffect(() => {
     const { current: canvas } = canvasRef; 
+    const { current: camera } = (cameraRef || { current: null })
     if (!canvas || !renderer)
       return null;
     
@@ -64,6 +73,10 @@ export const useResizingRenderer = (
         const size = new Vector2(width, height);
         setSize(size);
         renderer.setSize(width, height, false);
+        if (camera) {
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+        }
       }
     });
     observer.observe(canvas, { box: 'content-box' });
@@ -159,8 +172,6 @@ export const useTexture = (url/*: string*/)/*: Texture*/ => {
 
     const texture = loader.load(url);
     setTexture(texture);
-
-    console.log(loader);
     
     return () => {
       texture.dispose();
