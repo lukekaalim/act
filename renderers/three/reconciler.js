@@ -10,8 +10,13 @@ import { createSceneRenderer } from "./renderer";
 export const render = (element/*: Element*/, node/*: HTMLElement*/) => {
 
   const scene = createSceneRenderer();
-  const web = createWebRenderer({
-    'scene': scene,
+  const web = createWebRenderer(diff => {
+    switch (diff.next.element.type) {
+      case 'scene':
+        return scene.render(diff);
+      default:
+        return web.render(diff);
+    }
   });
   const onDiff = diff => {
     const children = web.render(diff);
