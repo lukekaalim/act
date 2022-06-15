@@ -9,7 +9,7 @@
     "@lukekaalim/act-curve": "^2.0.0",
     "@lukekaalim/act-three": "^4.0.0",
     "@lukekaalim/act-web": "^1.0.0",
-    "three": "^0.134.0",
+    "three": "^0.141.0",
     "three-nebula": "^10.0.2"
   },
   "devDependencies": {
