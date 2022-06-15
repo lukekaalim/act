@@ -10,7 +10,7 @@
     "preversion": "npm run test"
   },
   "dependencies": {
-    "@lukekaalim/act-renderer-core": "^3.2.0",
+    "@lukekaalim/act-renderer-core": "^3.2.2",
     "@lukekaalim/act-reconciler": "^3.0.1"
   },
   "devDependencies": {
