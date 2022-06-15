@@ -31,9 +31,15 @@ const objectRenderer = createObjectRenderer((diff) => {
       return objectRenderer.render(diff);
   }
 });
-const webRenderer = createWebRenderer({
-  'scene': createNullRenderer(objectRenderer)
-})
+const sceneRenderer = createNullRenderer(objectRenderer);
+const webRenderer = createWebRenderer(diff => {
+  switch (diff.next.element.type) {
+    case 'scene':
+      return sceneRenderer.render(diff);
+    default:
+      return webRenderer.render(diff)
+  }
+});
 
 const MultiRendererComponent = () => {
   const rootRef = useRef();
