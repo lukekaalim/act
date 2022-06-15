@@ -23,11 +23,12 @@
   "homepage": "https://github.com/lukekaalim/act#readme",
   "dependencies": {
     "@lukekaalim/act": "*",
-    "@lukekaalim/act-three": "*",
-    "@lukekaalim/act-rehersal": "*",
     "@lukekaalim/act-curve": "*",
     "@lukekaalim/act-navigation": "*",
+    "@lukekaalim/act-rehersal": "*",
+    "@lukekaalim/act-three": "*",
     "flow-parser": "^0.169.0",
-    "json5": "^2.2.0"
+    "json5": "^2.2.0",
+    "three": "^0.141.0"
   }
 }
