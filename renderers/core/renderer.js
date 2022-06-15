@@ -16,7 +16,7 @@ export type RendererOptions<TNode> = {
   update: (node: TNode, diff: CommitDiff, children: RenderResult<TNode>[]) => void,
   remove: (node: TNode) => void,
 
-  next?: (diff: CommitDiff) => RenderResult<TNode>[],
+  next?: (diff: CommitDiff, parent: null | TNode) => RenderResult<TNode>[],
   getExternalNodes?: (commit: Commit) => ?RenderResult<TNode>[],
 };
 */
@@ -24,7 +24,9 @@ export type RendererOptions<TNode> = {
 /*
 A "Sparse" tree renderer - not every commit corresponds to a "TNode".
 */
-export const createManagedRenderer = /*:: <TNode>*/(options/*: RendererOptions<TNode>*/)/*: Renderer<TNode> & { nodesByCommitID: Map<CommitID, TNode> }*/ => {
+export const createManagedRenderer = /*:: <TNode>*/(
+  options/*: RendererOptions<TNode>*/
+)/*: Renderer<TNode> & { nodesByCommitID: Map<CommitID, TNode> }*/ => {
   const { add, remove, update, next, getExternalNodes } = options;
   const nodesByCommitID/*: Map<CommitID, TNode>*/ = new Map();
 
@@ -56,9 +58,9 @@ export const createManagedRenderer = /*:: <TNode>*/(options/*: RendererOptions<T
       return external;
     return commit.children.map(getNodes).flat(1);
   }
-  const render = (diff)/*: RenderResult<TNode>[]*/ => {
+  const render = (diff, _)/*: RenderResult<TNode>[]*/ => {
     const node = nodesByCommitID.get(diff.next.id) || createNode(diff);
-    const children = diff.diffs.map(next || render).flat(1);
+    const children = diff.diffs.map(diff => (next || render)(diff, node)).flat(1);
 
     const hasDiff = diff.next.id !== diff.prev.id;
   
