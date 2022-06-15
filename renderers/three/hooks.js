@@ -58,6 +58,7 @@ export const useResizingRenderer = (
   canvasRef/*: Ref<?HTMLCanvasElement>*/,
   renderer/*: ?WebGLRenderer*/,
   cameraRef/*: ?Ref<?PerspectiveCamera>*/ = null,
+  onResize/*: () => mixed*/ = () => {},
 )/*: ?Vector2*/ => {
   const [size, setSize] = useState(null)
   useEffect(() => {
@@ -77,6 +78,7 @@ export const useResizingRenderer = (
           camera.aspect = width / height;
           camera.updateProjectionMatrix();
         }
+        onResize();
       }
     });
     observer.observe(canvas, { box: 'content-box' });
