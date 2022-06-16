@@ -20,8 +20,11 @@ export const createObjectRenderer = (
       if (typeof diff.next.element.type === 'function')
         return;
       setProps(diff, object);
-      if (children.length > 0)
-        object.add(...children.map(c => c.node));
+      const missingChildren = children
+        .map(c => c.node)
+        .filter(n => n.parent !== object);
+      if (missingChildren.length > 0)
+        object.add(...missingChildren);
     },
     add(diff) {
       if (typeof diff.next.element.type === 'function')
