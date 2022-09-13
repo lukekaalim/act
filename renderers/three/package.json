@@ -12,7 +12,7 @@
   "author": "Luke Kaalim",
   "license": "ISC",
   "peerDependencies": {
-    "three": "^0.141.0"
+    "three": "^0.144.0"
   },
   "dependencies": {
     "@lukekaalim/act": "^2.2.0",
