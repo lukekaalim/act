@@ -3,7 +3,7 @@
 
 import { assert, assertStruct } from "@lukekaalim/test";
 
-import { createComponentService  } from "@lukekaalim/act-reconciler";
+import { createComponentService  } from "@lukekaalim/act-reconciler/component.js";
 import { h, useEffect, useState } from "@lukekaalim/act";
 
 export const testComponentService = ()/*: Assertion*/ => {
