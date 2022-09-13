@@ -1,5 +1,5 @@
 [ignore]
-
+.*/malformed_package_json/.*
 [include]
 
 [libs]
