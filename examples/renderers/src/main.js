@@ -16,9 +16,8 @@ import {
   Quaternion,
 } from "three";
 import { h, useEffect, useMemo, useRef, useState, createContext, useContext } from '@lukekaalim/act';
-import { render, scene, group, points, three, perspectiveCamera } from '@lukekaalim/act-three';
+import { render, scene, group, points, perspectiveCamera } from '@lukekaalim/act-three';
 import * as a3 from '@lukekaalim/act-three';
-import { useCurve } from '@lukekaalim/act-curve';
 
 const geometry = new BoxGeometry(1, 1, 1);
 const material = new MeshBasicMaterial()
@@ -35,10 +34,6 @@ const App = () => {
 
   const [color, setColor] = useState('#00ff00');
   const [[wx,wy,wz], setSize] = useState([1, 1, 1]);
-
-  useCurve(r, r => ref.current && (
-    ref.current.rotation.x = r
-  ));
 
   material.color = new Color(color);
   pointsMat.color = material.color;
@@ -124,22 +119,6 @@ const App = () => {
     h('button', { onClick: () => setShow(b => !b) }, 'Show!'),
     h('button', { onClick: () => setCameraRotation(b => new Euler(b.x, b.y, b.z + (Math.PI / 16))) }, 'spin!!'),
     h('br'),
-    h(three, {
-      renderer: { size, clearAlpha: 1 },
-      camera,
-      onRender
-     }, [
-      h(scene, { }, [
-        h(group, { group: grid }),
-        h(group, { group: camera, position: cameraPosition, quaternion: cameraQuaternion }),
-        //h('particles'),
-        //h(C.mesh, { ref, geometry, material }),
-        show && h(group, { group: object }),
-        h(points, { ref, geometry, material: pointsMat })
-      ]),
-      /*null,
-      */
-    ]),
   ];
 };
 
