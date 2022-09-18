@@ -1,5 +1,4 @@
 // @flow strict
-/*:: import type { Object3D } from "three"; */
 /*:: import type { PropDiff } from '@lukekaalim/act-reconciler'; */ 
 import {
   Group,
@@ -20,12 +19,14 @@ import {
   Bone,
   Sprite,
   LOD,
+  Object3D,
 } from "three";
 
 export const threeObjectClasses/*: { [string]: Class<Object3D> }*/ = Object.fromEntries(Object.entries({
   // grouping
   Scene,
   Group,
+  Object3D,
 
   // lights
   DirectionalLight,
