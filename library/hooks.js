@@ -35,9 +35,14 @@ let registry/*: Hooks*/ = {
   useContext: () => { throw new Error(`Unset global hook`); },
 };
 
-export const useState/*: UseState*/ = /*:: <T>*/(initialValue)/*: [T, SetValue<T>]*/ => registry.useState(initialValue);
+export const useState/*: UseState*/ = /*:: <T>*/(
+  initialValue/*: T | () => T*/,
+)/*: [T, SetValue<T>]*/ => registry.useState/*:: <T>*/(initialValue);
+
 export const useEffect/*: UseEffect*/ = (effect, deps) => registry.useEffect(effect, deps);
-export const useContext/*: UseContext*/ = /*:: <T>*/(context)/*: T*/ => registry.useContext(context);
+export const useContext/*: UseContext*/ = /*:: <T>*/(
+  context/*: Context<T>*/,
+)/*: T*/ => registry.useContext(context);
 
 export const useRef/*: UseRef*/ = /*:: <T>*/(initialValue/*: T*/)/*: { current: T }*/ => {
   const [value] = useState/*:: <{ current: T }>*/({ current: initialValue })
