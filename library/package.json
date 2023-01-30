@@ -4,6 +4,7 @@
   "description": "Component library for @lukekaalim/act-reconciler",
   "type": "module",
   "main": "main.js",
+  "types": "main.d.ts",
   "scripts": {
     "test": "cd ..; npm test",
     "postversion": "../scripts/postversion.sh",
