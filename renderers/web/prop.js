@@ -1,6 +1,11 @@
 // @flow strict
-/*:: import type { PropDiff, CommitDiff } from '@lukekaalim/act-reconciler'; */
-import { calculatePropsDiff } from '@lukekaalim/act-reconciler'
+/*::
+import type { Commit3 } from "../../reconciler/commit3";
+import type { Diff3, DiffSet } from "../../reconciler/diff";
+import type { CommitDiff } from '@lukekaalim/act-reconciler';
+import type { PropDiff, PropDiffRegistry } from '@lukekaalim/act-renderer-core';
+*/
+import { calculatePropsDiff } from '@lukekaalim/act-renderer-core'
 
 const propBlacklist = new Set(['ref', 'key', 'children']);
 
@@ -12,9 +17,9 @@ export const setStylesProp = (
   const prevRules = typeof prev === 'object' && prev || {};
   const nextRules = typeof next === 'object' && next || {};
 
-  const diff = calculatePropsDiff(prevRules, nextRules);
+  const reg = calculatePropsDiff(prevRules, nextRules);
 
-  for (const [rule, { next }] of diff.entries()) {
+  for (const [rule, { next }] of reg.map) {
     const nextRuleValue = (typeof next === 'string' || typeof next === 'number') ? next : null;
     if (typeof (style/*: any*/)[rule] !== 'undefined')
       (style/*: any*/)[rule] = nextRuleValue;
@@ -93,18 +98,17 @@ export const setHTMLProp = (
 
 export const setHTMLProps = (
   element/*: HTMLElement | SVGElement*/,
-  diff/*: CommitDiff*/
+  registry/*: PropDiffRegistry*/
 ) => {
-  const propDiffs = calculatePropsDiff(diff.prev.element.props, diff.next.element.props)
-  for (const [_, propDiff] of propDiffs)
+  for (const [_, propDiff] of registry.map)
     setHTMLProp(element, propDiff);
 };
 
 export const setTextProps = (
   element/*: Text*/,
-  diff/*: CommitDiff*/
+  registry/*: PropDiffRegistry*/
 ) => {
-  const { content } = diff.next.element.props;
+  const content = registry.prop('content', '').next;
   if (content !== element.textContent)
     element.textContent = typeof content === 'string' ? content : '';
 };
@@ -113,11 +117,25 @@ export const setProps = (
   element/*: ?Node*/,
   diff/*: CommitDiff*/
 ) => {
+  const propDiff = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
   if (element instanceof HTMLElement || element instanceof SVGElement)
-    setHTMLProps(element, diff);
+    setHTMLProps(element, propDiff);
   if (element instanceof Text)
-    setTextProps(element, diff);
+    setTextProps(element, propDiff);
 };
+
+export const setWebProps2 = (
+  element/*: Node*/,
+  set/*: DiffSet*/,
+  diff/*: Diff3*/,
+) => {
+  const prev = set.prevs.map.get(diff.commit.id);
+  const propDiff = calculatePropsDiff(prev ? prev.element.props : {}, diff.commit.element.props);
+  if (element instanceof HTMLElement || element instanceof SVGElement)
+    setHTMLProps(element, propDiff);
+  if (element instanceof Text)
+    setTextProps(element, propDiff);
+}
 
 export const setRef = (
   node/*: ?Node*/,

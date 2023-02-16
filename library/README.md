@@ -20,7 +20,7 @@ of act.
 
 ## Install
 ```bash
-npm install @lukekaalim-act
+npm install @lukekaalim/act
 ```
 
 ## Usage

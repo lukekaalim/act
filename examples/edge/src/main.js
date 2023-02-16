@@ -80,7 +80,6 @@ const Entry = ({ children }) => {
 
 const Root = () => {
   const [ref, setRef] = useState(null);
-  console.log(ref);
   const [keys, setKeys] = useState('0,1,2,3')
   const [activeTermIndex, setIndex] = useState/*:: <number>*/(0)
   return [

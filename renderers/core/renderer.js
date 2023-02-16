@@ -1,5 +1,8 @@
 // @flow strict
-/*:: import type { Element } from '@lukekaalim/act'; */
+/*::
+import type { Renderer2 } from "./renderer2";
+import type { Element, ElementType } from '@lukekaalim/act';
+*/
 /*:: import type { CommitID, CommitDiff, Commit } from '@lukekaalim/act-reconciler'; */
 
 /*::
@@ -89,6 +92,41 @@ export const createNullRenderer = /*:: <TNode>*/ (internalRenderer/*: ?Renderer<
   const render = (diff) => {
     if (internalRenderer)
       internalRenderer.render(diff)
+    return [];
+  }
+  return { getNodes, render };
+}
+
+/**
+ * A special renderer that always returns no nodes,
+ * but continues the render chain to an internal renderer.
+ * 
+ * Useful for switching between renderers that share no
+ * common node system, but some other side effect must
+ * be used the bind them together.
+ */
+export const createNullRenderer2 = /*:: <A, B>*/ (
+  internalRenderer/*: null | Renderer2<A> | (() => Renderer2<A>)*/ = null,
+  skipTypes/*: ElementType[]*/ = []
+)/*: Renderer2<B>*/ => {
+  const getNodes = () => {
+    return [];
+  }
+  const skipTypesSet = new Set(skipTypes);
+
+  const render = (set, commitId) => {
+    const commit = set.nexts.get(commitId);
+    const type = commit.element.type;
+
+    if (skipTypesSet.has(type)) {
+      commit.children.map(commitId => render(set, commitId));
+    } else if (internalRenderer !== null) {
+      if (typeof internalRenderer === 'function')
+        internalRenderer().render(set, commitId);
+      else
+        internalRenderer.render(set, commitId);
+    }
+    
     return [];
   }
   return { getNodes, render };

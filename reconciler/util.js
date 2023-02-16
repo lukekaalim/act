@@ -8,6 +8,21 @@ export type IndexChangeSet = {
 };
 */
 
+/**
+ * Determine how an array's elements has changed over time, specifically:
+ *  - If elements have been added or removed
+ *  - If elements have been moved around
+ *  - If elements have stayed in the same spot
+ * 
+ * This function returns an "IndexChangeSet" representing the
+ * indices of various elements. "created" indices are references to the
+ * "next" array, while "removed" reference the prev. "persisted" indices,
+ * by their nature, will be the same index in both array, and "moved" indices
+ * are tuples that reference "where they were" and "where they went" for their
+ * prev and next respectivly.
+ * 
+ * Uses a strict equality checker by default.
+ */
 export const calculateIndexChanges = /*:: <A, B>*/(
   prev/*: $ReadOnlyArray<A>*/,
   next/*: $ReadOnlyArray<B>*/,
@@ -17,7 +32,8 @@ export const calculateIndexChanges = /*:: <A, B>*/(
   const persisted = [];
   const moved = [];
   const removed = []
-
+  // We gotta loop through one array to start with, so lets start with
+  // the "next" array, for no reason.
   for (let nextIndex = 0; nextIndex < next.length; nextIndex++) {
     const nextElement = next[nextIndex];
   
@@ -41,7 +57,7 @@ export const calculateIndexChanges = /*:: <A, B>*/(
       // there is no next index, this element has been removed
       removed.push(prevIndex);
     } else {
-      // there is a prev & next index, but this case shoudl already be handled.
+      // there is a prev & next index, but this case should already be handled.
     }
   }
 

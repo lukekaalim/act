@@ -2,7 +2,8 @@
 /*:: import type { Element, Component, Context, ContextID } from '@lukekaalim/act'; */
 
 /*:: import type { BranchState, Commit, Change, CommitRef, CommitID } from './commit2.js'; */
-/*:: import type { Scheduler } from './schedule.js'; */
+/*:: import type { Scheduler } from './schedule.js';
+import type { Commit3, CommitID3 } from "./commit3"; */
 
 /*::
 export type BranchContext<T> = {|

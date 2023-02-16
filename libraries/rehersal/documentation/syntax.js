@@ -41,7 +41,7 @@ const registerAndHighlight = async (element, languageName) => {
     console.error(error);
   }
   performance.mark(`${id} - ${languageName} - end`);
-  performance.measure(id, `${id} - ${languageName} - start`, `${id} - ${languageName} - end`);
+  performance.measure(`highlight:${languageName}`, `${id} - ${languageName} - start`, `${id} - ${languageName} - end`);
 };
 
 export const useSyntaxHighlight = (ref/*: Ref<?HTMLElement>*/, code/*: string*/, language/*: string*/ = '') => {

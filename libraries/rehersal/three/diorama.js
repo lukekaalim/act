@@ -87,7 +87,7 @@ export const OrthographicDiorama/*: Component<OrthographicDioramaProps>*/ = ({
         ref: cameraRef,
         
         zoom: 3,
-        aspect: 380/190,
+        //aspect: 380/190,
 
         left: -100,
         right: 100,
@@ -101,7 +101,7 @@ export const OrthographicDiorama/*: Component<OrthographicDioramaProps>*/ = ({
         castShadow: true,
         shadow: {
           camera: new OrthographicCamera(-32, 32, -32, 32, 0, 200),
-          radis: 3,
+          radius: 3,
           bias: -0.01,
           mapSize: new Vector2(256, 256)
         }

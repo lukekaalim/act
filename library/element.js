@@ -24,17 +24,34 @@ export type Element = {|
 const defaultProps = {};
 const defaultChildren = [];
 
+class MyElement {
+  /*::
+  +id: string;
+  +type: Component<any>;
+  +props: { +[string]: mixed };
+  +children: ElementNode;
+  */
+ constructor(type/*: any*/, props/*: any*/, children/*: any*/) {
+  this.id = createId();
+  this.type = type;
+  this.props = props;
+  this.children = children;
+ }
+}
+
 export const createElement = /*:: <T: {}>*/(
   type/*: Component<T>*/,
   props/*: T*/ = (defaultProps/*: any*/),
   children/*: ElementNode*/ = defaultChildren
-)/*: Element*/ => ({
-  id: createId(),
-  // $FlowFixMe
-  type,
-  props,
-  children: normalizeElement(children),
-});
+)/*: Element*/ => {
+  return {
+    id: createId(),
+    // $FlowFixMe
+    type,
+    props,
+    children: normalizeElement(children)
+  };
+};
 export {
   createElement as h,
 };

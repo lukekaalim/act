@@ -5,9 +5,9 @@ export type Updater<T> = (previousValue: T) => T;
 export type SetValue<T> = (value: T | Updater<T>) => void;
 export type UseState = <T>(initialValue: T | () => T) => [T, SetValue<T>];
 
-type CleanupFunc = () => mixed;
+export type CleanupFunc = () => mixed;
 export type Deps = null | mixed[];
-type Effect = () => ?CleanupFunc;
+export type Effect = () => ?CleanupFunc;
 export type UseEffect = (effect: Effect, deps?: Deps) => void;
 
 export type UseContext = <T>(context: Context<T>) => T;
@@ -24,8 +24,12 @@ export type Hooks = {|
 |};
 */
 
-export const setRegistry = (newHooks/*: Hooks*/) => {
+// Older versions of setRegistry returned nothing,
+// so function signiture is backwards compatible.
+export const setRegistry = (newHooks/*: Hooks*/)/*: ?Hooks*/ => {
+  const oldHooks = registry;
   registry = newHooks;
+  return oldHooks
 };
 
 // Global registry for hooks. This is set magically every component render by the reconciler.
@@ -52,7 +56,7 @@ export const useRef/*: UseRef*/ = /*:: <T>*/(initialValue/*: T*/)/*: { current: 
 export const depsAreEqual = (prev/*: null | mixed[]*/, next/*: null | mixed[]*/)/*: boolean*/ => {
   if (prev && next)
     return (
-      prev.length !== next.length &&
+      prev.length === next.length &&
       next.every((dep, i) => dep === prev[i])
     );
 

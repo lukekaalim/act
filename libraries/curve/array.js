@@ -110,8 +110,6 @@ export const createAnimatedArrayReducer = /*:: <T, S>*/(
       elementReducer(null, 1, animations[prevIndex][0], now, animations[prevIndex][1])
     ]);
 
-    //console.log({ created, persisted, moved, removed });
-
     return [
       ...removed,
       ...created,

@@ -1,78 +1,135 @@
 // @flow strict
-/*:: import type { Object3D, WebGLRenderer } from "three"; */
-/*:: import type { Props, PropDiff, CommitDiff } from '@lukekaalim/act-reconciler'; */
+/*:: import type { WebGLRenderer, LightShadow } from "three"; */
+/*::
+import type { Props } from '@lukekaalim/act';
+import type { PropDiff, PropDiffRegistry } from '@lukekaalim/act-renderer-core';
+import type { CommitDiff, Diff3, DiffSet } from '@lukekaalim/act-reconciler';
+*/
 
-import { calculatePropsDiff } from "@lukekaalim/act-reconciler";
+import { calculatePropsDiff, setRef2 } from '@lukekaalim/act-renderer-core'
 import { setHTMLProp } from "@lukekaalim/act-web";
-import { DirectionalLight, Group, Light, OrthographicCamera } from "three";
+import {
+  BufferGeometry,
+  Camera,
+  DirectionalLight,
+  Euler,
+  Group,
+  Light,
+  Material,
+  Matrix3,
+  Matrix4,
+  Object3D,
+  OrthographicCamera,
+  Quaternion,
+  Vector2,
+  Vector3,
+} from "three";
 import { setRef } from "@lukekaalim/act-renderer-core";
 
-export const setObjectProp = ({ key, prev, next }/*: PropDiff*/, object/*: Object3D*/)/*: void*/ => {
-  switch (key) {
-    case 'position':
-      return object.position.copy((next/*: any*/));
-    case 'quaternion':
-      return void object.quaternion.copy((next/*: any*/));
-    case 'rotation':
-      return object.rotation.copy((next/*: any*/));
-    case 'scale':
-      return object.scale.copy((next/*: any*/));
-    case 'matrix':
-      return void object.matrix.copy((next/*: any*/));
+export const setTransformProp = (target/*: mixed*/, diff/*: PropDiff*/)/*: boolean*/ => {
+  if (target instanceof Vector2 && diff.next instanceof Vector2) {
+    target.copy(diff.next);
+    return true;
+  }
+  if (target instanceof Vector3 && diff.next instanceof Vector3) {
+    target.copy(diff.next);
+    return true;
+  }
+  if (target instanceof Matrix3 && diff.next instanceof Matrix3) {
+    target.copy(diff.next);
+    return true;
+  }
+  if (target instanceof Matrix4 && diff.next instanceof Matrix4) {
+    target.copy(diff.next);
+    return true;
+  }
+  if (target instanceof Quaternion && diff.next instanceof Quaternion) {
+    target.copy(diff.next);
+    return true;
+  }
+  if (target instanceof Euler && diff.next instanceof Euler) {
+    target.copy(diff.next);
+    return true;
+  }
+  return false;
+}
+export const setValueProp = (object/*: { [string]: mixed }*/, name/*: string*/, diff/*: PropDiff*/)/*: boolean*/ => {
+  if (typeof object[name] !== typeof diff.next)
+    return false;
+
+  switch (typeof object[name]) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+      object[name] = diff.next;
+      return true;
     default:
-      (object/*: any*/)[key] = next; break;
+      return false;
   }
-};
-
-export const setGroupProps = (diff/*: CommitDiff*/, group/*: Group*/) => {
-  const diffs = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
-  for (const [key, diff] of diffs) {
-    switch (key) {
-      case 'group':
-        if (diff.prev && diff.prev !== diff.next)
-          group.remove((diff.prev/*: any*/));
-        if (diff.next)
-          group.add((diff.next/*: any*/));
-        break;
-      default:
-        setObjectProp(diff, group); break;
-    }
+}
+export const setMeshProp = (object/*: { [string]: mixed }*/, name/*: string*/, diff/*: PropDiff*/)/*: boolean*/ => {
+  if (object[name] instanceof BufferGeometry && diff.next instanceof BufferGeometry) {
+    object[name] = diff.next;
+    return true;
   }
-};
+  if (object[name] instanceof Material && diff.next instanceof Material) {
+    object[name] = diff.next;
+    return true;
+  }
+  return false;
+}
 
-export const setDirectionalLightProps = (diff/*: CommitDiff*/, light/*: DirectionalLight*/) => {
-  const diffs = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
-  for (const [key, diff] of diffs) {
-    switch (key) {
-      case 'shadow': {
-        const diffs = calculatePropsDiff((diff.prev/*: any*/) || {}, (diff.next/*: any*/) || {});
-        for (const [key, diff] of diffs)
-          (light/*: any*/).shadow[key] = diff.next;
-        break;
+export const setLightShadowProps = (
+  diffs/*: PropDiffRegistry*/,
+  lightShadow/*: LightShadow*/,
+) => {
+  for (const [key, propDiff] of diffs.map) {
+    const target = (lightShadow/*: any*/)[key];
+    if (setTransformProp(target, propDiff))
+      continue;
+    if (setValueProp((lightShadow/*: any*/), key, propDiff))
+      continue;
+    if (target instanceof Object3D) {
+      if (propDiff.next instanceof Object3D) {
+        (lightShadow/*: any*/)[key] = propDiff.next;
+        continue;
       }
-      default:
-        setObjectProp(diff, light); break;
+      const propRegistry = calculatePropsDiff((propDiff.prev/*: any*/) || {}, (propDiff.next/*: any*/) || {});
+      setObjectProps2(propRegistry, target);
+      continue;
     }
+
+    console.warn(`Unhandled prop ${key}`, propDiff.next, target);
   }
 }
 
-export const setObjectProps = (diff/*: CommitDiff*/, object/*: ?Object3D*/)/*: void*/ => {
-  setRef(object, diff);
-  if (diff.next.pruned || !object)
-    return;
-  if (object instanceof Group)
-    return setGroupProps(diff, object);
-  if (object instanceof DirectionalLight)
-    return setDirectionalLightProps(diff, object);
-  if (object instanceof OrthographicCamera) {
-    const diffs = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
-    for (const [key, diff] of diffs)
-      setObjectProp(diff, object);
+const skipProps = new Set(['ref', 'key', 'children'])
+
+export const setObjectProps2 = (
+  diff/*: PropDiffRegistry*/,
+  object/*: Object3D*/,
+) => {
+  for (const [key, propDiff] of diff.map) {
+    if (skipProps.has(key))
+      continue;
+
+    const target = (object/*: any*/)[key];
+    if (key === 'shadow' && object instanceof Light) {
+      const propRegistry = calculatePropsDiff((propDiff.prev/*: any*/) || {}, (propDiff.next/*: any*/) || {});
+      setLightShadowProps(propRegistry, target)
+      continue;
+    }
+    if (setMeshProp((object/*: any*/), key, propDiff)) {
+      continue;
+    }
+    if (setTransformProp(target, propDiff))
+      continue;
+    if (setValueProp((object/*: any*/), key, propDiff))
+      continue;
+
+    console.warn(`Unhandled prop ${key}`, propDiff.next, object);
+  }
+
+  if (object instanceof OrthographicCamera)
     object.updateProjectionMatrix();
-  }
-  else {
-    const diffs = calculatePropsDiff(diff.prev.element.props, diff.next.element.props);
-    for (const [key, diff] of diffs)
-      setObjectProp(diff, object);
-  }
-};
+}

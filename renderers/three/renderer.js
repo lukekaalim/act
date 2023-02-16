@@ -1,48 +1,61 @@
 // @flow strict
-/*:: import type { Renderer, RenderResult} from '@lukekaalim/act-renderer-core'; */
-/*:: import type { Component } from '@lukekaalim/act'; */
-/*:: import type { CommitDiff, PropDiff, CommitID } from '@lukekaalim/act-reconciler'; */
-/*:: import type { Object3D } from 'three'; */
-import { createManagedRenderer, createNullRenderer } from '@lukekaalim/act-renderer-core';
+/*:: import type { Renderer, RenderResult, PropDiff } from '@lukekaalim/act-renderer-core'; */
+/*:: import type { Component, ElementType } from '@lukekaalim/act'; */
+/*:: import type { CommitDiff, CommitID } from '@lukekaalim/act-reconciler'; */
+/*::
+import type { Object3D } from 'three';
+import type { Renderer2 } from "../core/renderer2";
+*/
+import { calculatePropsDiff, createManagedRenderer, createNullRenderer, createNullRenderer2, setRef2 } from '@lukekaalim/act-renderer-core';
+import { createRenderer2 } from '@lukekaalim/act-renderer-core/renderer2';
 import { createObject } from "./objects";
-import { setObjectProps } from "./props";
+import { setObjectProps2 } from "./props";
 
 export const createObjectRenderer = (
-  next/*: ?((diff: CommitDiff, parent: ?Object3D) => RenderResult<Object3D>[])*/ = null,
-  create/*: string => null | Object3D*/ = createObject,
-  setProps/*: (CommitDiff, Object3D) => void*/ = setObjectProps,
-)/*: Renderer<Object3D>*/ => {
-  const objectRenderer = createManagedRenderer({
+  getNextRenderer/*: null | ((type: ElementType) => null | Renderer2<Object3D>)*/ = null
+)/*: Renderer2<Object3D>*/ => {
+
+  const getRenderer = (set, commitId) => {
+    const commit = set.nexts.get(commitId);
+    return getNextRenderer && getNextRenderer(commit.element.type) || objectRenderer;
+  }
+
+  const getNodes = (set, commitId) => {
+    const renderer = getRenderer(set, commitId)
+    return renderer.getNodes(set, commitId);
+  }
+
+  const render = (set, commitId) => {
+    const renderer = getRenderer(set, commitId)
+    return renderer.render(set, commitId);
+  }
+
+  const objectRenderer = createRenderer2({
     remove(object) {
       object.removeFromParent();
     },
-    update(object, diff, children) {
-      if (typeof diff.next.element.type === 'function')
-        return;
-      setProps(diff, object);
+    update(object, set, diff) {
+      setRef2(object, diff.commit, diff.change);
+      const prev = set.prevs.map.get(diff.commit.id);
+      const propDiff = calculatePropsDiff(prev ? prev.element.props : {}, diff.commit.element.props)
+      setObjectProps2(propDiff, object);
+    },
+    create(type) {
+      return createObject(type);
+    },
+    attach(object, set, diff, children) {
       const missingChildren = children
-        .map(c => c.node)
         .filter(n => n.parent !== object);
+      
       if (missingChildren.length > 0)
         object.add(...missingChildren);
-    },
-    add(diff) {
-      if (typeof diff.next.element.type === 'function')
-        return null;
-      if (diff.next.element.type === 'act:context')
-        return null;
-      return create(diff.next.element.type);
-    },
-    next(diff, parent) {
-      if (next)
-        return next(diff, parent)
-      return objectRenderer.render(diff);
     }
-  });
+  }, { getNodes, render });
+
   return objectRenderer;
 };
 
-export const createSceneRenderer = /*:: <T>*/()/*: Renderer<T>*/ => {
+export const createSceneRenderer = /*:: <T>*/()/*: Renderer2<T>*/ => {
   const object = createObjectRenderer();
-  return createNullRenderer(object);
+  return createNullRenderer2(object);
 }

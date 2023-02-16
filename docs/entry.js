@@ -104,10 +104,8 @@ const DocsApp = () => {
     target.scrollIntoView({ behavior: 'smooth' });
   }, [navigation.location.hash])
 
-  return h('act:boundary', { fallback: ErrorFallback },
-    h(Rehersal, { rootLink: rootPage.link, selectedLink: page.link, onLinkClick },
-        h('div', { onClick }, page.content))
-  );
+  return h(Rehersal, { rootLink: rootPage.link, selectedLink: page.link, onLinkClick },
+    h('div', { onClick }, page.content))
 };
 
 const ErrorFallback = ({ value }) => {

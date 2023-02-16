@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { Component } from './component.js'; */
-import { createElement } from './element.js';
+import { h } from './element.js';
 import { createId } from './ids.js';
 /*::
 export opaque type ContextID: string = string;
@@ -10,12 +10,19 @@ export type Context<T> = {|
   defaultValue: T,
   Provider: Component<{| value: T |}>
 |};
+
+export type ContextProviderProps = {
+  value: mixed,
+  contextId: ContextID,
+}
 */
+
+export const Provider/*: Component<ContextProviderProps>*/ = 'act:context';
 
 export const createContext = /*:: <T>*/(defaultValue/*: T*/)/*: Context<T>*/ => {
   const contextId = createId();
   const Provider = ({ value, children }) =>
-    createElement('act:context', { value, contextId }, children);
+    h('act:context', { value, contextId }, children);
 
   return {
     defaultValue,

@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { PropDiff } from '@lukekaalim/act-reconciler'; */ 
+/*:: import type { PropDiff } from '@lukekaalim/act-renderer-core'; */ 
 import {
   Group,
   Mesh,
@@ -56,12 +56,13 @@ export const threeObjectClasses/*: { [string]: Class<Object3D> }*/ = Object.from
   LOD,
 }).map(([key, value]) => [key.toLowerCase(), (value/*: any*/)]));
 
-export const createObject = (type/*: string*/)/*: null | Object3D*/ => {
+class UnsupportedObjectTypeError extends Error {}
+
+export const createObject = (type/*: string*/)/*: Object3D*/ => {
   const objectClass = threeObjectClasses[type.toLowerCase()];
 
   if (!objectClass) {
-    console.warn(`Unknown object type "${type}"`)
-    return null;
+    throw new UnsupportedObjectTypeError()
   }
 
   return new objectClass(); 
