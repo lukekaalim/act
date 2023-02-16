@@ -29,6 +29,6 @@
     "@lukekaalim/act-three": "*",
     "flow-parser": "^0.169.0",
     "json5": "^2.2.0",
-    "three": "^0.141.0"
+    "three": "^0.149.0"
   }
 }
