@@ -32,7 +32,7 @@ export const render = (element/*: Element*/, node/*: HTMLElement*/) => {
   });
 
   const scheduler = createSchedule2((callback) => {
-    const id = requestAnimationFrame(() => callback(5));
+    const id = requestAnimationFrame(() => callback(16));
     return () => cancelAnimationFrame(id);
   })
   const effect = createEffectService(scheduler);
@@ -41,23 +41,14 @@ export const render = (element/*: Element*/, node/*: HTMLElement*/) => {
   const reconciler = createReconciler(scheduler);
   
   reconciler.diff.subscribeDiff(set => {
-    performance.mark('act:three:nodes:start')
     const children = web.render(set, set.root);
     setNodeChildren2(node, children);
-    performance.mark('act:three:nodes:end')
-    performance.measure('act:three:nodes', 'act:three:nodes:start', 'act:three:nodes:end')
 
-    performance.mark('act:three:effects:start')
     reconciler.tree.live.registry = effect.runEffectRegistry(set.registry);
-    performance.mark('act:three:effects:end')
-    performance.measure('act:three:effects', 'act:three:effects:start', 'act:three:effects:end')
 
 
-    performance.mark('act:three:suspense:start')
     const map = boundary.calcBoundaryMap(set);
     boundary.getRootBoundaryValue(set.suspensions, set, map);
-    performance.mark('act:three:suspense:end')
-    performance.measure('act:three:suspense', 'act:three:suspense:start', 'act:three:suspense:end')
   })
   reconciler.tree.mount(element);
 };

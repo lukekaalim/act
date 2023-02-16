@@ -81,7 +81,6 @@ export const createEffectService = (
 )/*: EffectService*/ => {
   const runEffectRegistry = (registry) => {
     for (const [id, runEffect] of registry.pending.registered) {
-      performance.mark(`act:effects:${id}:start`)
       try {
         const cleanup = runEffect() || null;
         registry.effectMap.set(id, {
@@ -91,11 +90,8 @@ export const createEffectService = (
           priority: 'normal',
         });
       } catch {}
-      performance.mark(`act:effects:${id}:end`)
-      performance.measure(`act:effects:${id}`, `act:effects:${id}:start`, `act:effects:${id}:end`)
     }
     for (const [id, nextRunEffect] of registry.pending.updated) {
-      performance.mark(`act:effects:${id}:start`)
       const prevRegisteredEffect = registry.effectMap.get(id);
       if (!prevRegisteredEffect)
         continue;
@@ -109,8 +105,6 @@ export const createEffectService = (
         prevRegisteredEffect.runEffect = nextRunEffect;
         prevRegisteredEffect.cleanup = nextCleanup || null;
       } catch {}
-      performance.mark(`act:effects:${id}:end`)
-      performance.measure(`act:effects:${id}`, `act:effects:${id}:start`, `act:effects:${id}:end`)
     }
     for (const [id] of registry.pending.removed) {
       const prevRegisteredEffect = registry.effectMap.get(id);

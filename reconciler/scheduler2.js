@@ -53,12 +53,10 @@ export const createSchedule2 = (
   };
 
   const run = (deadline) => {
-    console.info('Tick');
     const start = performance.now();
     const ignoreDeadline = deadline === -1;
 
     while (tasks.length > 0) {
-      performance.mark('act:scheduler:startrun')
       const task = tasks.pop();
 
       let result = null;
@@ -66,8 +64,6 @@ export const createSchedule2 = (
         if (!ignoreDeadline && performance.now() - start > deadline) {
           enqueueCallback();
           tasks.push(task);
-          performance.mark('act:scheduler:interruptrun')
-          performance.measure('act:scheduler:run', 'act:scheduler:startrun', 'act:scheduler:interruptrun')
           return;
         }
         result = task.work.next();
@@ -76,8 +72,6 @@ export const createSchedule2 = (
         }
       }
     }
-    performance.mark('act:scheduler:finishrun')
-    performance.measure('act:scheduler:run', 'act:scheduler:startrun', 'act:scheduler:finishrun')
   };
   return { requestWork, run };
 };

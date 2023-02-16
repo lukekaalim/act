@@ -105,7 +105,6 @@ export const createDiffService = (
 
   const submitChange = (change, prevSet) => {
     if (!activeTask) {
-      console.warn("Queue is clear; starting new DiffTask.")
       const newTask = startNewDiffTask(change, prevSet);
       const { promise } = schedule.requestWork(newTask.work)
       activeTask = {
@@ -131,11 +130,9 @@ export const createDiffService = (
     })
 
     if (mergedChange) {
-      console.warn("Merged submitted into change running task!")
       return activeTaskPromise;
     }
 
-    console.warn("Couldn't merge change into running commit, waiting until end of current queue and retrying");
     return activeTaskPromise
       .then(prevSet => submitChange(change, prevSet))
   }
@@ -147,7 +144,6 @@ export const createDiffService = (
     const root = initialChange.commit.id;
 
     function* work() {
-      console.log('Starting Work')
       const diffs = new Map/*:: <CommitID3, Diff3>*/();
 
       const processCommit = (change, result) => {
@@ -181,12 +177,7 @@ export const createDiffService = (
         return type;
       }
       while (pending.length > 0) {
-        performance.mark('loopstart')
         const change = pending.pop();
-        const markId = getElementTypeName((change.type === 'create' ? change.element : change.commit.element).type);
-        const startMark = 'Start ' + markId;
-        const endMark = 'End ' + markId;
-        performance.mark(startMark);
 
         const result = commitService.submit(change, prevs, registry);
         const processedResult = processCommit(change, result)
@@ -194,16 +185,7 @@ export const createDiffService = (
         pending.push(...processedResult.changes);
         diffs.set(processedResult.commit.id, createDiff(change, processedResult));
 
-        performance.mark(endMark);
-        performance.measure('Diff ' + markId, startMark, endMark);
-
-        performance.mark('yieldstart')
         yield null;
-        performance.mark('yieldend')
-        performance.measure('yieldtime', 'yieldstart', 'yieldend')
-
-        performance.mark('loopend')
-        performance.measure('loop', 'loopstart', 'loopend')
       }      
       return { diffs, nexts, prevs, root, registry, suspensions };
     }
