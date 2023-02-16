@@ -2,8 +2,7 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 import { h, useRef, useEffect, useState } from '@lukekaalim/act';
 import { sequenceSpanPairs, useBezierAnimation, useAnimatedList, defaultBezierElementOptions } from '@lukekaalim/act-curve';
-
-import * as uuid from 'uuid';
+import { createId } from '@lukekaalim/act';
 
 const ListElement = ({ color, status, index, done }) => {
   const ref = useRef/*:: <HTMLLIElement>*/((null/*: any*/));
@@ -79,7 +78,7 @@ export const AnimatedListDemo/*: Component<>*/ = () => {
       ...colors,
       ...Array
         .from({ length: Math.floor(Math.random() * 4) + 1 })
-        .map(() => uuid.v4())
+        .map(() => createId())
     ];
 
     setColors(elements);
