@@ -3,7 +3,7 @@
   "main": "entry.js",
   "types": "entry.d.ts",
   "type": "module",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "sideEffects": false,
   "scripts": {
     "test": "cd ../..; npm test",
