@@ -5,11 +5,9 @@ import type { CommitDiff, Commit } from '@lukekaalim/act-reconciler';
 import type { Renderer2 } from "../core/renderer2";
 */
 /*:: import type { Renderer, RenderResult } from '@lukekaalim/act-renderer-core'; */
-import { createManagedRenderer } from '@lukekaalim/act-renderer-core';
 import { setProps, setRef, setWebProps2 } from './prop.js';
 import { createNode, removeNode, setNodeChildren, setNodeChildren2 } from './node.js';
-import { createRenderer2 } from '@lukekaalim/act-renderer-core/renderer2.js';
-import { setRef2 } from "../core/props";
+import { createRenderer2, setRef2 } from '@lukekaalim/act-renderer-core';
 
 export const createDOMRenderer = (
   namespace/*: string*/,
