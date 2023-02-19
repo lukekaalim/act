@@ -1,0 +1,48 @@
+:root {
+  --text-block-width: 44rem;
+}
+
+
+.markdownBlock > p {
+  margin-left: auto;
+  margin-right: auto;
+  width: var(--text-block-width);
+}
+
+.markdownBlock > h1, .markdownBlock > h2, .markdownBlock > code {
+  margin-left: auto;
+  margin-right: auto;
+  width: var(--text-block-width);
+}
+.markdownBlock > ul {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0;
+  width: var(--text-block-width);
+}
+.markdownBlock > ul > li {
+  margin-left: 2em;
+}
+
+.markdownBlock > blockquote {
+  margin-left: auto;
+  margin-right: auto;
+  width: calc(var(--text-block-width) + 10rem);
+  padding: 1rem;
+  border-radius: 16px;
+  background-color: var(--secondary-color);
+}
+.markdownBlock > blockquote > p pre {
+  background-color: var(--light-accent-color);
+  padding: 4px;
+  border-radius: 8px;
+  margin: 0;
+}
+
+
+.markdownBlock > p pre, .markdownBlock > ul pre {
+  background-color: var(--secondary-color);
+  padding: 4px;
+  border-radius: 8px;
+  margin: 0;
+}

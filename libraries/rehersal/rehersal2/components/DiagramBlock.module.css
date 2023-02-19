@@ -1,0 +1,37 @@
+.background {
+  height: 100%;
+  width: 100%;
+  user-select: none;
+  position: absolute;
+}
+
+.diagramBlock {
+  height: 20em;
+  margin: 24px;
+  position: relative;
+  border: 2px solid var(--accent-color);
+
+  overflow: hidden;
+}
+
+.diagramContainer {
+  position: absolute;
+  pointer-events: none;
+}
+.diagramContainer > * {
+  pointer-events: all;
+}
+
+.positionReadout {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+
+  border-radius: 8px;
+
+  padding: 4px;
+  margin: 0;
+
+  background-color: var(--light-accent-color);
+  color: var(--accent-color);
+}

@@ -1,0 +1,47 @@
+.navigationColumn {
+  width: 18em;
+  margin-right: 1em;
+}
+
+.pageList {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+
+.pageListRow {
+  transition: 0.1s background-color;
+  height: 22px;
+  position: relative;
+  padding: 2px;
+}
+.pageListRow:hover {
+  background-color: var(--light-accent-color);
+}
+
+.branchPageEntry {
+  
+}
+
+.pageEntry {
+  width: 100%;
+  position: absolute;
+  display: inline-flex;
+}
+
+.pageTag {
+  line-height: 22px;
+  flex: 1;
+}
+.pageTag.selected {
+  font-weight: bold;
+}
+
+.navigationColumnEntry {
+  margin-left: var(--navigation-depth, 0px);
+}
+
+.navigationColumnEntry > summary::marker {
+  display: inline-block;
+  width: 8px;
+}

@@ -63,7 +63,14 @@ export const createDOMRenderer = (
 export const createWebRenderer = (
   getNextRenderer/*: null | (ElementType => null | Renderer2<Node>)*/ = null,
 )/*: Renderer2<Node>*/ => {
-  const svgRenderer = createDOMRenderer('http://www.w3.org/2000/svg')
+  const svgRenderer = createDOMRenderer('http://www.w3.org/2000/svg', type => {
+    switch (type) {
+      case 'div':
+        return htmlRenderer;
+      default:
+        return getNextRenderer && getNextRenderer(type);
+    }
+  })
 
   const htmlRenderer = createDOMRenderer('http://www.w3.org/1999/xhtml', type => {
     switch (type) {

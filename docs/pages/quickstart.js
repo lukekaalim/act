@@ -1,12 +1,16 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Page } from '../entry.js'; */
+/*::
+import type { RehersalPage } from "../../libraries/rehersal/rehersal2/pages";
+*/
 import { h, useState } from '@lukekaalim/act';
 import { Document, Markdown } from '@lukekaalim/act-rehersal'
+import { MarkdownBlock } from '@lukekaalim/act-rehersal/rehersal2/components/MarkdownBlock';
 
 
 const text = `
-# Web Quickstart
+# ⚡ Web Quickstart
 
 Follow this guide to create a act-powered website quickly without much fuss.
 
@@ -32,14 +36,14 @@ Lets install our dependencies:
 
 And we'll use the tool [vite](https://vitejs.dev/) to bundle our site into something hostable.
 
-${'```'}
+${'```'}bash
 npm i @lukekaalim/act @lukekaalim/act-web
 npm i -D vite
 ${'```'}
 
 And lets add a build and dev step to our package.json
 
-${'```'}
+${'```'}yaml
 "scripts": {
   "dev": "vite",
   "build": "vite build"
@@ -95,13 +99,13 @@ const Application = () => {
 ${'```'}
 
 Lets now render this application directly into the body. First, lets import our renderer.
-${'```'}
+${'```'}ts
 import { render } from '@lukekaalim/act-web';
 ${'```'}
 
 Then, update our main function.
 
-${'```'}
+${'```'}ts
 const main = () => {
   render(h(Application), document.body);
 };
@@ -116,13 +120,13 @@ And voila! You should now see the test elements we've thrown together.
 And for kicks, let show off some state and styling.
 
 Update our act import to add the "useState" hook alongside "h".
-${'```'}
+${'```'}ts
 import { h, useState } from '@lukekaalim/act';
 ${'```'}
 
 And lets update our application to use a _color_.
 
-${'```'}
+${'```'}ts
 const Application = () => {
   const [color, setColor] = useState('black');
 
@@ -166,16 +170,14 @@ const ApplicationExample = () => {
   ])
 };
 
-export const quickstartPage/*: Page*/ = {
-  link: {
-    name: 'Web Quickstart',
-    href: '/quickstart',
-    children: [],
-  },
+export const quickstartPage/*: RehersalPage*/ = {
+  id: 'quickstart',
+  title: '⚡ Web Quickstart',
+  path: '/quickstart',
+  subsections: [],
+  children: [],
   content: [
-    h(Document, {}, [
-      h(Markdown, { text }),
-      h(ApplicationExample)
-    ]),
+    h(MarkdownBlock, { input: { type: 'text', text }}),
+    h(ApplicationExample),
   ]
 };

@@ -1,0 +1,12 @@
+.slideContainer {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.transitionContainer {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}

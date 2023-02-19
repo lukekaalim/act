@@ -77,6 +77,19 @@ const getElementKey = (element, index) => {
     return [element.type, 'key', key.toString()]
   return [element.type, 'index', index]
 }
+const isMatchingKey = (keyA, keyB) => {
+  return keyA[0] === keyB[0] &&
+  keyA[1] === keyB[1] &&
+  keyA[2] === keyB[2]
+}
+/*
+const calculateGroupChanges = (prevCommits, nextElements, targets, strategy) => {
+  switch (strategy || 'index') {
+    case 'index':
+      const indexChanges = calculateIndexChanges(prevCommits, nextKeys, isMatchingKey);
+  }
+}
+*/
 
 /**
  * Saucy function. Given a previous commit, and a new batch of children,
@@ -89,16 +102,18 @@ const calculateElementChanges = (
   next/*: $ReadOnlyArray<Element>*/,
   commitMap/*: CommitMap*/,
   targets/*: CommitRef3[]*/,
+  element/*: Element*/
 )/*: $ReadOnlyArray<CommitChange3>*/ => {
   const prevCommits = prev.children.map(commitMap.get);
+  // TODO: escape hatches for faster algorithms?
+  /*
+  if (element.type === 'act:group')
+    return calculateGroupChanges(prevCommits, next, targets, element.props.strategy);
+  */
   const prevKeys = prevCommits.map((commit, index) => getElementKey(commit.element, index));
   const nextKeys = next.map((element, index) => getElementKey(element, index));
 
-  const { removed, persisted, moved } = calculateIndexChanges(prevKeys, nextKeys, (keyA, keyB) =>
-    keyA[0] === keyB[0] &&
-    keyA[1] === keyB[1] &&
-    keyA[2] === keyB[2]
-  );
+  const { removed, persisted, moved } = calculateIndexChanges(prevKeys, nextKeys, isMatchingKey);
   const nextCommitByIndex = new Map([
     ...persisted.map(nextIndex => [nextIndex, prev.children[nextIndex]]),
     ...moved.map(([prevIndex, nextIndex]) => [nextIndex, prev.children[prevIndex]])
@@ -190,7 +205,7 @@ export const createCommitService2 = (component/*: ComponentService2*/)/*: Commit
     effect/*: EffectRegistry*/
   )/*: CommitChangeResult3*/ => {
     const nextElements = component.render(prev, element, effect);
-    const changes = calculateElementChanges(prev, nextElements, commitMap, targets);
+    const changes = calculateElementChanges(prev, nextElements, commitMap, targets, element);
     return {
       commit: {
         ...prev,

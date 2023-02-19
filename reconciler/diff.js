@@ -176,21 +176,24 @@ export const createDiffService = (
           return type.name;
         return type;
       }
-      while (pending.length > 0) {
-        const change = pending.pop();
+      while (task.pending.length > 0) {
+        yield null;
+
+        const change = task.pending.pop();
 
         const result = commitService.submit(change, prevs, registry);
         const processedResult = processCommit(change, result)
         nexts.append(processedResult.commit);
-        pending.push(...processedResult.changes);
+        task.pending.push(...processedResult.changes);
         diffs.set(processedResult.commit.id, createDiff(change, processedResult));
-
-        yield null;
-      }      
-      return { diffs, nexts, prevs, root, registry, suspensions };
+      }
+      const diffSet = { diffs, nexts, prevs, root, registry, suspensions };
+      return diffSet;
     }
 
-    return { work: work(), pending, prevSet };
+    const task = { work: work(), pending, prevSet };
+
+    return task;
   };
 
   const submitDiff = (diffSet) => {

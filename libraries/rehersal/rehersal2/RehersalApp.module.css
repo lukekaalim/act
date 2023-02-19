@@ -1,0 +1,45 @@
+.rehersal {
+  height: 100%;
+  width: 100%;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainRow {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.accentBar {
+  height: 8px;
+  background-color: var(--accent-color, #009fff);
+}
+
+.navigationColumn {
+  width: 18em;
+}
+
+.navigationColumnEntry {
+  margin-left: var(--navigation-depth, 0px);
+}
+
+.navigationColumnEntry > summary::marker {
+  display: inline-block;
+  width: 8px;
+}
+
+.pageContent {
+  overflow: auto;
+  height: 100%;
+
+  padding-top: 1em;
+  padding-bottom: 6em;
+  box-sizing: border-box;
+}
+
+.transitionContainer {
+  flex: 1;
+}

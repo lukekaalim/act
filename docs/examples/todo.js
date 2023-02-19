@@ -17,6 +17,7 @@ export const TodoManager/*: Component<{ initialTasks: string[] }>*/ = ({ initial
 
   return [
     h('div', { style: {
+      border: '1px solid black',
       width: '405px', height: '190px',
       overflow: 'hidden',
       padding: '1em',

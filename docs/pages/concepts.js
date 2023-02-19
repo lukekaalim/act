@@ -1,12 +1,16 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Page } from '../entry.js'; */
+/*::
+import type { RehersalPage } from "../../libraries/rehersal/rehersal2/pages";
+*/
 import { h } from '@lukekaalim/act';
 import { Document, ExportDescription, Markdown, SyntaxCode, TypeDocumentation } from '@lukekaalim/act-rehersal';
 import { MarkdownNode } from '@lukekaalim/act-markdown';
 import JSON5 from 'json5';
 
 import conceptsText from './concepts.md?raw';
+import { MarkdownBlock } from '@lukekaalim/act-rehersal/rehersal2/components/MarkdownBlock';
 
 const HelloExample = () => {
   const greet = () => {
@@ -42,14 +46,14 @@ const ComponentDiagram = () => {
   ])
 }
 
-export const conceptsPage/*: Page*/ = {
-  link: {
-    name: 'Basic Concepts',
-    href: '/concepts',
-    children: [],
-  },
+export const conceptsPage/*: RehersalPage*/ = {
+  title: 'Basic Concepts',
+  id: 'concepts',
+  path: '/concepts',
+  children: [],
+  subsections: [],
   content: h(Document, {}, [
-    h(Markdown, { text: conceptsText, directives: {
+    h(MarkdownBlock, { input: { type: 'text', text: conceptsText }, directives: {
       //'api': MarkdownAPI,
       //'type': MarkdownTypeDoc,
       'hello_example': HelloExample,

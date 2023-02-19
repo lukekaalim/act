@@ -1,9 +1,14 @@
 // @flow strict
 /*:: import type { NavigationLink } from "@lukekaalim/act-rehersal"; */
 /*:: import type { ElementNode } from "@lukekaalim/act"; */
-import { h, useEffect, useState } from '@lukekaalim/act';
+import { h, useEffect, useMemo, useState } from '@lukekaalim/act';
+
+/*::
+import type { TreeGraphNode } from "../libraries/rehersal/rehersal2/graphs/treeGraph";
+*/
 
 import actReadmeText from '@lukekaalim/act/README.md?raw';
+import styles from './entry.module.css';
 
 
 import { render } from '@lukekaalim/act-three';
@@ -24,6 +29,13 @@ import { TodoManager } from './examples/todo.js';
 import { librariesPage, librariesPages } from './pages/libraries.js';
 import { rendererPages, webRendererPage } from './pages/renderers.js';
 import { rendererPage } from "./pages/renderers";
+import { RehersalApp } from '@lukekaalim/act-rehersal/rehersal2/RehersalApp.js';
+import { TextBlock } from '@lukekaalim/act-rehersal/rehersal2/components/TextBlock.js';
+import { DiagramBlock } from '@lukekaalim/act-rehersal/rehersal2/components/DiagramBlock.js';
+import { GraphPicture } from '@lukekaalim/act-rehersal/rehersal2/components/GraphPicture.js';
+import { createId } from "../library/ids";
+import { calculateTreeNodesEdges } from "../libraries/rehersal/rehersal2/graphs/treeGraph";
+import { MarkdownBlock } from '@lukekaalim/act-rehersal/rehersal2/components/MarkdownBlock';
 
 
 /*::
@@ -35,16 +47,18 @@ export type Page = {
 
 const directives = {
   demos: () => {
-    return h('div', { style: { display: 'flex' } }, [
-      h(CurveCubeDemo),
-      h(TodoManager, { initialTasks: ['Write Documentation', 'Finish D&D Prep', 'Cook Dinner'] })
+    return h('div', { style: { display: 'flex', flexDirection: 'column' } }, [
+      h('div', { style: { margin: 'auto', display: 'flex' }}, [
+        h(CurveCubeDemo),
+        h(TodoManager, { initialTasks: ['Write Documentation', 'Finish D&D Prep', 'Cook Dinner'] }),
+      ])
     ]);
   }
 };
 
 const rootPage = {
   link: { name: '@lukekaalim/act', href: '/', children: [
-    quickstartPage.link,
+    //quickstartPage.link,
     conceptsPage.link,
     rendererPage.link,
     librariesPage.link,
@@ -119,10 +133,142 @@ const ErrorFallback = ({ value }) => {
   ];
 }
 
+const Weird = () => {
+  const [aOrB, setAOrB] = useState/*::<'a' | 'b'>*/('b');
+
+  useEffect(() => {
+    setInterval(() => {
+      setAOrB(aOrB => aOrB === 'a' ? 'b' : 'a')
+    }, 2000)
+  }, [])
+  
+  const trees = {
+    a: treeA,
+    b: treeB,
+  }
+  const tree = trees[aOrB];
+  const result = calculateTreeNodesEdges([tree]);
+  const nodes = result.flatMap(r => r.nodes);
+  const edges = result.flatMap(r => r.edges);
+
+  return [
+    useMemo(() => {
+      return h(GraphPicture, {
+        edges,
+        nodes
+      })
+    }, [aOrB])
+  ];
+}
+
+const treeA/*: TreeGraphNode*/ = {
+  content: 'root',
+  id: 'root',
+  children: [
+    { content: 'hello', id: 'hello', children: [
+      { content: 'world', id: 'world' }
+    ] },
+    { id: 'child', content: h('button', {}, 'A Child'), children: [
+      { content: 'balance?' },
+      { content: 'balance?' },
+    ] }
+  ],
+}
+const treeB/*: TreeGraphNode*/ = {
+  id: 'root',
+  content: 'root',
+  children: [
+    { content: 'hello', id: 'hello', children: [
+      { content: 'really' },
+      { content: 'really' },
+      { content: 'really', children: [
+        { content: 'deep' },
+        { content: 'nesting' },
+        { content: 'nesting' },
+      ] },
+      { content: 'world', id: 'world' },
+    ] },
+    { id: 'child', content: 'a child!' }
+  ]
+}
+
+const result = calculateTreeNodesEdges([treeA]);
+const nodes = result.flatMap(r => r.nodes);
+const edges = result.flatMap(r => r.edges);
+
+const DocsApp2 = () => {
+  const homePage = {
+    id: 'home',
+    title: '@lukekaalim/act',
+    path: '/',
+    content: h(MarkdownBlock, { input: { type: 'text', text: actReadmeText }, directives }),
+    subsections: [],
+    children: [
+      quickstartPage,
+      conceptsPage,
+      {
+        id: '1',
+        title: 'Child Page',
+        path: '/child',
+        content: [
+          h(DiagramBlock, { bounding: { x: Number.POSITIVE_INFINITY, y: Number.POSITIVE_INFINITY }, style: { height: '40em' } }, [
+            /*h('div', { style: {
+              backgroundColor: 'white',
+              borderRadius: '4px',
+              border: '1px solid black',
+              padding: '4px'
+            }}, [
+              h('button', {}, 'Sample Button')
+            ]),
+            */
+            h(Weird)
+          ]),
+          h(TextBlock, {}, [
+            h('h1', {}, 'Well, is this a nice graph'),
+            h('p', {}, 'I hope you like it!')
+          ])
+        ],
+        children: [],
+        subsections: [],
+      },
+      {
+        id: '2',
+        title: 'Child Page 2',
+        path: '/child2',
+        content: h(TextBlock, {}, [
+          h('h1', {}, 'Greetings!'),
+          h('p', {}, 'This is a slightly longer paragraph!')
+        ]),
+        children: [],
+        subsections: [],
+      },
+      {
+        id: '3',
+        title: 'Child Page 3',
+        path: '/child3',
+        content: h('h1', {}, 'Hello'),
+        children: [
+          {
+            id: '4',
+            title: 'Child Page 4',
+            path: '/child3/4',
+            content: h('h1', {}, 'World'),
+            children: [],
+            subsections: [],
+          },
+        ],
+        subsections: [],
+      },
+    ]
+  }
+
+  return h(RehersalApp, { pages: [homePage] })
+}
+
 const main = () => {
   const { body } = document;
   if (body)
-    render(h(DocsApp), body);
+    render(h(DocsApp2), body);
 };
 
 main();
