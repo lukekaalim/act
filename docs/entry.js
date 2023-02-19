@@ -134,18 +134,16 @@ const ErrorFallback = ({ value }) => {
 }
 
 const Weird = () => {
-  const [aOrB, setAOrB] = useState/*::<'a' | 'b'>*/('b');
+  const [aOrB, setAOrB] = useState/*::<number>*/(0);
+
+  const trees = [treeA, treeB, treeC]
 
   useEffect(() => {
     setInterval(() => {
-      setAOrB(aOrB => aOrB === 'a' ? 'b' : 'a')
+      setAOrB(aOrB => (aOrB + 1) % trees.length)
     }, 2000)
   }, [])
   
-  const trees = {
-    a: treeA,
-    b: treeB,
-  }
   const tree = trees[aOrB];
   const result = calculateTreeNodesEdges([tree]);
   const nodes = result.flatMap(r => r.nodes);
@@ -162,18 +160,19 @@ const Weird = () => {
 }
 
 const treeA/*: TreeGraphNode*/ = {
-  content: 'root',
   id: 'root',
+  content: 'root',
   children: [
     { content: 'hello', id: 'hello', children: [
       { content: 'world', id: 'world' }
     ] },
     { id: 'child', content: h('button', {}, 'A Child'), children: [
-      { content: 'balance?' },
-      { content: 'balance?' },
+      { content: 'balance?', id: 'ba' },
+      { content: 'balance?', id: 'bb' },
     ] }
   ],
 }
+
 const treeB/*: TreeGraphNode*/ = {
   id: 'root',
   content: 'root',
@@ -191,6 +190,28 @@ const treeB/*: TreeGraphNode*/ = {
     { id: 'child', content: 'a child!' }
   ]
 }
+
+const treeC/*: TreeGraphNode*/ = {
+  id: 'root',
+  content: 'root',
+  children: [
+    { content: 'hello', id: 'hello', children: [
+      { content: 'world', id: 'world' },
+      { content: 'balance?' },
+      { content: 'balance?' },
+    ] },
+    { id: 'child', content: h('button', {}, 'A Child'), children: [
+      { content: 'balance?', id: 'ba' },
+      { content: 'balance?', id: 'bb' },
+      { content: 'balance?', children: [
+        { content: 'balance?' },
+        { content: 'balance?' },
+      ] },
+      { content: 'balance?' },
+    ] }
+  ],
+}
+
 
 const result = calculateTreeNodesEdges([treeA]);
 const nodes = result.flatMap(r => r.nodes);

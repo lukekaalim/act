@@ -52,18 +52,44 @@ export const RehersalApp/*: Component<RehersalAppProps>*/ = ({
       return;
 
     const onClick = (e/*: MouseEvent*/) => {
-      if (!(e.target instanceof HTMLAnchorElement))
+      const findAnchorParent = (target) => {
+        if (target instanceof HTMLAnchorElement)
+          return target;
+        if (!target.parentElement)
+          return null;
+        
+        return findAnchorParent(target.parentElement);
+      }
+      if (!(e.target instanceof Element))
         return;
-      const url = new URL(e.target.href);
+      const anchor = findAnchorParent(e.target)
+      console.log(anchor);
+
+      if (!anchor)
+        return;
+      const url = new URL(anchor.href);
       if (url.origin !== document.location.origin)
         return;
       
       e.preventDefault();
       navigation.navigate(url);
+      const element = document.getElementById(url.hash.slice(1));
+
+      if (!element)
+        return;
+
+      element.scrollIntoView({ behavior: 'smooth' });
     }
     section.addEventListener('click', onClick);
     return () => section.removeEventListener('click', onClick);
   }, [navigation]);
+
+  useEffect(() => {
+    const element = document.getElementById(navigation.location.hash.slice(1));
+    if (!element)
+      return;
+    element.scrollIntoView({ behavior: 'smooth' });
+  }, [navigation.location.pathname])
 
   const rehersalStyleVariables = {
     ['--accent-color']: style.accentColor,

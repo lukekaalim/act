@@ -24,6 +24,13 @@
   margin-left: 2em;
 }
 
+.markdownBlock > * {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  width: var(--text-block-width);
+}
+
 .markdownBlock > blockquote {
   margin-left: auto;
   margin-right: auto;

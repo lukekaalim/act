@@ -5,10 +5,11 @@
 
 A generic rendering library for hierarchical elements.
 
-Basically, a react knockoff.
+Basically, a react/preact knockoff.
 
 Render to HTML with `@lukekaalim/act-web`
-or use 3D capabilites with [threejs](https://threejs.org/) using `@lukekaalim/act-three`.
+or use 3D capabilites with [threejs](https://threejs.org/) using `@lukekaalim/act-three`, or even
+build mobile, tv, or desktop apps with `@lukekaalim/act-remote`!
 
 Writing declarative user interfaces using components, state and side effects.
 

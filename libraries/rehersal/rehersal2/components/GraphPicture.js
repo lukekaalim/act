@@ -1,6 +1,6 @@
 // @flow strict
 
-import { h, useMemo, useRef } from "@lukekaalim/act";
+import { h, useMemo, useRef, useState } from "@lukekaalim/act";
 import { calculateCubicBezierAnimationPoint, maxSpan, useAnimatedNumber, useBezierAnimation, useTimeSpan } from "@lukekaalim/act-curve";
 import { useFadeTransition } from "./fadeTransition";
 
@@ -69,13 +69,14 @@ const GraphNodePicture = ({ node, animState }) => {
   })
 
   const ref = useRef/*::<?SVGElement>*/();
+  const [fill] = useState(`hsl(${Math.random() * 360}deg, 40%, 90%)`)
 
   return [
     h('g', {
       ref,
       'stroke-width': "2",
       stroke: 'black',
-      fill: "white"
+      fill,
     }, [
       h('rect', {
         width: node.size?.width || 100,
