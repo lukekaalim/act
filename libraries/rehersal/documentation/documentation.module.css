@@ -1,6 +1,8 @@
 .signature {
   border: 1px solid #c4c4c4;
-  margin: 2em -1em 2em -1em;
+  margin-left: auto;
+  margin-right: auto;
+  width: calc(var(--text-block-width) + 4rem);
   border-radius: 4px;
   padding: 1em;
 

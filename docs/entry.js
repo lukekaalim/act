@@ -199,7 +199,7 @@ const edges = result.flatMap(r => r.edges);
 const DocsApp2 = () => {
   const homePage = {
     id: 'home',
-    title: '@lukekaalim/act',
+    title: '🌠 @lukekaalim/act',
     path: '/',
     content: h(MarkdownBlock, { input: { type: 'text', text: actReadmeText }, directives }),
     subsections: [],

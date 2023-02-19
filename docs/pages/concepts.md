@@ -1,4 +1,6 @@
 
+# Basic Concepts
+
 > @lukekaalim/act behaves very similarly to [facebook's React](https://reactjs.org/) -
 > if you are familiar with React, then all these concepts
 > should be familiar to you.
@@ -6,7 +8,6 @@
 > This guide assumes that you don't have such knowlege,
 > and starts from the beginning.
 
-# Basic Concepts
 
 At it's core, **[@lukekaalim/act](/)** (or just **act**) helps you break apart your applications into units called **Components**.
 A Component is a function that you write which, given some inputs (which can generally be broken into **Props** and **State**), can generate set of Elements that can represent various things, like DOM nodes. You can attach event listeners, set attributes and properties, and create parent-child relationships with them.

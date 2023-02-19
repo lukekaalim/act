@@ -47,19 +47,19 @@ const ComponentDiagram = () => {
 }
 
 export const conceptsPage/*: RehersalPage*/ = {
-  title: 'Basic Concepts',
+  title: '✅ Basic Concepts',
   id: 'concepts',
   path: '/concepts',
   children: [],
   subsections: [],
-  content: h(Document, {}, [
+  content: [
     h(MarkdownBlock, { input: { type: 'text', text: conceptsText }, directives: {
       //'api': MarkdownAPI,
       //'type': MarkdownTypeDoc,
       'hello_example': HelloExample,
       //'component_diagram': ComponentDiagram,
     } }),
-  ]),
+  ],
 };
 
 export const conceptsPages = [

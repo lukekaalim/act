@@ -27,7 +27,7 @@
 .markdownBlock > blockquote {
   margin-left: auto;
   margin-right: auto;
-  width: calc(var(--text-block-width) + 10rem);
+  width: calc(var(--text-block-width) + 4rem);
   padding: 1rem;
   border-radius: 16px;
   background-color: var(--secondary-color);
