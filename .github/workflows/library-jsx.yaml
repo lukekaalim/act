@@ -1,0 +1,20 @@
+name: "Publish @lukekaalim/act-jsx"
+
+on:
+  push:
+    tags:
+      - '@lukekaalim/act-jsx@*'
+
+jobs:
+  publish-act-jsx:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm publish --access public --workspace=libraries/jsx
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}

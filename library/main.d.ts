@@ -66,3 +66,5 @@ export const useContext: UseContext;
 
 export const useRef: UseRef;
 export const useMemo: UseMemo;
+
+export var Boundary: Component<{ handleBoundaryValue?: (value: unknown[]) => unknown[] }>

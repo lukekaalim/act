@@ -30,8 +30,11 @@ const App = () => {
   const [loadTime, setLoadTime] = useState(1000);
 
   return [
-    h('button', { style: { borderColor: randomColor() }, key: value, onClick: () => setValue(v => v + 1) }, value),
+    <button style={{ borderColor: randomColor() }} key={value} onClick={() => setValue(v => v + 1)}>
+      {value}
+    </button>,
     memoButton,
+    <div>Hello!</div>,
     h('input', { type: 'checkbox', checked: working, onInput: e => setWorking(e.target.checked) }),
     h(FallbackBoundary, { fallback, deps: [working] }, [
       h(BadComponent, { working }),
@@ -72,9 +75,8 @@ const BadComponent = ({ working }) => {
 }
 
 class LoadingSuspension {
-  /*:: 
   message: string;
-  */
+
   constructor() {
     this.message = 'This component is loading';
   }

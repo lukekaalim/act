@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "esbuild src/main.js --servedir=www --outdir=www/js --bundle --sourcemap"
+    "dev": "node dev.js"
   },
   "type": "module",
   "dependencies": {
@@ -8,6 +8,7 @@
     "@lukekaalim/act-web": "*"
   },
   "devDependencies": {
+    "@types/react": "^18.0.28",
     "esbuild": "^0.17.8"
   }
 }
