@@ -66,6 +66,6 @@ export const mapMarkdownASTNode = (
   node/*: MarkdownASTNode*/,
   mapFunc/*: MarkdownASTNode => MarkdownASTNode*/
 )/*: MarkdownASTNode*/ => {
-  const children = node.children.map(c => mapMarkdownASTNode(c, mapFunc));
+  const children = (node.children || []).map(c => mapMarkdownASTNode(c, mapFunc));
   return mapFunc({ ...node, children });
 }

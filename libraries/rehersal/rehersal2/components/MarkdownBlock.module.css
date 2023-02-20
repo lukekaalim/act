@@ -43,6 +43,11 @@
   border-radius: 16px;
   background-color: var(--secondary-color);
 }
+
+.markdownBlock > code {
+  width: calc(var(--text-block-width) + 8rem);
+}
+
 .markdownBlock > blockquote > p pre {
   background-color: var(--light-accent-color);
   padding: 4px;
