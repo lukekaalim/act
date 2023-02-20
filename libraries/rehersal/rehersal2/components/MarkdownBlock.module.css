@@ -31,6 +31,10 @@
   width: var(--text-block-width);
 }
 
+.markdownBlock > p > * {
+  max-width: var(--text-block-width);
+}
+
 .markdownBlock > blockquote {
   margin-left: auto;
   margin-right: auto;

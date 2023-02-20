@@ -18,7 +18,7 @@ export type MarkdownBlockProps = {
   input:
     | { type: 'text', text: string }
     | { type: 'nodes', nodes: MarkdownASTNode },
-  directives?: ComponentMap
+  directives?: ComponentMap,
 }
 */
 
@@ -60,4 +60,12 @@ const defaultDirectives/*: ComponentMap*/ = {
 }
 const externalComponents = {
   code: SyntaxMarkdownCode,
+}
+
+export const mapMarkdownASTNode = (
+  node/*: MarkdownASTNode*/,
+  mapFunc/*: MarkdownASTNode => MarkdownASTNode*/
+)/*: MarkdownASTNode*/ => {
+  const children = node.children.map(c => mapMarkdownASTNode(c, mapFunc));
+  return mapFunc({ ...node, children });
 }
