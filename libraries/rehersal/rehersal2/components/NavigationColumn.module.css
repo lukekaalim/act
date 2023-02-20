@@ -12,6 +12,7 @@
 .pageList {
   padding: 0;
   list-style: none;
+  min-width: 18rem;
 }
 
 .pageList .pageList {
