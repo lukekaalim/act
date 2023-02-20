@@ -1,6 +1,7 @@
 .navigationColumn {
   width: 18em;
   margin-right: 1em;
+  overflow: auto;
 }
 
 .pageList {
