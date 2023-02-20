@@ -64,13 +64,22 @@ const BranchPageEntry = ({ page, pages = [], selectedPageId }) => {
   }
 
   return h('details', { class: styles.branchPageEntry, open: open || "", onToggle: e => setOpen(!!e.target.open) }, [
-    h('summary', { class: styles.pageListRow }, h(LeafPageEntry, { page, selectedPageId, onClick })),
+    h('summary', { class: styles.pageListRow }, [
+      h(VisibilityToggle, { open, setOpen }),
+      h(LeafPageEntry, { page, selectedPageId, onClick })
+    ]),
     h(PageList, { pages, selectedPageId }),
   ])
 }
 
-const SectionList = () => {
-
+const VisibilityToggle = ({ open, setOpen }) => {
+  return h('label', { classList: [styles.visibilityToggle, open && styles.open] }, [
+    h('input', {
+      type: 'checkbox',
+      checked: open,
+      onInput: e => setOpen(e.currentTarget.checked)
+    }),
+  ])
 }
 
 const PageTag = ({ page, selectedPageId, onClick = _ => {} }) => {

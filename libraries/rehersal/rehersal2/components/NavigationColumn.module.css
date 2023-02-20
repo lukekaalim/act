@@ -1,36 +1,47 @@
 .navigationColumn {
   width: 18em;
   margin-right: 1em;
+  padding-right: 1em;
   overflow: auto;
+  resize: horizontal;
+
+  border-right: 1px solid black;
+  box-shadow: 0 0 10px 0px #cecece;
 }
 
 .pageList {
-  margin: 0 0 0 1em;
   padding: 0;
   list-style: none;
 }
 
+.pageList .pageList {
+  margin: 0 0 0 14px;
+  margin-left: 28px;
+}
+
 .pageListRow {
   transition: 0.1s background-color;
-  height: 22px;
+  
   position: relative;
-  padding: 2px;
+
+  display: flex;
+  flex-direction: row;
 }
+div.pageListRow > .pageEntry > a {
+  padding-left: 20px;
+}
+
 .pageListRow:hover {
   background-color: var(--light-accent-color);
 }
 
-.branchPageEntry {
-  
-}
-
 .pageEntry {
   width: 100%;
-  position: absolute;
-  display: inline-flex;
+  display: flex;
 }
 
 .pageTag {
+  padding: 2px;
   line-height: 22px;
   flex: 1;
 }
@@ -42,7 +53,22 @@
   margin-left: var(--navigation-depth, 0px);
 }
 
-.navigationColumnEntry > summary::marker {
-  display: inline-block;
-  width: 8px;
+
+.visibilityToggle {
+  background-image: url('../assets/visible_toggle_closed_black.svg');
+  background-position: center;
+  background-size: contain;
+
+  height: 16px;
+  width: 16px;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-right: 4px;
+}
+.visibilityToggle.open {
+  background-image: url('../assets/visible_toggle_open_black.svg');
+}
+
+.visibilityToggle > input {
+  display: none;
 }
