@@ -63,7 +63,6 @@ export const RehersalApp/*: Component<RehersalAppProps>*/ = ({
       if (!(e.target instanceof Element))
         return;
       const anchor = findAnchorParent(e.target)
-      console.log(anchor);
 
       if (!anchor)
         return;
@@ -73,6 +72,9 @@ export const RehersalApp/*: Component<RehersalAppProps>*/ = ({
       
       e.preventDefault();
       navigation.navigate(url);
+      const hash = url.hash.slice(1);
+      if (!hash)
+        return;
       const element = document.getElementById(url.hash.slice(1));
 
       if (!element)
@@ -85,7 +87,10 @@ export const RehersalApp/*: Component<RehersalAppProps>*/ = ({
   }, [navigation]);
 
   useEffect(() => {
-    const element = document.getElementById(navigation.location.hash.slice(1));
+    const hash = navigation.location.hash.slice(1);
+    if (!hash)
+      return;
+    const element = document.getElementById(hash);
     if (!element)
       return;
     element.scrollIntoView({ behavior: 'smooth' });

@@ -16,7 +16,7 @@ export type RehersalPage = {
 */
 
 export const normalizedPath = (path/*: string*/)/*: string*/ => {
-  return path.toLocaleLowerCase().split('/').filter(Boolean).join('/');
+  return decodeURI(path).toLocaleLowerCase().split('/').filter(Boolean).join('/');
 }
 
 export const calculatePageSelection = (
