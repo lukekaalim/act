@@ -6,7 +6,17 @@ import type { ElementNode } from "../../library/element";
 import type { Assertion } from "@lukekaalim/test/src/assert";
 */
 import { assert as assertIs } from '@lukekaalim/test';
+import { ast as pageAST } from 'flow:./index.js';
 
+
+const findTypeAlias = (name) => {
+  return pageAST.body.find(statement => {
+    switch (statement.type) {
+      case 'TypeAlias':
+        return name === statement.id.name;
+    }
+  })
+}
 
 const createBrokenCounterService = ()/*: CounterService*/ => {
   const counter = {
@@ -59,7 +69,7 @@ const assert = {
   }),
   countEquals: (subject/*: CounterService*/, expectedCount/*: number*/) => {
     return assert.is(
-      `internal count (${subject.count}) should equal ${expectedCount}`,
+      `.count (${subject.count}) should equal ${expectedCount}`,
       subject.count === expectedCount,
     );
   },
@@ -71,7 +81,7 @@ const assert = {
   canCountToTarget: (subject/*: CounterService*/, count/*: number*/) => {
     return assert.is(`can count to ${count}`, [
       ...setup.repeat(count, () =>
-        (subject.increment(), assert.is('increment()', true))),
+        (subject.increment(), assert.is('.increment()', true))),
       assert.countEquals(subject, count)
     ]);
   },
@@ -84,7 +94,7 @@ const assert = {
       function`.replaceAll('\n', '').split(' ').filter(Boolean).join(' '),
       [
         ...setup.repeat(count, () =>
-          (subject.increment(), assert.is('increment()', true))),
+          (subject.increment(), assert.is('.increment()', true))),
         assert.is('reset()', (subject.reset(), true)),
         assert.countEquals(subject, 0)
       ],
@@ -135,6 +145,7 @@ export type DocTestAssertion =
   | { type: 'markdown', text: string }
   | { type: 'param', key: string, paramType: 'string' | 'number' | 'boolean' }
   | { type: 'result' }
+  | { type: 'type-declaration', typeDeclaration: mixed }
   | { type: 'block', block: DocTestAssertionBlock<any> }
   | { type: 'output-fragment', key: string, outputs: mixed[] }
   | { type: 'output', key: string }
@@ -165,6 +176,7 @@ const text = value => ({ type: 'text', text: value.toString() });
 const param = (key, paramType = 'string') => ({ type: 'param', key, paramType });
 const output = (key) => ({ type: 'output', key })
 const result = ({ type: 'result' })
+const type = (alias) => ({ type: 'type-declaration', typeDeclaration: findTypeAlias(alias) })
 
 
 export const test = ()/*: DocTest<any>*/ => {
@@ -177,6 +189,8 @@ The counter service is a object than can \`increment()\`
 an internally stored number. You can retrieve the value from
 \`count\`. Once you are done, you can reset the internal value
 to zero with \`reset()\`.
+
+${type('CounterService')}
 
 This package exposes two implementations of this service:
  - Working

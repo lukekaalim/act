@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "devDependencies": {
+    "@types/node": "^18.14.0",
     "vite": "^4.1.3"
   },
   "scripts": {
@@ -21,6 +22,7 @@
   },
   "homepage": "https://github.com/lukekaalim/act#readme",
   "dependencies": {
-    "dedent-js": "^1.0.1"
+    "dedent-js": "^1.0.1",
+    "flow-parser": "^0.200.0"
   }
 }

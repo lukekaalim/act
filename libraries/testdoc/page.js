@@ -26,6 +26,8 @@ const parseDocTestToMarkdown = (doc) => {
       return `:result`;
     case 'output':
       return '::output';
+    case 'type-declaration':
+      return `::type{id="${doc.typeDeclaration.id.name}"}`
     default:
       return ''
   }
@@ -69,19 +71,85 @@ const OutputComponent = ({ node }) => {
   return [
     h('details', { open: 'open' }, [
       h('summary', {}, 'Output'),
-      h('pre', { class: styles.output }, [
-        testAssertions.map(assertion => h(AssertionOutput, { assertion, depth: 0 }))
+      h('code', { class: styles.output }, [
+        h('pre', {  }, [
+          testAssertions.map(assertion => h(AssertionOutput, { assertion, depth: 0 }))
+        ])
       ])
     ])
   ]
 }
 
+const getTypeProperties = (type) => {
+  switch (type.type) {
+    case 'ObjectTypeAnnotation':
+      return new Map(type.properties.map(prop => {
+        switch (prop.type) {
+          case 'ObjectTypeProperty':
+            switch (prop.key.type) {
+              case 'Identifier':
+                return [prop.key.name, prop.value];
+            }
+          default:
+            return null
+        }
+      }).filter(Boolean));
+  }
+}
+
+const RenderType = ({ type }) => {
+  switch (type.type) {
+    case 'FunctionTypeAnnotation':
+      return [
+        '(',
+        type.params.map(param => h(RenderType, { type: param })).join(','),
+        ') => ',
+        h(RenderType, { type: type.returnType })
+      ];
+    case 'VoidTypeAnnotation':
+      return 'void';
+    case 'NumberTypeAnnotation':
+      return 'number';
+    case 'ObjectTypeAnnotation':
+      return [
+        '{\n',
+        type.properties.map(prop => {
+          return ['  ', prop.key.name, `: `, h(RenderType, { type: prop.value }), '\n']
+        }),
+        '}'
+      ]
+  }
+  return null;
+}
+
+const TypeComponent = ({ node: { attributes: { id }}}) => {
+  const [{ types }, setParams] = useContext(testContext);
+
+  const declaration = types.find(t => t.id.name === id);
+  if (!declaration)
+    return;
+
+  const type = declaration.right;
+
+  console.log(type);
+
+  return h('pre', { class: styles.typeDeclaration }, [
+    h(RenderType, { type })
+  ]);
+}
+
 const directiveComponents = {
   param: ParamComponent,
   result: ResultComponent,
-  output: OutputComponent
+  output: OutputComponent,
+  type: TypeComponent,
 }
-const testContext = createContext([{ params: {}, pass: false, assertions: [] }, _ => {}]);
+const testContext = createContext([{
+  params: {},
+  pass: false,
+  assertions: [],
+  types: []
+}, _ => {}]);
 
 const getBlockAssertions = async (block, params)/*: Promise<[DocTestAssertion[], DocTestAssertion[]]>*/ => {
   const directAssertions = await normalize(block.runBlock(params));
@@ -129,7 +197,14 @@ const TestBlock = ({ block }) => {
     .filter(Boolean))
 
   const blockContext = [
-    { pass: testResult.result, params, assertions: directAssertions },
+    {
+      pass: testResult.result,
+      params,
+      assertions: directAssertions,
+      types: assertions
+        .map(r => r.type === 'type-declaration' ? r.typeDeclaration : null)
+        .filter(Boolean)
+    },
     setParams
   ];
 
