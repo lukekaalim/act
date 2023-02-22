@@ -177,7 +177,7 @@ const content = h('div', { style: { maxWidth: '60rem', margin: 'auto' }}, [
 export const testDocPage/*: RehersalPage*/ = {
   id: 'testpage',
   title: 'Home',
-  path: '/',
+  path: '/testpage',
   content,
   children: [],
   subsections: [],
