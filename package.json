@@ -18,7 +18,8 @@
     "docs",
     "libraries/navigation",
     "libraries/markdown",
-    "libraries/jsx"
+    "libraries/jsx",
+    "libraries/testdoc"
   ],
   "scripts": {
     "test": "cd test; npm test",

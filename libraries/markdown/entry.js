@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { Component, ElementNode } from '@lukekaalim/act'; */
+/*:: import type { Component, ElementNode, Context } from '@lukekaalim/act'; */
 import { h, useEffect, useState, useMemo, createContext, useContext } from '@lukekaalim/act';
 
 import { unified } from 'unified';
@@ -148,6 +148,7 @@ export const MarkdownNode/*: Component<{ node: MarkdownASTNode, spread?: boolean
     case 'strong':
       return h(MarkdownStrong, { node });
     case 'leafDirective':
+    case 'textDirective':
     case 'containerDirective':
       return h(MarkdownDirective, { node });
     default:
@@ -168,7 +169,10 @@ export type MarkdownContext = {
 };
 */
 
-const markdownContext = createContext/*:: <MarkdownContext>*/({ directiveComponents: {}, externalComponents: {} });
+export const markdownContext/*: Context<MarkdownContext>*/ = createContext({
+  directiveComponents: {},
+  externalComponents: {} ,
+});
 
 /*::
 export type MarkdownRendererProps = {

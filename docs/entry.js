@@ -36,6 +36,7 @@ import { GraphPicture } from '@lukekaalim/act-rehersal/rehersal2/components/Grap
 import { createId } from "../library/ids";
 import { calculateTreeNodesEdges } from "../libraries/rehersal/rehersal2/graphs/treeGraph";
 import { MarkdownBlock } from '@lukekaalim/act-rehersal/rehersal2/components/MarkdownBlock';
+import { testDocPage } from '../libraries/testdoc/page';
 
 
 /*::
@@ -227,6 +228,7 @@ const DocsApp2 = () => {
     children: [
       quickstartPage,
       conceptsPage,
+      testDocPage,
       {
         id: '1',
         title: 'Child Page',
