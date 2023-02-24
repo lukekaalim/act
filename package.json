@@ -19,7 +19,8 @@
     "libraries/navigation",
     "libraries/markdown",
     "libraries/jsx",
-    "libraries/testdoc"
+    "libraries/testdoc",
+    "libraries/typedoc"
   ],
   "scripts": {
     "test": "cd test; npm test",

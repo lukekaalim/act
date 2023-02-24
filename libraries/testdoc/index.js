@@ -4,18 +4,44 @@
 import type { Component } from "../../library/component";
 import type { ElementNode } from "../../library/element";
 import type { Assertion } from "@lukekaalim/test/src/assert";
+import type {
+  TypeDocNode,
+  FlowProgram,
+  FlowAnnotation,
+  FlowTypeAliasStatement,
+  TypeDocStatement,
+  TypeDocDeclarationStatement,
+} from "../typedoc";
 */
 import { assert as assertIs } from '@lukekaalim/test';
 import { ast as pageAST } from 'flow:./index.js';
+import { createFlowAnnotationTypeDocNode } from '../typedoc/flow';
 
+const findTypeAlias = (name/*: string*/)/*: null | FlowTypeAliasStatement*/ => {
+  const aliases = pageAST.body
+    .map(st => {
+      switch (st.type) {
+        case 'TypeAlias':
+          return st;
+        case 'ExportNamedDeclaration':
+          switch (st.exportKind) {
+            case 'type':
+              return st.declaration;
+            default:
+              return null;
+          }
+        default:
+          return null;
+      }
+    })
+    .filter(Boolean);
 
-const findTypeAlias = (name) => {
-  return pageAST.body.find(statement => {
-    switch (statement.type) {
-      case 'TypeAlias':
-        return name === statement.id.name;
-    }
-  })
+    
+
+  return aliases.find(a => {
+    const declaration = a.type === 'TypeAlias' ? a : a.declaration;
+    return declaration.id.name === name
+  }) || null;
 }
 
 const createBrokenCounterService = ()/*: CounterService*/ => {
@@ -85,17 +111,13 @@ const assert = {
       assert.countEquals(subject, count)
     ]);
   },
-  canReset: (subject/*: CounterService*/, count/*: number*/) => {
-    ;
+  canReset: (subject/*: CounterService*/) => {
     subject.reset();
+    String;
     return assert.is(
-      `should reset it's internal count
-      to zero when calling the reset()
-      function`.replaceAll('\n', '').split(' ').filter(Boolean).join(' '),
+      `should reset it's internal count to zero when calling the reset() function`,
       [
-        ...setup.repeat(count, () =>
-          (subject.increment(), assert.is('.increment()', true))),
-        assert.is('reset()', (subject.reset(), true)),
+        assert.is('.reset()', (subject.reset(), true)),
         assert.countEquals(subject, 0)
       ],
     );
@@ -145,7 +167,7 @@ export type DocTestAssertion =
   | { type: 'markdown', text: string }
   | { type: 'param', key: string, paramType: 'string' | 'number' | 'boolean' }
   | { type: 'result' }
-  | { type: 'type-declaration', typeDeclaration: mixed }
+  | { type: 'type-declaration', typeDeclaration: TypeDocDeclarationStatement }
   | { type: 'block', block: DocTestAssertionBlock<any> }
   | { type: 'output-fragment', key: string, outputs: mixed[] }
   | { type: 'output', key: string }
@@ -176,11 +198,26 @@ const text = value => ({ type: 'text', text: value.toString() });
 const param = (key, paramType = 'string') => ({ type: 'param', key, paramType });
 const output = (key) => ({ type: 'output', key })
 const result = ({ type: 'result' })
-const type = (alias) => ({ type: 'type-declaration', typeDeclaration: findTypeAlias(alias) })
+const flowType = (alias) => {
+  const declaration = findTypeAlias(alias);
+  if (!declaration)
+    throw new Error();
+  const type = createFlowAnnotationTypeDocNode(declaration.right);
 
+  return {
+    type: 'type-declaration',
+    typeDeclaration: {
+      type: 'declaration',
+      id: declaration.id.name,
+      value: type,
+      exported: true,
+      generic: null
+    }
+  }
+};
 
 export const test = ()/*: DocTest<any>*/ => {
-  return assert.md`
+  return [assert.md`
 # My Tests :result
 
 ## Testing the Counter Service
@@ -190,7 +227,7 @@ an internally stored number. You can retrieve the value from
 \`count\`. Once you are done, you can reset the internal value
 to zero with \`reset()\`.
 
-${type('CounterService')}
+${flowType('CounterService')}
 
 This package exposes two implementations of this service:
  - Working
@@ -198,32 +235,29 @@ This package exposes two implementations of this service:
 
 The broken variant decrements instead of incrementing, and
 the reset function sets the number to a random value.
-
-${() => {
-  const working = createWorkingCounterService();
-  const broken = createBrokenCounterService();
-
-  return [
-    assert.block({ count: 5 }, (params) => assert.md`
+`,
+  assert.block({ count: 5 }, (params) => {
+      const working = createWorkingCounterService();
+      return assert.md`
 ### Working version :result
 
 - can keep track of the amount of times \`increment\` is called (${param('count')})
 ${assert.canCountToTarget(working, params.count)}
 - can reset its internal state
-${assert.canReset(working, params.count)}
+${assert.canReset(working)}
 
 ::output
-`),
-    assert.block({ count: 5 }, (params) => assert.md`
+`}),
+    assert.block({ count: 5 }, (params) => {
+      const broken = createBrokenCounterService();
+      return assert.md`
 ### Broken version :result
 
 - can keep track of the amount of times \`increment\` is called (${param('count')})
 ${assert.canCountToTarget(broken, params.count)}
 - can reset its internal state
-${assert.canReset(broken, params.count)}
+${assert.canReset(broken)}
 
 ::output
-    `),
-  ]
-}}
-`};
+    `}),
+]};

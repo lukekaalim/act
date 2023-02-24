@@ -1,0 +1,18 @@
+.functionParenthesis, .objectBraces, .keyColon, .parameterComma, .propertyComma {
+  color: #ff8e3e;
+}
+
+.argumentId {
+  color: rgb(255, 253, 235)
+}
+.identifier {
+  color: rgb(253, 205, 60)
+}
+
+.keyword, .typeId {
+  color: rgb(131, 173, 252)
+}
+
+.argumentList, .objectPropertyList {
+  margin-left: 16px;
+}

@@ -18,10 +18,27 @@ pre:global(.inline) {
   border-radius: 5px;
 }
 
+.typeDeclarationId {
+  margin: 0;
+  display: inline;
+}
+.typeDeclarationName {
+  color: rgb(131, 173, 252)
+}
+
 .typeDeclaration {
   margin: 1rem 2rem 1rem 2rem;
   padding: 1rem;
   border-radius: 1rem;
   background-color: black;
-  color: white;
+  color: #d9d9d9;
+
+  display: block;
+}
+.typeDeclarationKeyword {
+  color: #d54141;
+}
+
+.typeDeclarationEquals {
+  color: #ff8e3e;
 }

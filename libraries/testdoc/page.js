@@ -7,6 +7,7 @@ import { test, normalize } from './index.js';
 import { assert } from '@lukekaalim/test';
 import styles from './page.module.css';
 import { RehersalApp } from "../rehersal/rehersal2/RehersalApp";
+import { RenderTypeDocNode } from "../typedoc";
 /*::
 import type { DocTestAssertion } from "./index.js";
 import type { RehersalPage } from "../rehersal/rehersal2/pages";
@@ -27,7 +28,7 @@ const parseDocTestToMarkdown = (doc) => {
     case 'output':
       return '::output';
     case 'type-declaration':
-      return `::type{id="${doc.typeDeclaration.id.name}"}`
+      return `::type{id="${doc.typeDeclaration.id}"}`
     default:
       return ''
   }
@@ -80,62 +81,28 @@ const OutputComponent = ({ node }) => {
   ]
 }
 
-const getTypeProperties = (type) => {
-  switch (type.type) {
-    case 'ObjectTypeAnnotation':
-      return new Map(type.properties.map(prop => {
-        switch (prop.type) {
-          case 'ObjectTypeProperty':
-            switch (prop.key.type) {
-              case 'Identifier':
-                return [prop.key.name, prop.value];
-            }
-          default:
-            return null
-        }
-      }).filter(Boolean));
-  }
-}
-
-const RenderType = ({ type }) => {
-  switch (type.type) {
-    case 'FunctionTypeAnnotation':
-      return [
-        '(',
-        type.params.map(param => h(RenderType, { type: param })).join(','),
-        ') => ',
-        h(RenderType, { type: type.returnType })
-      ];
-    case 'VoidTypeAnnotation':
-      return 'void';
-    case 'NumberTypeAnnotation':
-      return 'number';
-    case 'ObjectTypeAnnotation':
-      return [
-        '{\n',
-        type.properties.map(prop => {
-          return ['  ', prop.key.name, `: `, h(RenderType, { type: prop.value }), '\n']
-        }),
-        '}'
-      ]
-  }
-  return null;
-}
-
 const TypeComponent = ({ node: { attributes: { id }}}) => {
   const [{ types }, setParams] = useContext(testContext);
 
-  const declaration = types.find(t => t.id.name === id);
+  const declaration = types.find(t => t.id === id);
+
+  console.log(declaration)
+  
   if (!declaration)
-    return;
+    return null;
 
-  const type = declaration.right;
+  const node = declaration.value;
 
-  console.log(type);
-
-  return h('pre', { class: styles.typeDeclaration }, [
-    h(RenderType, { type })
-  ]);
+  return [
+    h('code', { class: styles.typeDeclaration }, [
+      h('h4', { class: styles.typeDeclarationId, id: declaration.id }, [
+        h('span', { class: styles.typeDeclarationKeyword }, 'type '),
+        h('a', { class: styles.typeDeclarationName, href: `#${declaration.id}` }, declaration.id),
+        h('span', { class: styles.typeDeclarationEquals }, ' = '),
+      ]),
+      h(RenderTypeDocNode, { node })
+    ])
+];
 }
 
 const directiveComponents = {

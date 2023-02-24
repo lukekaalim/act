@@ -67,14 +67,17 @@ export const RehersalApp/*: Component<RehersalAppProps>*/ = ({
       if (!anchor)
         return;
       const url = new URL(anchor.href);
+      console.log({url});
       if (url.origin !== document.location.origin)
         return;
+      console.log('hash time!')
       
       e.preventDefault();
       navigation.navigate(url);
       const hash = url.hash.slice(1);
       if (!hash)
         return;
+      console.log(hash)
       const element = document.getElementById(url.hash.slice(1));
 
       if (!element)
