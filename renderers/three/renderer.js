@@ -6,8 +6,7 @@
 import type { Object3D } from 'three';
 import type { Renderer2 } from "../core/renderer2";
 */
-import { calculatePropsDiff, createManagedRenderer, createNullRenderer, createNullRenderer2, setRef2 } from '@lukekaalim/act-renderer-core';
-import { createRenderer2 } from '@lukekaalim/act-renderer-core/renderer2';
+import { calculatePropsDiff, createRenderer2, createNullRenderer2, setRef2 } from '@lukekaalim/act-renderer-core';
 import { createObject } from "./objects";
 import { setObjectProps2 } from "./props";
 
