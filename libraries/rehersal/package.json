@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-rehersal",
-  "version": "2.4.3",
+  "version": "2.5.0",
   "description": "A component library for building act previews",
   "main": "entry.js",
   "type": "module",
