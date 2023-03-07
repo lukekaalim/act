@@ -20,7 +20,8 @@
     "libraries/markdown",
     "libraries/jsx",
     "libraries/testdoc",
-    "libraries/typedoc"
+    "libraries/typedoc",
+    "libraries/alias"
   ],
   "scripts": {
     "test": "cd test; npm test",
