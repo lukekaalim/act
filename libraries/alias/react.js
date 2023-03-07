@@ -12,13 +12,13 @@ import {
 } from 'react';
 
 const classPropsTransformer = (props) => {
-  const { class: classProps, otherProps } = props;
-  if (classProps)
-    return { ...otherProps, className: classProps };
+  const { class: classProp, ...otherProps } = props;
+  if (props.hasOwnProperty('class'))
+    return { ...otherProps, className: classProp };
   return props;
 }
 const classListPropsTransformer = (props) => {
-  const { classList, otherProps } = props;
+  const { classList, ...otherProps } = props;
   if (Array.isArray(classList))
     return { ...otherProps, className: classList.filter(Boolean).join(' ') };
   return props;
@@ -35,6 +35,9 @@ const propsTransformer = (props) => {
 };
 
 const createElementWrapper = (element, props, children) => {
+  if (Array.isArray(children)) {
+    return createElement(element, propsTransformer(props), ...children)
+  }
   return createElement(element, propsTransformer(props), children)
 };
 
