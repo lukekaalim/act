@@ -11,13 +11,15 @@ import {
 } from 'react';
 
 const classPropsTransformer = (props) => {
-  if (props.class)
-    return { ...props, className: props.class };
+  const { class: classProps, otherProps } = props;
+  if (classProps)
+    return { ...otherProps, className: classProps };
   return props;
 }
 const classListPropsTransformer = (props) => {
-  if (Array.isArray(props.classList))
-    return { ...props, className: classList.filter(Boolean).join(' ') };
+  const { classList, otherProps } = props;
+  if (Array.isArray(classList))
+    return { ...otherProps, className: classList.filter(Boolean).join(' ') };
   return props;
 }
 
