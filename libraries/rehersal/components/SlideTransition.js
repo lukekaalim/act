@@ -3,11 +3,11 @@
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { createInitialCubicBezierAnimation, interpolateCubicBezierAnimation, useAnimatedList, useBezierAnimation } from "@lukekaalim/act-curve";
 import styles from './SlideTransition.module.css';
+import { nanoid } from "nanoid/non-secure";
 
 /*::
 import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
 import type { ElementNode, Ref, Component } from "@lukekaalim/act";
-import { nanoid } from "nanoid/non-secure";
 
 type TransitionID = string;
 type SlideTransitionState = {

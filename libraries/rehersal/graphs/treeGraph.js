@@ -1,11 +1,11 @@
 // @flow strict
 
 import { h } from "@lukekaalim/act";
+import { nanoid } from "nanoid/non-secure";
 
 /*::
 import type { GraphNode, GraphEdge, GraphNodeID } from "./basicGraph";
 import type { ElementNode } from "@lukekaalim/act";
-import { nanoid } from "nanoid/non-secure";
 
 export type TreeGraphNode = {
   id?: GraphNodeID,
