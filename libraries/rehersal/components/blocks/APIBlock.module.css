@@ -1,0 +1,9 @@
+.apiBlock {
+  border: 1px solid var(--accent-color);
+  background-color: rgb(247, 247, 247);
+  border-radius: 4px;
+
+  width: calc(var(--text-block-width) + 6rem);
+
+  margin: 32px auto 32px auto;
+}

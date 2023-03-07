@@ -1,7 +1,6 @@
 // @flow strict
 /*:: import type { Page } from '@lukekaalim/act-rehersal'; */
 import { h, useEffect, useState } from '@lukekaalim/act';
-import { Document, GridBench, Markdown, TabbedToolbox, Workspace } from '@lukekaalim/act-rehersal';
 import { MarkdownRenderer } from '@lukekaalim/act-markdown';
 import readme from '@lukekaalim/act-markdown/README.md?raw';
 

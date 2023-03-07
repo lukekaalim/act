@@ -1,16 +1,14 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
-/*:: import type { Page } from '../entry.js'; */
 /*::
-import type { RehersalPage } from "../../libraries/rehersal/rehersal2/pages";
+import type { RehersalPage } from "@lukekaalim/act-rehersal";
 */
 import { h, useState } from '@lukekaalim/act';
-import { Document, Markdown } from '@lukekaalim/act-rehersal'
-import { MarkdownBlock } from '@lukekaalim/act-rehersal/rehersal2/components/MarkdownBlock';
+import { MarkdownBlock } from '@lukekaalim/act-rehersal';
 
 
 const text = `
-# ⚡ Web Quickstart
+# Web Quickstart
 
 Follow this guide to create a act-powered website quickly without much fuss.
 
@@ -172,10 +170,17 @@ const ApplicationExample = () => {
 
 export const quickstartPage/*: RehersalPage*/ = {
   id: 'quickstart',
-  title: '⚡ Web Quickstart',
+  title: 'Web Quickstart',
   path: '/quickstart',
-  subsections: [],
+  subsections: [
+    'initialization',
+    'dependencies',
+    'entrypoints',
+    'application',
+    'state'
+  ],
   children: [],
+  searchableText: async () => text,
   content: [
     h(MarkdownBlock, { input: { type: 'text', text }}),
     h(ApplicationExample),

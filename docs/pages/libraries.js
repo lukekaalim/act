@@ -1,26 +1,17 @@
 // @flow strict
-
-/*:: import type { Page } from "@lukekaalim/act-rehersal"; */
+/*::
+import type { RehersalPage } from "@lukekaalim/act-rehersal";
+*/
 
 import { h } from "@lukekaalim/act";
-import { Document, Markdown } from "@lukekaalim/act-rehersal";
-
+import { MarkdownBlock } from "@lukekaalim/act-rehersal";
 import text from './libraries.md?raw';
 
-import { rehersalPage, rehersalPages } from './libraries/rehersal.js';
-import { markdownPage, markdownPages } from "./libraries/markdown.js";
-import { curvePage, curvePages } from './libraries/curve.js';
-
-export const librariesPage/*: Page*/ = {
-  content: h(Document, {}, h(Markdown, { text })),
-  link: { name: 'Libraries', children: [
-    rehersalPage.link, markdownPage.link, curvePage.link
-  ], href: '/libraries' }
-};
-
-export const librariesPages/*: Page[]*/ = [
-  librariesPage,
-  ...rehersalPages,
-  ...markdownPages,
-  ...curvePages,
-];
+export const libraryPage/*: RehersalPage*/ = {
+  id: 'libraries',
+  path: '/lib',
+  children: [],
+  content: h(MarkdownBlock, { input: { type: 'text', text }}),
+  subsections: [],
+  title: "Libraries"
+}

@@ -3,7 +3,7 @@
 /*:: import type { Mesh } from "three"; */
 
 import { h, useRef, useState } from "@lukekaalim/act";
-import { CubeMesh, OrthographicDiorama, PlaneMesh } from "@lukekaalim/act-rehersal";
+//import { CubeMesh, OrthographicDiorama, PlaneMesh } from "@lukekaalim/act-rehersal";
 import { useAnimatedNumber, useBezierAnimation } from "@lukekaalim/act-curve";
 import {
   Vector3,

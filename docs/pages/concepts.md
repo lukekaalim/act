@@ -60,7 +60,8 @@ render(HelloExample, document.body);
 
 As mentioned, there is one main function that act exports for element creation.
 
-::::api{source=@lukekaalim/act aliases=h name=createElement}
+:::api
+### createElement
 
 ```ts
 import { h, createElement } from '@lukekaalim/act';
@@ -73,21 +74,13 @@ import { h, createElement } from '@lukekaalim/act';
 > which in turn follows [hyperscript](https://hyperscript.org/) (which is presumably what the "h" stands for).
 > You can use the full "createElement" name, or just alias it to something shorter yourself - there is no difference there.
 
-:::type{format=json5}
-{
-  type: "function",
-  name: "createElement",
-  arguments: [
-    { name: "type", value: { type: "union", values: [
-      { type: "opaque", name: "string" },
-      { type: "opaque", name: "Component", referenceURL: "#Component" },
-    ] } },
-    { name: "props", optional: true, value: { type: "opaque", name: "Object" } },
-    { name: "children", optional: true, value: { type: "opaque", name: "Element", referenceURL: "#Element" } },
-  ],
-  returns: { type: "opaque", name: "Element", referenceURL: "#Element" }
-}
-:::
+```ts
+createElement(
+  component: (string | FunctionComponent),
+  props?: Object,
+  children?: ElementNode
+): Element;
+```
 
 #### type
 A special string that tells the renderer what this element represents.
@@ -122,7 +115,7 @@ override any prop named "children" passed into the element.
 Otherwise, if the "type" is a string, then the renderer gets to decide what children represent: in the
 case of the Web Renderer, children are Child Elements in the DOM hierarchy.
 
-::::
+:::
 
 ## Types
 
@@ -132,26 +125,19 @@ that you will work with when using act: the [Element](#Element) type, and the [C
 These types aren't classes or things you import, they are just abstract interfaces included here
 for reference.
 
-::::api{name=Element}
+:::api
+### Element
 The `Element` type is a set of acceptable values that you can put anywhere the API
 asks for an Element.
 
-:::type{format=json5}
-{
-  type: "assignment",
-  name: "Element",
-  value: {
-    type: "union",
-    values: [
-      { type: 'opaque', name: 'string' },
-      { type: 'opaque', name: 'number' },
-      { type: 'opaque', name: 'null' },
-      { type: 'opaque', name: 'ElementNode' },
-      { type: 'array', element: { type: 'opaque', name: 'Element', referenceURL: '#Element' } },
-    ]
-  }
-}
-:::
+```ts
+type ElementNode =
+  | string
+  | number
+  | null
+  | Element
+  | ElementNode[]
+```
 
 Most commontly, you put elements as the return value of [Components](#Component) and as the third
 argument to the [createElement](#createElement) function.
@@ -187,24 +173,17 @@ and you typically don't need to worry about it directly.
 > and `null` becoming
 > `h('act:null')`.
 
-::::
-
-
-::::api{name=Component}
-
-:::type{format=json5}
-{
-  type: "function",
-  name: "Component",
-  genericArguments: [
-    { name: "T", restriction: { type: "opaque", name: "Object" } }
-  ],
-  arguments: [
-    { name: 'props', value: { type: 'opaque', name: 'T' } }
-  ],
-  returns: { type: 'opaque', name: 'Element', referenceURL: '#Element' }
-}
 :::
+
+
+:::api
+### Component
+
+```ts
+type Component<Props> = (
+  props: Props & { children: ElementNode }
+) => ElementNode;
+```
 
 The Component type represents the interface all your component functions must follow.
 
@@ -226,4 +205,4 @@ In addition to props, components have another feature that lets them access some
 
 Every component (and really every element) keeps track of a set of data called **State**, often accessible by
 special functions called **Hooks**.
-::::
+:::

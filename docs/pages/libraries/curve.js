@@ -1,7 +1,6 @@
 // @flow strict
 /*:: import type { Page } from '@lukekaalim/act-rehersal'; */
 import { h } from '@lukekaalim/act';
-import { Document, Markdown } from '@lukekaalim/act-rehersal';
 
 import curveHooksText from './curve/hooks.md?raw';
 import curveMainText from './curve.md?raw';

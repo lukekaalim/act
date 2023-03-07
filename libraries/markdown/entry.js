@@ -39,7 +39,7 @@ export const MarkdownEmphasis/*: MarkdownComponent<>*/ = ({ node }) => {
 export const MarkdownStrong/*: MarkdownComponent<>*/ = ({ node }) => {
   return h('strong', { }, h(MarkdownChildren, { node }))
 }
-const getHeadingElementType = (node) => {
+export const getHeadingElementType = (node/*: MarkdownASTNode*/)/*: string*/ => {
   switch (true) {
     case node.depth === 1:
       return 'h1';
@@ -107,6 +107,21 @@ export const MarkdownDirective/*: MarkdownComponent<>*/ = ({ node }) => {
 
   return h(component, { node }, h(MarkdownChildren, { node }))
 }
+export const MarkdownTable/*: MarkdownComponent<>*/ = ({ node }) => {
+  return h('table', {}, [
+    h(MarkdownChildren, { node })
+  ])
+}
+export const MarkdownTableRow/*: MarkdownComponent<>*/ = ({ node }) => {
+  return h('tr', {}, [
+    h(MarkdownChildren, { node })
+  ])
+}
+export const MarkdownTableCell/*: MarkdownComponent<>*/ = ({ node }) => {
+  return h('td', {}, [
+    h(MarkdownChildren, { node })
+  ])
+}
 
 export const MarkdownChildren/*: Component<{ node: MarkdownASTNode, spread?: boolean }>*/ = ({ node, spread }) => {
   return node.children.map(node => h(MarkdownNode, { node, spread }));
@@ -151,6 +166,12 @@ export const MarkdownNode/*: Component<{ node: MarkdownASTNode, spread?: boolean
     case 'textDirective':
     case 'containerDirective':
       return h(MarkdownDirective, { node });
+    case 'table':
+      return h(MarkdownTable, { node });
+    case 'tableRow':
+      return h(MarkdownTableRow, { node });
+    case 'tableCell':
+      return h(MarkdownTableCell, { node })
     default:
       console.warn(`Unsupported markdown node type`);
       console.warn(node);
@@ -220,3 +241,5 @@ export const MarkdownASTRenderer/*: Component<MarkdownASTRendererProps>*/ = ({
     ),
   ];
 }
+
+export * from './text.js';

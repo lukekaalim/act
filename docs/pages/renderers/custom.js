@@ -6,7 +6,6 @@ import { h, useEffect, useRef } from "@lukekaalim/act";
 import { createObjectRenderer, useDisposable } from "@lukekaalim/act-three";
 import { createWebRenderer, setNodeChildren } from "@lukekaalim/act-web";
 import { createNullRenderer, createManagedRenderer } from "@lukekaalim/act-renderer-core";
-import { Document, Markdown } from "@lukekaalim/act-rehersal";
 
 import text from './custom.md?raw';
 import { createTree } from "@lukekaalim/act-reconciler";

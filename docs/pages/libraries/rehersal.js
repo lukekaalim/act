@@ -4,7 +4,6 @@
 /*:: import type { CubicBezier } from '@lukekaalim/act-curve'; */
 import { createId, h, useMemo, useState } from '@lukekaalim/act';
 import { getCubicPoint, getBerenstienCubicPoint, getBezierVelocity, getBezierAcceleration } from '@lukekaalim/act-curve';
-import { Document, TabbedToolbox, Workspace, TextInput, GridBench, NumberInput, BooleanInput, Markdown } from '@lukekaalim/act-rehersal';
 import rehersalReadmeText from '@lukekaalim/act-rehersal/README.md?raw';
 
 const primitiveText = `

@@ -5,12 +5,11 @@
 import type { RehersalPage } from "../../libraries/rehersal/rehersal2/pages";
 */
 import { h } from '@lukekaalim/act';
-import { Document, ExportDescription, Markdown, SyntaxCode, TypeDocumentation } from '@lukekaalim/act-rehersal';
 import { MarkdownNode } from '@lukekaalim/act-markdown';
 import JSON5 from 'json5';
 
 import conceptsText from './concepts.md?raw';
-import { MarkdownBlock } from '@lukekaalim/act-rehersal/rehersal2/components/MarkdownBlock';
+import { MarkdownBlock } from '@lukekaalim/act-rehersal';
 
 const HelloExample = () => {
   const greet = () => {
@@ -47,11 +46,17 @@ const ComponentDiagram = () => {
 }
 
 export const conceptsPage/*: RehersalPage*/ = {
-  title: '✅ Basic Concepts',
+  title: 'Basic Concepts',
   id: 'concepts',
   path: '/concepts',
+  searchableText: async () => conceptsText,
   children: [],
-  subsections: [],
+  subsections: [
+    "basic concepts",
+    "createElement",
+    "element",
+    "component",
+  ],
   content: [
     h(MarkdownBlock, { input: { type: 'text', text: conceptsText }, directives: {
       //'api': MarkdownAPI,

@@ -1,7 +1,6 @@
 // @flow strict
 /*:: import type { Page } from "@lukekaalim/act-rehersal"; */
 import { h } from "@lukekaalim/act";
-import { Document, Markdown } from "@lukekaalim/act-rehersal";
 
 import webText from './renderers/web.md?raw';
 import text from './renderers/index.md?raw';

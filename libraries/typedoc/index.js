@@ -114,7 +114,8 @@ export const RenderTypeDocObjectProperty/*: Component<RenderTypeDocObjectPropert
 }
 
 export const RenderTypeDocNode/*: Component<RenderTypeDocNodeProps>*/ = ({
-  node, depth = 0
+  node,
+  depth = 0
 }) => {
   switch (node.type) {
     case 'object':
@@ -159,9 +160,12 @@ export const RenderTypeDocNode/*: Component<RenderTypeDocNodeProps>*/ = ({
       return h('span', { class: styles.typeId }, 'void');
     case 'literal':
       return h('span', { style: { color: 'yellow' }}, node.literal.toString());
+    case 'reference':
+      return h('a', { class: styles.typeId, href: `#${node.id}` }, node.id)
     default:
       return 'Unsupported type'
   }
 };
 
 export * from './flow.js';
+export * from './typescript.js';

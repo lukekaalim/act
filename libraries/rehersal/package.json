@@ -2,7 +2,7 @@
   "name": "@lukekaalim/act-rehersal",
   "version": "2.5.0",
   "description": "A component library for building act previews",
-  "main": "entry.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "postversion": "../../scripts/postversion.sh"
@@ -20,11 +20,13 @@
   "dependencies": {
     "@lukekaalim/act": "*",
     "@lukekaalim/act-markdown": "*",
-    "@lukekaalim/act-three": "*",
     "@lukekaalim/act-navigation": "^1.0.0",
-    "@lukekaalim/cast": "^4.1.1",
-    "highlight.js": "^11.4.0",
+    "@lukekaalim/act-three": "*",
+    "@lukekaalim/cast": "^4.4.0",
+    "highlight.js": "^11.7.0",
     "json5": "^2.2.0",
+    "lodash": "^4.17.21",
+    "lunr": "^2.3.9",
     "mdast-util-from-markdown": "^1.0.4"
   }
 }

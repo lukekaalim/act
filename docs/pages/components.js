@@ -2,7 +2,6 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Page } from '../entry.js'; */
 import { h } from '@lukekaalim/act';
-import { Document } from '@lukekaalim/act-rehersal';
 
 const text = `
 # Writing Components
