@@ -6,6 +6,7 @@ import {
   useContext,
 
   useMemo,
+  useRef,
   
   createContext,
 } from 'react';
@@ -42,6 +43,7 @@ export {
   createElementWrapper as h,
   createContext,
   useMemo,
+  useRef,
   useContext,
   useState,
   useEffect,
