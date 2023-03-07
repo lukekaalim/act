@@ -1,12 +1,13 @@
 // @flow strict
 
-import { h, useEffect, useRef, useState, createId } from "@lukekaalim/act";
+import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { createInitialCubicBezierAnimation, interpolateCubicBezierAnimation, useAnimatedList, useBezierAnimation } from "@lukekaalim/act-curve";
 import styles from './SlideTransition.module.css';
 
 /*::
 import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
 import type { ElementNode, Ref, Component } from "@lukekaalim/act";
+import { nanoid } from "nanoid/non-secure";
 
 type TransitionID = string;
 type SlideTransitionState = {
@@ -55,7 +56,7 @@ export const SlideTransition/*: Component<SlideTransitionProps>*/ = ({ content, 
   useEffect(() => {
     if (!transitionState) {
       setTransitionState({
-        transitionId: createId(),
+        transitionId: nanoid(),
         content,
         contentKey,
         animation: createInitialCubicBezierAnimation(0),
@@ -70,7 +71,7 @@ export const SlideTransition/*: Component<SlideTransitionProps>*/ = ({ content, 
       animation: interpolateCubicBezierAnimation(transitionState.animation, 1, 400, 3, now)
     };
     const nextTransitionState = {
-      transitionId: createId(),
+      transitionId: nanoid(),
       content,
       contentKey,
       animation: interpolateCubicBezierAnimation(createInitialCubicBezierAnimation(-1), 0, 400, 3, now),

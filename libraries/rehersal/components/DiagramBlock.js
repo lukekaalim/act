@@ -1,7 +1,8 @@
 // @flow strict
 
-import { h, useState, createId, useEffect, useRef, createContext } from "@lukekaalim/act";
+import { h, useState, useEffect, useRef, createContext } from "@lukekaalim/act";
 import styles from './DiagramBlock.module.css';
+import { nanoid } from 'nanoid/non-secure';
 
 /*::
 import type { Component, Context } from "@lukekaalim/act";
@@ -73,7 +74,7 @@ const DiagramControls = ({ position }) => {
 }
 
 const DiagramBackground = ({ position, dragging, setPosition, setDragging, bounding }) => {
-  const [id] = useState(createId());
+  const [id] = useState(nanoid());
 
   const onPointerDown = (e/*: PointerEvent*/) => {
     setDragging(true);

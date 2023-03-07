@@ -23,10 +23,12 @@
     "@lukekaalim/act-navigation": "^1.0.0",
     "@lukekaalim/act-three": "*",
     "@lukekaalim/cast": "^4.4.0",
+    "@lukekaalim/act-curve": "^3.1.2",
     "highlight.js": "^11.7.0",
     "json5": "^2.2.0",
     "lodash": "^4.17.21",
     "lunr": "^2.3.9",
-    "mdast-util-from-markdown": "^1.0.4"
+    "mdast-util-from-markdown": "^1.0.4",
+    "nanoid": "^4.0.1"
   }
 }

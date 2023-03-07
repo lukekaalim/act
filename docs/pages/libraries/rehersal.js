@@ -366,22 +366,6 @@ export type DragAxisGrid2DProps = {
 };
 */
 
-const DraggableGraphGrid2D/*: Component<DragAxisGrid2DProps>*/ = ({
-  children,
-  size = [720, 300],
-  gridInterval = 20,
-  initialScale = 3,
-  id = createId(),
-}) => {
-  const [width, height] = size;
-  const [offset, scale, events] = useDragging([-0, -0], initialScale, size);
-  const [namespaceId] = useState(id);
-
-  return h('svg', { id: namespaceId, width, height, ...events, xmlns: 'http://www.w3.org/2000/svg' }, [
-    h(AxisGrid2D, { offset, scale, namespaceId, size, gridInterval }, children)
-  ])
-};
-
 export const rehersalPage/*: Page*/ = {
   link: { href: '/libraries/rehersal', name: 'Rehersal', children: [
     //{ name: 'exports', children: [primitivesPage.link] }

@@ -1,11 +1,11 @@
 // @flow strict
 
 import { h } from "@lukekaalim/act";
-import { createId } from "@lukekaalim/act/ids";
 
 /*::
 import type { GraphNode, GraphEdge, GraphNodeID } from "./basicGraph";
 import type { ElementNode } from "@lukekaalim/act";
+import { nanoid } from "nanoid/non-secure";
 
 export type TreeGraphNode = {
   id?: GraphNodeID,
@@ -86,7 +86,7 @@ export const calculateTreeNodesEdges = (
         depth + 100,
         position.x,
       );
-      const id = node.id || createId();
+      const id = node.id || nanoid();
       const nodes = [
         {
           id,

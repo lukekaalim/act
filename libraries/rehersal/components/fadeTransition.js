@@ -4,7 +4,7 @@
 import { useEffect, useState } from "@lukekaalim/act";
 import { createInitialCubicBezierAnimation, interpolateCubicBezierAnimation } from "@lukekaalim/act-curve";
 import { calculateIndexChanges } from "@lukekaalim/act-reconciler/util";
-import { createId } from "@lukekaalim/act/ids";
+import { nanoid } from "nanoid/non-secure";
 
 /*::
 import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
@@ -22,7 +22,7 @@ export type FadeTransitionState<T> = {
 
 const createInitialState = /*:: <T>*/(value/*: T*/, getElementKey/*: T => mixed*/)/*: FadeTransitionState<T>*/ => {
   return {
-    id: createId(),
+    id: nanoid(),
     value,
     key: getElementKey(value),
     position: 'entering',
@@ -53,7 +53,7 @@ export const useFadeTransition = /*:: <T>*/(
       const created = changes.created.includes(index);
       if (created) {
         return {
-          id: createId(),
+          id: nanoid(),
           value, key: nextKeys[index],
           position: 'entering',
           animation: interpolateCubicBezierAnimation(
