@@ -10,12 +10,25 @@ import {
   createContext,
 } from 'react';
 
-const propsTransformer = (props) => {
-  if (!props)
-    return props;
+const classPropsTransformer = (props) => {
   if (props.class)
     return { ...props, className: props.class };
   return props;
+}
+const classListPropsTransformer = (props) => {
+  if (Array.isArray(props.classList))
+    return { ...props, className: classList.filter(Boolean).join(' ') };
+  return props;
+}
+
+const propsTransformer = (props) => {
+  if (!props)
+    return props;
+
+  return [
+    classPropsTransformer ,
+    classListPropsTransformer,
+  ].reduce((props, transformer) => transformer(props), props)
 };
 
 const createElementWrapper = (element, props, children) => {
