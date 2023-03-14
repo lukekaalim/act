@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-renderer-core",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Utility functions for building three renderers",
   "main": "entry.js",
   "type": "module",
