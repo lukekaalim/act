@@ -6,6 +6,7 @@ import type { Element, Props } from "@lukekaalim/act";
 import type { Diff3 } from "../../reconciler/diff";
 
 export type RendereredNode<T> =
+  | { type: 'empty' }
   | { type: 'skip' }
   | { type: 'node', node: T }
 export type RenderResult2<T> = {
@@ -31,23 +32,28 @@ const identityRenderer/*: Renderer2<any>*/ = {
   getNodes: () => [],
 }
 
+const defaultEmptyNodes = new Set([
+  'act:null',
+])
 const defaultSkipNodes = new Set([
   'act:context',
   'act:suspend',
   'act:boundary',
-  'act:null',
 ])
 
 export const createRenderer2 = /*::<T>*/(
   implementation/*: RendererImplementation<T>*/,
   nextRenderer/*: Renderer2<T>*/ = identityRenderer,
 )/*: Renderer2<T>*/ => {
-  const nodeDetailsByCommitId/*: Map<CommitID3, { type: 'skip' } | { type: 'node', node: T }>*/ = new Map();
+  const nodeDetailsByCommitId/*: Map<CommitID3, RendereredNode<T>>*/ = new Map();
 
   const createNode = (element) => {
     const { type, props, children } = element;
     if (typeof type === 'function')
       return { type: 'skip' };
+
+    if (defaultEmptyNodes.has(type))
+      return { type: 'empty' };
 
     if (defaultSkipNodes.has(type))
       return { type: 'skip' }
@@ -100,7 +106,7 @@ export const createRenderer2 = /*::<T>*/(
       .flat(1);
 
     const commit = set.nexts.get(commitId);
-    if (commit.state === 'suspended')
+    if (commit.state === 'suspended' || nodeDetails.type === 'empty')
       return [];
 
     if (nodeDetails.type === 'skip')
