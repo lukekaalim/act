@@ -3,6 +3,7 @@
   "version": "1.1.0",
   "description": "Context and Hooks for HTML page navigation",
   "type": "module",
+  "types": "entry.d.ts",
   "main": "entry.js",
   "scripts": {
     "postversion": "../../scripts/postversion.sh"
