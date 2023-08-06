@@ -1,12 +1,12 @@
 import { Context } from "@lukekaalim/act";
 
 export type Navigation = {
-  navigate: (destination: URL, title?: string) => mixed;
+  navigate: (destination: URL, title?: string) => unknown;
   location: URL;
 };
 
 export type History = {
-  pushState: (state: ?unknown, title: ?string, destination?: string) => void;
+  pushState: (state?: unknown, unused?: "", destination?: string) => void;
 };
 
 export const navigationContext: Context<null | Navigation>;
