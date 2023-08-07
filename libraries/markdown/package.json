@@ -3,6 +3,7 @@
   "version": "1.5.0",
   "description": "Renders markdown syntax into act elements",
   "main": "entry.js",
+  "types": "entry.d.ts",
   "type": "module",
   "scripts": {
     "postversion": "../../scripts/postversion.sh"
