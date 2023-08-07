@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-markdown",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Renders markdown syntax into act elements",
   "main": "entry.js",
   "types": "entry.d.ts",
