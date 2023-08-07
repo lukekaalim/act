@@ -17,7 +17,7 @@ export type MarkdownRendererProps = {
 export const MarkdownRenderer: Component<MarkdownRendererProps>;
 
 export type MarkdownASTRendererProps = {
-  root: MarkdownASTNode,
+  root: Root,
   directiveComponents?: ComponentMap,
   externalComponents?: ComponentMap,
 };
