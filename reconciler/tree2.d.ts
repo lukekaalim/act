@@ -1,5 +1,5 @@
 import { Element } from "@lukekaalim/act";
-import { CommitRef, DiffService, DiffSet } from "./main";
+import { CommitRef, CommitRef3, DiffService, DiffSet } from "./main";
 
 export type TreeService2 = {
   mount: (element: Element) => void,
