@@ -19,3 +19,5 @@ export type SuspensionRegistry = {
 declare export function createSuspensionRegistry(
   suspensionsByCommit?: Map<CommitID3, unknown>
 ): SuspensionRegistry
+
+declare export function createBoundaryService(): BoundaryService;
