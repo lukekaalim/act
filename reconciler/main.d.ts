@@ -5,3 +5,5 @@ export * from './effect';
 export * from './context2';
 export * from './component2';
 export * from './commit3';
+export * from './diff';
+export * from './boundary';
