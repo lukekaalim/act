@@ -27,3 +27,8 @@ declare export function createNullRenderer2<A, B> (
   internalRenderer?: null | Renderer2<A> | (() => Renderer2<A>),
   skipTypes?: ElementType[]
 ): Renderer2<B>
+
+declare export function createRenderer2 <T>(
+  implementation: RendererImplementation<T>,
+  nextRenderer?: Renderer2<T>,
+): Renderer2<T>
