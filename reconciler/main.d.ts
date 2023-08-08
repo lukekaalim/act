@@ -21,8 +21,28 @@ export type CommitChangeResult = {
   changes: CommitChange[],
   commit: Commit,
 }
+
+export type DiffTask = {
+  pending: CommitChange3[],
+  prevSet: DiffSet,
+
+  work: Generator<null, DiffSet, void>
+};
 export type DiffSet = {
-  
+  diffs: Map<CommitID3, Diff3>,
+
+  prevs: CommitMap,
+  nexts: CommitMap,
+  root: CommitID3,
+
+  registry: EffectRegistry,
+  suspensions: SuspensionRegistry,
+}
+
+export type Diff3 = {
+  commit: Commit3,
+  change: CommitChange3,
+  diffs: CommitID3[],
 }
 
 declare type Scheduler = {
