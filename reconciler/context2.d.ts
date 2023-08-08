@@ -10,5 +10,7 @@ export type ContextProvider = {
 declare type ContextService2 = {
   getProviderForPath: (contextId: ContextID, path: CommitID3[], defaultValue: unknown) => ContextProvider,
 
+ 
   updateCommit: (commit: Commit3) => { targets: CommitRef3[] },
 }
+declare export function createContextService2(): ContextService2

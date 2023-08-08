@@ -1,5 +1,5 @@
 import { CleanupFunc, Effect } from "@lukekaalim/act";
-import { SchedulePriority2 } from "./scheduler2";
+import { SchedulePriority2, Scheduler2 } from "./scheduler2";
 
 export type EffectID = string;
 export type RegisteredEffect = {
@@ -26,3 +26,7 @@ export type EffectRegistry = {
 export type EffectService = {
   runEffectRegistry: (registry: EffectRegistry) => EffectRegistry,
 };
+
+declare export function createEffectService(
+  scheduler: Scheduler2
+): EffectService

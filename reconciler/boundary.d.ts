@@ -11,7 +11,11 @@ export type BoundaryService = {
 };
 
 export type SuspensionRegistry = {
-  suspensionsByCommit: Map<CommitID3, mixed>,
+  suspensionsByCommit: Map<CommitID3, unknown>,
   clone: () => SuspensionRegistry,
   addSuspensionValue: (commitId: Commit3) => void,
 };
+
+declare export function createSuspensionRegistry(
+  suspensionsByCommit?: Map<CommitID3, unknown>
+): SuspensionRegistry
