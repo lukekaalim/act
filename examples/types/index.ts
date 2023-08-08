@@ -1,6 +1,8 @@
 import { h, Component, useState, useEffect, useRef, Ref } from '@lukekaalim/act';
-import { render } from '@lukekaalim/act-web';
-import { createTreeService } from '@lukekaalim/act-reconciler';
+import { render as renderWeb } from '@lukekaalim/act-web';
+import { render as renderThree } from '@lukekaalim/act-three';
+import '@lukekaalim/act-renderer-core';
+
 
 const MyNestedApp: Component<{ brah: string, ref: Ref<Symbol> }> = ({ brah }) => {
   return brah;
@@ -33,4 +35,4 @@ const App: Component<{ count: number }> = ({ children, count }) => {
   ]);
 };
 
-render(h(App, { count: 10 }), document.body);
+renderThree(h(App, { count: 10 }), document.body);

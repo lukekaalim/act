@@ -1,2 +1,2 @@
-export * from './renderer';
-export * from './props';
+export * from './renderer.js';
+export * from './props.js';

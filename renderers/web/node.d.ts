@@ -1,1 +1,1 @@
-declare export function setNodeChildren2(parent: Node, children: Node[]): void
+export declare function setNodeChildren2(parent: Node, children: Node[]): void
