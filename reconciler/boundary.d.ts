@@ -1,4 +1,5 @@
-import { Commit3, CommitID3 } from "./commit3";
+import { Commit3, CommitID3 } from "./commit3.js";
+import { DiffSet } from "./diff.js";
 
 export type BoundaryMap = {
   boundaries: Map<CommitID3, Commit3>,
@@ -7,7 +8,7 @@ export type BoundaryMap = {
 
 export type BoundaryService = {
   calcBoundaryMap: (diffSet: DiffSet) => BoundaryMap,
-  getRootBoundaryValue: (suspension: SuspensionRegistry, diffSet: DiffSet, boundaryMap: BoundaryMap) => mixed[],
+  getRootBoundaryValue: (suspension: SuspensionRegistry, diffSet: DiffSet, boundaryMap: BoundaryMap) => unknown[],
 };
 
 export type SuspensionRegistry = {
@@ -16,8 +17,8 @@ export type SuspensionRegistry = {
   addSuspensionValue: (commitId: Commit3) => void,
 };
 
-declare export function createSuspensionRegistry(
+export declare function createSuspensionRegistry(
   suspensionsByCommit?: Map<CommitID3, unknown>
 ): SuspensionRegistry
 
-declare export function createBoundaryService(): BoundaryService;
+export declare function createBoundaryService(): BoundaryService;

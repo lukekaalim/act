@@ -1,5 +1,5 @@
 import { ContextID } from "@lukekaalim/act"
-import { Commit3, CommitID3, CommitRef3 } from "./commit3"
+import { Commit3, CommitID3, CommitRef3 } from "./commit3.js"
 
 export type ContextProvider = {
   value: unknown,
@@ -13,4 +13,4 @@ declare type ContextService2 = {
  
   updateCommit: (commit: Commit3) => { targets: CommitRef3[] },
 }
-declare export function createContextService2(): ContextService2
+export declare function createContextService2(): ContextService2

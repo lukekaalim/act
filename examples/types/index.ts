@@ -1,5 +1,6 @@
 import { h, Component, useState, useEffect, useRef, Ref } from '@lukekaalim/act';
 import { render } from '@lukekaalim/act-web';
+import { createTreeService } from '@lukekaalim/act-reconciler';
 
 const MyNestedApp: Component<{ brah: string, ref: Ref<Symbol> }> = ({ brah }) => {
   return brah;

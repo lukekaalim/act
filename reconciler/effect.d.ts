@@ -1,5 +1,5 @@
 import { CleanupFunc, Effect } from "@lukekaalim/act";
-import { SchedulePriority2, Scheduler2 } from "./scheduler2";
+import { SchedulePriority2, Scheduler2 } from "./scheduler2.js";
 
 export type EffectID = string;
 export type RegisteredEffect = {
@@ -18,7 +18,7 @@ export type EffectRegistry = {
   },
 
   registerEffect: (runEffect: () => void | (() => unknown), priority?: 'normal') => EffectID,
-  updateEffect: (id: EffectID, runEffect: () => void | (() => mixed), priority?: 'normal') => void,
+  updateEffect: (id: EffectID, runEffect: () => void | (() => unknown), priority?: 'normal') => void,
   teardownEffect: (id: EffectID) => void,
 
   clone: () => EffectRegistry,
@@ -27,6 +27,6 @@ export type EffectService = {
   runEffectRegistry: (registry: EffectRegistry) => EffectRegistry,
 };
 
-declare export function createEffectService(
+export declare function createEffectService(
   scheduler: Scheduler2
 ): EffectService

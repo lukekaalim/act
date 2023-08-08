@@ -1,9 +1,9 @@
-import { CommitService2 } from "./commit3";
-import { ComponentService2 } from "./component2";
-import { ContextService2 } from "./context2";
-import { DiffService } from "./diff";
-import { Scheduler2 } from "./scheduler2";
-import { TreeService2 } from "./tree2";
+import { CommitService2 } from "./commit3.js";
+import { ComponentService2 } from "./component2.js";
+import { ContextService2 } from "./context2.js";
+import { DiffService } from "./diff.js";
+import { Scheduler2 } from "./scheduler2.js";
+import { TreeService2 } from "./tree2.js";
 
 export type Reconciler = {
   tree: TreeService2,
@@ -13,4 +13,4 @@ export type Reconciler = {
   context: ContextService2,
 }
 
-declare export function createReconciler(scheduler: Scheduler2): Reconciler;
+export declare function createReconciler(scheduler: Scheduler2): Reconciler;

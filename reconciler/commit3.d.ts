@@ -1,6 +1,6 @@
 import { Element } from "@lukekaalim/act";
-import { EffectRegistry } from "./effect";
-import { ComponentService2 } from "./component2";
+import { EffectRegistry } from "./effect.js";
+import { ComponentService2 } from "./component2.js";
 
 export type CommitID3 = string;
 export type CommitVersion = string;
@@ -29,7 +29,7 @@ export type CommitChange3 =
     };
 
 export type CommitChangeResult3 = {
-  changes: $ReadOnlyArray<CommitChange3>;
+  changes: ReadonlyArray<CommitChange3>;
   commit: Commit3;
 };
 
