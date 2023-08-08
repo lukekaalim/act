@@ -1,7 +1,7 @@
 import { CommitService2 } from "./commit3";
 import { ComponentService2 } from "./component2";
 import { ContextService2 } from "./context2";
-import { DiffService } from "./main";
+import { DiffService } from "./diff";
 import { Scheduler2 } from "./scheduler2";
 import { TreeService2 } from "./tree2";
 
