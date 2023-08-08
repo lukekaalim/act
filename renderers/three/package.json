@@ -1,8 +1,9 @@
 {
   "name": "@lukekaalim/act-three",
-  "version": "5.10.4",
+  "version": "5.10.5",
   "description": "Render threejs content using act",
   "main": "entry.js",
+  "types": "entry.d.ts",
   "type": "module",
   "scripts": {
     "test": "cd ../../; npm test;",
