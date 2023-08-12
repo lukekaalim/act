@@ -22,10 +22,12 @@ import {
   Object3D,
   OrthographicCamera,
   Quaternion,
+  Scene,
   Vector2,
   Vector3,
 } from "three";
 import { setRef } from "@lukekaalim/act-renderer-core";
+import { scenePropSetters } from './components/scene';
 
 export const setTransformProp = (target/*: mixed*/, diff/*: PropDiff*/)/*: boolean*/ => {
   if (target instanceof Vector2 && diff.next instanceof Vector2) {
@@ -131,7 +133,7 @@ export const setObjectProps2 = (
     }
     if (setInstanceProp((object/*: any*/), key, propDiff))
       continue;
-    
+
     if (setMeshProp((object/*: any*/), key, propDiff)) {
       continue;
     }
@@ -139,10 +141,20 @@ export const setObjectProps2 = (
       continue;
     if (setValueProp((object/*: any*/), key, propDiff))
       continue;
+    if (object instanceof Scene) {
+      const setter = scenePropSetters[propDiff.key];
+      if (setter) {
+        setter(object, propDiff.next, propDiff.prev);
+        continue;
+      }
+    }
+      
+
 
     console.warn(`Unhandled prop ${key}`, propDiff.next, object);
   }
 
   if (object instanceof OrthographicCamera)
     object.updateProjectionMatrix();
+
 }
