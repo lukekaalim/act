@@ -2,7 +2,7 @@ import { Component, Ref } from "@lukekaalim/act";
 import { AmbientLight, Color, CubeTexture, DirectionalLight, Euler, HemisphereLight, Light, Mesh, PerspectiveCamera, PointLight, Quaternion, Scene, Sprite, Texture, Vector3 } from "three";
 
 export type ReferenceProps<T> = {
-  ref?: ((reference: T) => unknown) | Ref<T>
+  ref?: ((reference: T) => unknown) | Ref<null | T>
 };
 
 type PropsFromList<TObject, TPropList extends (keyof TObject)[]> = {
