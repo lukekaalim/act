@@ -11,6 +11,7 @@ import { setHTMLProp } from "@lukekaalim/act-web";
 import {
   BufferGeometry,
   Camera,
+  Color,
   DirectionalLight,
   Euler,
   Group,
@@ -78,6 +79,15 @@ export const setMeshProp = (object/*: { [string]: mixed }*/, name/*: string*/, d
   }
   return false;
 }
+export const setInstanceProp = (object/*: { [string]: mixed }*/, name/*: string*/, diff/*: PropDiff*/)/*: boolean*/ => {
+  if (object[name] instanceof Color) {
+    if (diff.next instanceof Color || typeof diff.next === 'string' || typeof diff.next === 'number') {
+      object[name].set(diff.next)
+      return true;
+    }
+  }
+  return false;
+}
 
 export const setLightShadowProps = (
   diffs/*: PropDiffRegistry*/,
@@ -119,6 +129,9 @@ export const setObjectProps2 = (
       setLightShadowProps(propRegistry, target)
       continue;
     }
+    if (setInstanceProp((object/*: any*/), key, propDiff))
+      continue;
+    
     if (setMeshProp((object/*: any*/), key, propDiff)) {
       continue;
     }
