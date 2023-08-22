@@ -5,6 +5,8 @@ import { h, useEffect, useState, useMemo, createContext, useContext } from '@luk
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
+import remarkHeading from 'remark-heading-id';
+import remarkHeadings from '@vcarl/remark-headings';
 import remarkDirective from 'remark-directive';
 
 /*::
@@ -54,7 +56,8 @@ export const getHeadingElementType = (node/*: MarkdownASTNode*/)/*: string*/ => 
 }
 export const MarkdownHeading/*: MarkdownComponent<>*/ = ({ node }) => {
   const elementType = getHeadingElementType(node);
-  return h(elementType, {}, h(MarkdownChildren, { node }));
+  const id = node.data && node.data.id;
+  return h(elementType, { id }, h(MarkdownChildren, { node }));
 }
 const getListElementType = (node) => {
   switch (node.ordered) {
@@ -203,12 +206,16 @@ export type MarkdownRendererProps = {
 };
 */
 
+const parser = unified()
+  .use(remarkParse)
+  .use(remarkDirective)
+  .use(remarkGfm)
+  .use(remarkHeading, { defaults: true })
+  .use(remarkHeadings)
+
 export const parseMarkdown = (text/*: string*/)/*: MarkdownASTNode*/ => {
-  return unified()
-    .use(remarkParse)
-    .use(remarkDirective)
-    .use(remarkGfm)
-    .parse(text)
+  const ast = parser.parse(text);
+  return parser.runSync(ast, text);
 }
 
 export const useMarkdownAST = (text/*: string*/)/*: MarkdownASTNode*/ => {

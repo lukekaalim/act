@@ -20,6 +20,7 @@
   "homepage": "https://github.com/lukekaalim/act#readme",
   "dependencies": {
     "@lukekaalim/act": "^2.3.0",
+    "@vcarl/remark-headings": "^0.1.0",
     "mdast-util-directive": "^3.0.0",
     "remark": "^14.0.3",
     "remark-directive": "^2.0.1",

@@ -77,7 +77,7 @@ const defaultDirectives/*: ComponentMap*/ = {
 }
 const externalComponents = {
   code: SyntaxMarkdownCode,
-  heading: HeadingComponent
+  //heading: HeadingComponent
 }
 
 export const mapMarkdownASTNode = (
