@@ -28,7 +28,6 @@
     "json5": "^2.2.0",
     "lodash": "^4.17.21",
     "lunr": "^2.3.9",
-    "mdast-util-from-markdown": "^1.0.4",
     "nanoid": "^4.0.1"
   }
 }
