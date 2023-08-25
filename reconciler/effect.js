@@ -106,7 +106,7 @@ export const createEffectService = (
         prevRegisteredEffect.cleanup = nextCleanup || null;
       } catch {}
     }
-    for (const [id] of registry.pending.removed) {
+    for (const id of registry.pending.removed) {
       const prevRegisteredEffect = registry.effectMap.get(id);
       if (!prevRegisteredEffect)
         continue;

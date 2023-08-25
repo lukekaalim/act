@@ -16,7 +16,7 @@ import type { TreeService2 } from "./tree2";
 export type ComponentState = {
   ref: CommitRef3,
   run: (component: FunctionComponent<mixed>, props: any, effect: EffectRegistry) => ElementNode,
-  teardown: () => void,
+  teardown: (effect: EffectRegistry) => void,
 };
 
 export type ComponentService2 = {
@@ -140,9 +140,10 @@ export const createComponentService = (
       }
     };
 
-    const teardown = () => {
-      for (const [,effectState] of effects)
-        registry.teardownEffect(effectState.id)
+    const teardown = (currentRegistry) => {
+      for (const [,effectState] of effects) {
+        currentRegistry.teardownEffect(effectState.id)
+      }
       for (const [,contextState] of contexts)
         contextState.detach();
     };
@@ -166,11 +167,11 @@ export const createComponentService = (
     return normalizeElement(state.run(type, { ...props, children }, effect));
   };
 
-  const remove = (ref) => {
+  const remove = (ref, effect) => {
     const state = componentStateMap.get(ref.id);
     if (!state)
       return;
-    state.teardown();
+    state.teardown(effect);
     componentStateMap.delete(ref.id);
     return;
   }
