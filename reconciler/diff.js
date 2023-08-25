@@ -170,6 +170,7 @@ export const createDiffService = (
       }
 
       const registry = prevSet.registry.clone();
+      console.log('Creating Registry Clone', registry.pending.removed);
       const suspensions = prevSet.suspensions.clone();
       const getElementTypeName = (type) => {
         if (typeof type === 'function')
@@ -187,6 +188,7 @@ export const createDiffService = (
         task.pending.push(...processedResult.changes);
         diffs.set(processedResult.commit.id, createDiff(change, processedResult));
       }
+      console.log("Returning registry", registry.pending.removed)
       const diffSet = { diffs, nexts, prevs, root, registry, suspensions };
       return diffSet;
     }

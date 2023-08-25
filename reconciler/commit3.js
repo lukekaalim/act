@@ -182,7 +182,9 @@ export const createCommitService2 = (component/*: ComponentService2*/)/*: Commit
     commitMap/*: CommitMap*/,
     effect/*: EffectRegistry*/,
   )/*: CommitChangeResult3*/ => {
+    console.log("Removing component", effect.pending.removed);
     component.remove(prev, effect);
+    console.log("Removed  component", effect.pending.removed);
     return {
       commit: {
         ...prev,
