@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@lukekaalim/act-renderer-core": "^3.5.3",
-    "@lukekaalim/act-reconciler": "^3.7.3"
+    "@lukekaalim/act-reconciler": "^3.7.5"
   },
   "devDependencies": {
     "@lukekaalim/act": "*"
