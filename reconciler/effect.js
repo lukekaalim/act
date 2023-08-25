@@ -55,14 +55,12 @@ export const createEffectRegistry = (effectMap/*: Map<EffectID, RegisteredEffect
   };
   const teardownEffect = (id) => {
     removed.add(id)
-    console.log('Adding effect to remove', removed)
   };
   const updateEffect = (id, runEffect) => {
     updated.set(id, runEffect);
   };
 
   const clone = () => {
-    console.log('cloneing registry')
     return createEffectRegistry(new Map(effectMap));
   }
 
