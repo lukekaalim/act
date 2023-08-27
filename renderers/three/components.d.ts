@@ -1,5 +1,5 @@
 import { Component, Ref } from "@lukekaalim/act";
-import { AmbientLight, Color, CubeTexture, DirectionalLight, Euler, HemisphereLight, Light, Line, LineLoop, LineSegments, Mesh, PerspectiveCamera, PointLight, Quaternion, Scene, Sprite, Texture, Vector3 } from "three";
+import { AmbientLight, Color, CubeTexture, DirectionalLight, Euler, Group, HemisphereLight, Light, Line, LineLoop, LineSegments, Mesh, PerspectiveCamera, PointLight, Quaternion, Scene, Sprite, Texture, Vector3 } from "three";
 
 export type ReferenceProps<T> = {
   ref?: ((reference: T) => unknown) | Ref<null | T>
@@ -31,6 +31,10 @@ export type SceneProps =
     "background",
     "environment"
   ]>
+
+export const group: Component<GroupProps>;
+export type GroupProps =
+  & Object3DProps<Group>
 
 export const mesh: Component<MeshProps>;
 export type MeshProps = 
