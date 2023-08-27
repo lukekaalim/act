@@ -102,7 +102,7 @@ export const createRenderer2 = /*::<T>*/(
     
     const nodeDetails = getNodeDetails(diff.commit.id, change);
 
-    const children = diff.diffs
+    const children = (diff.diffs.length > 0 ? diff.diffs : diff.commit.children)
       .map(id => nextRenderer.render(set, id))
       .flat(1);
 
