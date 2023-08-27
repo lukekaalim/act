@@ -101,11 +101,12 @@ export const createRenderer2 = /*::<T>*/(
     const { change } = diff;
     
     const nodeDetails = getNodeDetails(diff.commit.id, change);
-    const children = diff.commit.children
+
+    const children = diff.diffs
       .map(id => nextRenderer.render(set, id))
       .flat(1);
 
-    const commit = set.nexts.get(commitId);
+    const commit = set.nexts.map.get(commitId) || set.prevs.get(commitId);
     if (commit.state === 'suspended' || nodeDetails.type === 'empty')
       return [];
 

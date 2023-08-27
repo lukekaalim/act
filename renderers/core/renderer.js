@@ -115,7 +115,7 @@ export const createNullRenderer2 = /*:: <A, B>*/ (
   const skipTypesSet = new Set(skipTypes);
 
   const render = (set, commitId) => {
-    const commit = set.nexts.get(commitId);
+    const commit = set.nexts.map.get(commitId) || set.prevs.get(commitId);
     const type = commit.element.type;
 
     if (skipTypesSet.has(type)) {

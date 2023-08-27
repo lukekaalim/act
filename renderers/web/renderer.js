@@ -33,7 +33,7 @@ export const createDOMRenderer = (
   }
 
   const getRenderer = (set, commitId) => {
-    const commit = set.nexts.get(commitId);
+    const commit = set.nexts.map.get(commitId) || set.prevs.get(commitId);
     return getNextRenderer && getNextRenderer(commit.element.type) || nodeRenderer;
   }
 

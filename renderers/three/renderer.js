@@ -15,7 +15,7 @@ export const createObjectRenderer = (
 )/*: Renderer2<Object3D>*/ => {
 
   const getRenderer = (set, commitId) => {
-    const commit = set.nexts.get(commitId);
+    const commit = set.nexts.map.get(commitId) || set.prevs.get(commitId);
     return getNextRenderer && getNextRenderer(commit.element.type) || objectRenderer;
   }
 
