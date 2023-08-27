@@ -1,5 +1,5 @@
 import { Component, Ref } from "@lukekaalim/act";
-import { AmbientLight, Color, CubeTexture, DirectionalLight, Euler, HemisphereLight, Light, Mesh, PerspectiveCamera, PointLight, Quaternion, Scene, Sprite, Texture, Vector3 } from "three";
+import { AmbientLight, Color, CubeTexture, DirectionalLight, Euler, HemisphereLight, Light, Line, LineLoop, LineSegments, Mesh, PerspectiveCamera, PointLight, Quaternion, Scene, Sprite, Texture, Vector3 } from "three";
 
 export type ReferenceProps<T> = {
   ref?: ((reference: T) => unknown) | Ref<null | T>
@@ -41,6 +41,13 @@ export const sprite: Component<SpriteProps>;
 export type SpriteProps =
   & Object3DProps<Sprite>
   & PropsFromList<Sprite, ["geometry", "material", "center"]>
+
+export const line: Component<LineProps>;
+export const lineLoop: Component<LineProps>;
+export const lineSegments: Component<LineProps>;
+export type LineProps =
+  & Object3DProps<Line>
+  & PropsFromList<Line, ["geometry", "material"]>
 
 
 export type LightProps = PropsFromList<Light, [
