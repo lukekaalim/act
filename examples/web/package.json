@@ -5,7 +5,8 @@
   "type": "module",
   "dependencies": {
     "@lukekaalim/act": "*",
-    "@lukekaalim/act-web": "*"
+    "@lukekaalim/act-web": "*",
+    "@lukekaalim/act-curve": "*"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",

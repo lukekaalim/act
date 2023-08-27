@@ -4,6 +4,7 @@
   "description": "Hooks for fast-updating easing function for DOM nodes",
   "main": "main.js",
   "type": "module",
+  "types": "./main.d.ts",
   "scripts": {
     "test": "cd ../../; npm test;",
     "postversion": "../../scripts/postversion.sh",

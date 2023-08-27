@@ -9,3 +9,4 @@ export * from './animation.js';
 export * from './timing.js';
 export * from './track.js';
 export * from './schedule.js';
+export * from './array2.js';

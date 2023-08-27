@@ -2,8 +2,13 @@
 import { render } from '@lukekaalim/act-web';
 import {
   createElement as h, useMemo,
-  useState, Boundary, useEffect, useRef
+  useState, Boundary, useEffect, useRef, Component
 } from '@lukekaalim/act';
+import {
+  ValueState,
+  useAnimatedList2,
+  useBezierAnimation,
+} from '@lukekaalim/act-curve';
 
 const ToggleButton = () => {
   const [toggle, setToggle] = useState/*:: <boolean>*/(false);
@@ -29,6 +34,17 @@ const App = () => {
   const fallback = h('pre', {}, 'Ooopsie!')
   const [loadTime, setLoadTime] = useState(1000);
 
+  const [list, setList] = useState<string[]>([]);
+  const addListThing = () => {
+    setList(l => [...l, `new thing! ${Math.random()}`])
+  };
+  const removeListThing = () => {
+    setList(l => [...l].slice(1))
+  };
+  const items = useAnimatedList2(list, { calculateKey(thing) {
+    return thing
+  } })
+
   return [
     <button style={{ borderColor: randomColor() }} key={value} onClick={() => setValue(v => v + 1)}>
       {value}
@@ -39,6 +55,11 @@ const App = () => {
     h(FallbackBoundary, { fallback, deps: [working] }, [
       h(BadComponent, { working }),
     ]),
+    h('button', { onClick: addListThing }, 'Add'),
+    h('button', { onClick: removeListThing }, 'Remove'),
+    [...items
+      .sort((a, b) => a.value.localeCompare(b.value))]
+      .map(item => h(AnimatedComponent, { item, key: item.key })),
     h('div', {}, [
       h('input', { type: 'number', value: loadTime, onInput: e => setLoadTime(e.target.valueAsNumber) }),
       h(FallbackBoundary, { fallback: "Loading", deps: [loadTime] }, [
@@ -47,6 +68,20 @@ const App = () => {
     ])
   ];
 };
+
+const AnimatedComponent: Component<{ item: ValueState<string>, key: string }> = ({ item }) => {
+  const ref = useRef(null);
+
+  useBezierAnimation(item.state, point => {
+    const { current: el } = ref;
+    if (!el)
+      return;
+    el.style.opacity = 1 - Math.abs(point.position);
+    el.style.maxHeight = (1 - Math.abs(point.position)) * 300 + 'px';
+  });
+
+  return h('pre', { ref, style: { margin: 0 } }, item.value)
+}
 
 const LoadingComponent = ({ loadTime }) => {
   useLoading(loadTime);
