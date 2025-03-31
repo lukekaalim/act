@@ -152,3 +152,7 @@ export const createElementService = (
 
   return { render, clear, boundary: boundaryValues };
 }
+
+export const ElementService = {
+  create: createElementService
+}

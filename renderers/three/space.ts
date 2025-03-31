@@ -1,8 +1,10 @@
-import { createSimpleRenderSpace } from "@lukekaalim/act-backstage/mod.ts"
+import { createSimpleRenderSpace, RenderSpace } from "@lukekaalim/act-backstage"
 import { act, recon, three } from "./deps"
 import { setProps } from "./props";
 import { primitiveNodeTypes, renderNodeType } from "@lukekaalim/act";
 import { getElementHandler } from "./elements";
+import { createWebSpace } from "@lukekaalim/act-web";
+import { CommitTree } from "@lukekaalim/act-recon";
 
 export const ThreeJS: act.Component = ({ children }) => act.h(renderNodeType, { type: 'threejs' }, children)
 
@@ -28,6 +30,13 @@ export const createFinaleSpace = (tree: recon.CommitTree) => {
         el.removeFromParent()
     },
   })
+}
+
+export const createThreeWebSpace = (tree: CommitTree, root: HTMLElement) => {
+  return RenderSpace.combine([
+    createWebSpace(tree, root),
+    createFinaleSpace(tree),
+  ]);
 }
 
 export const finale = createFinaleSpace;

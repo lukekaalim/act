@@ -1,5 +1,4 @@
 import { createId, Element, OpaqueID } from "@lukekaalim/act";
-import { version } from "os";
 
 /**
  * A single consistent id representing a commit in the act tree.
@@ -28,6 +27,12 @@ export type CommitRef = {
   path: CommitPath;
 };
 export const CommitRef = {
+  from(path: CommitPath) {
+    return {
+      path,
+      id: path[path.length - 1],
+    }
+  },
   new(path: CommitPath = []) {
     const id = createId<'CommitID'>();
     return {
@@ -35,21 +40,6 @@ export const CommitRef = {
       id,
     }
   },
-  /**
-   * Visit each ID in a commit's path, from "lowest" to "highest" (reverse order)
-   * @param ref
-   * @param climbFunc 
-   * @returns 
-   */
-  climb<T>(ref: CommitRef, climbFunc: (id: CommitID) => T): T | null {
-    const ids = [...ref.path].reverse();
-    for (const id of ids) {
-      const value = climbFunc(id);
-      if (value)
-        return value;
-    }
-    return null;
-  }
 }
 
 /**

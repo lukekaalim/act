@@ -13,7 +13,9 @@ export type CommitViewerProps = {
 };
 
 export const CommitViewer: Component<CommitViewerProps> = ({ reconciler, tree, commitId }) => {
-  const commit = tree.commits.get(commitId) as Commit;
+  const commit = tree.commits.get(commitId);
+  if (!commit)
+    return null;
 
   const state = tree.components.get(commitId);
 

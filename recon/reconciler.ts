@@ -1,115 +1,111 @@
-import { WorkThread } from "./thread";
+import { convertNodeToElements, Node, OpaqueID } from "@lukekaalim/act";
+import { CommitID, CommitRef } from "./commit";
+import { WorkThread } from "./thread"
 import { CommitTree } from "./tree";
-import { DeltaSet } from "./delta";
-import { createElementService, ElementService } from "./element";
-import { createScheduler, Scheduler } from "./scheduler";
-import { createId, OpaqueID } from "@lukekaalim/act";
-
-export type Subscription = { cancel: () => void };
-export type RenderHandler = (thread: WorkThread) => unknown;
-export type WorkHandler = () => unknown;
-export type RequestWorkHandler = () => unknown;
+import { ElementService } from "./element";
+import { Scheduler, WorkID } from "./scheduler";
+import { createEventEmitter, EventEmitter } from "./event";
 
 export type Reconciler = {
+  mount(node: Node): void,
+  render(ref: CommitRef): void,
+
+  state: ReconcilerState,
   tree: CommitTree,
   elements: ElementService,
-  scheduler: Scheduler,
+  on: EventEmitter<ReconcilerEvents>["on"],
+}
 
-  work: () => void,
+export type ReconcilerState = {
+  thread: WorkThread | null,
+  work: WorkID | null,
+  /**
+   * These are targets that can't be fulfilled with the current thread
+   * */
+  pendingTargets: Map<CommitID, CommitRef>,
+}
 
-  on(event: 'request-work', handler: RequestWorkHandler): Subscription,
-  on(event: 'start-work', handler: WorkHandler): Subscription,
-  on(event: 'complete-work', handler: WorkHandler): Subscription,
-  on(event: 'thread-queued', handler: WorkHandler): Subscription,
-  on(event: 'render', handler: RenderHandler): Subscription,
-};
+export type ReconcilerEvents = {
+  'on-thread-start': WorkThread,
+  'on-thread-update': WorkThread,
+  'on-thread-complete': WorkThread,
+}
 
-/**
- * A reconciler links all the relevant subsystems together.
- * 
- * @param space 
- * @param onAfterRender 
- * @returns 
- */
-export const createReconciler = (): Reconciler => {
-  const tree = CommitTree.new();
-  const elements = createElementService(tree, ref => scheduler.render(ref));
+export const createReconciler = (scheduler: Scheduler): Reconciler => {
+  const events = createEventEmitter<ReconcilerEvents>();
+  const state: ReconcilerState = {
+    thread: null,
+    work: null,
+    pendingTargets: new Map(),
+  };
 
-  const onThreadComplete = (thread: WorkThread) => {
-    for (const [,handler] of handlers.render)
-      handler(thread);
-    
-    // immediately execute all side effects
-    for (const effect of thread.pendingEffects)
-      effect.func();
-  }
-  const onThreadQueued = () => {
-    for (const [,handler] of handlers["thread-queued"])
-      handler();
-  }
-
-  const tasks = new Set<() => void>();
-
-  // TODO: better "work" abstraction needed
-  const scheduler = createScheduler(tree, elements, (workFunc) => {
-    tasks.add(workFunc);
-
-    for (const [,handler] of handlers["request-work"])
-      handler();
-
-    return { cancel() { } }
-  }, onThreadComplete, onThreadQueued)
-
-
-  const handlers = {
-    render: new Map<OpaqueID<'HandlerID'>, RenderHandler>(),
-    work: new Map<OpaqueID<'HandlerID'>, WorkHandler>(),
-    'request-work': new Map<OpaqueID<'HandlerID'>, WorkHandler>(),
-    'start-work': new Map<OpaqueID<'HandlerID'>, WorkHandler>(),
-    'complete-work': new Map<OpaqueID<'HandlerID'>, WorkHandler>(),
-    'thread-queued': new Map<OpaqueID<'HandlerID'>, WorkHandler>(),
-  }
-  const on = (event: 'render' | 'complete-work' | 'schedule' | 'request-work' | 'thread-queued', handler: RenderHandler | WorkHandler | ScheduleHandler) => {
-    const id = createId<'HandlerID'>();
-    switch (event) {
-      case 'render':
-        handlers[event].set(id, handler as RenderHandler);
-        break;
-      case 'complete-work':
-        handlers[event].set(id, handler as WorkHandler);
-        break;
-      case 'request-work':
-        handlers[event].set(id, handler as WorkHandler);
-        break;
-      case 'thread-queued':
-        handlers[event].set(id, handler as WorkHandler);
-        break;
-      default:
-        throw new Error();
-    }    
-    return { cancel: () => {
-      handlers[event].delete(id);
-    } }
-  }
   const work = () => {
-    if (tasks.size <= 0)
+    state.work = null;
+    if (!state.thread)
       return;
-    const tasksThisRound = [...tasks];
-    tasks.clear();
 
-    for (const task of tasksThisRound)
-      task();
+    const update = state.thread.pendingUpdates.pop();
+    if (update) {
+      WorkThread.update(state.thread, update, tree, elements);
+      state.work = scheduler.requestWork(work);
+    } else {
+      const completedThread = state.thread;
+      state.thread = null;
 
-    for (const [,handler] of handlers["complete-work"])
-      handler();
+      const pendingTargets = [...state.pendingTargets]
+      state.pendingTargets.clear();
+
+      for (const [,target] of pendingTargets)
+        render(target);
+
+      WorkThread.apply(completedThread, tree);
+      events.call('on-thread-complete', completedThread);
+
+      // Run side effects
+      for (const effect of completedThread.pendingEffects) {
+        try {
+          effect.func();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
   }
 
-  return {
-    scheduler,
-    elements,
-    tree,
-
-    work,
-    on,
+  const start = () => {
+    if (!state.thread) {
+      state.thread = WorkThread.new();
+      events.call('on-thread-start', state.thread);
+    }
+    if (!state.work) {
+      state.work = scheduler.requestWork(work);
+    }
+    return state.thread;
   }
+
+  const mount = (node: Node) => {
+    const thread = start();
+    const elements = convertNodeToElements(node)
+
+    for (const element of elements) {
+      const ref = CommitRef.new()
+      tree.roots.add(ref);
+      WorkThread.queueMount(thread, ref, element);
+    }
+    events.call('on-thread-update', thread);
+  };
+  const render = (ref: CommitRef) => {
+    const thread = start();
+
+    if (WorkThread.queueTarget(thread, ref, tree)) {
+      events.call('on-thread-update', thread);
+    } else {
+      state.pendingTargets.set(ref.id, ref);
+    }
+  }
+
+  const tree = CommitTree.new();
+  const elements = ElementService.create(tree, render);
+
+  return { mount, render, state, tree, elements, on: events.on };
 }

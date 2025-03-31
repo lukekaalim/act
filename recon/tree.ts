@@ -21,8 +21,20 @@ export const CommitTree = {
     commits: new Map(),
     roots: new Set(),
   }),
+  clone(tree: CommitTree): CommitTree {
+    return {
+      errors: new Map(tree.errors),
+      components: new Map(tree.components),
+      contexts: new Map(tree.contexts),
+  
+      commits: new Map(tree.commits),
+      roots: new Set(tree.roots),
+    }
+  },
   getRootCommits: (tree: CommitTree) => {
-    return [...tree.roots].map(ref => tree.commits.get(ref.id) as Commit)
+    return [...tree.roots]
+      .map(ref => tree.commits.get(ref.id))
+      .filter(c => !!c)
   },
   /**
    * Each commit ID _may_ have an ErrorBoundaryState associated with it

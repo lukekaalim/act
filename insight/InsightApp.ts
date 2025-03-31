@@ -1,8 +1,8 @@
-import { Component, Element, h, useEffect, useState } from '@lukekaalim/act';
+import { Component, Element, h, useEffect, useMemo, useState } from '@lukekaalim/act';
 import { Commit, CommitID, CommitTree, Reconciler, Update, WorkThread } from '@lukekaalim/act-recon';
 import { hs } from '@lukekaalim/act-web';
 
-import { TreeViewer } from './TreeViewer';
+import { CommitPreview, TreeViewer } from './TreeViewer';
 
 import { debounce } from 'lodash-es'
 import { getElementName } from './utils';
@@ -10,13 +10,16 @@ import { CommitViewer } from './CommitViewer';
 import classes from './InsightApp.module.css';
 import { InsightMode } from './mode';
 import { MenuBar } from './MenuBar';
+import { ThreadViewer } from './ThreadViewer';
+import { DebugScheduler } from './debug';
 
 export type InsightAppProps = {
   reconciler: Reconciler,
+  scheduler: DebugScheduler,
   onReady: () => void,
 }
 
-export const InsightApp: Component<InsightAppProps> = ({ reconciler, onReady }) => {
+export const InsightApp: Component<InsightAppProps> = ({ reconciler, onReady, scheduler }) => {
   const [mode, setMode] = useState<InsightMode>('tree');
 
   const [renderReportIndex, setRenderReportIndex] = useState(0);
@@ -29,35 +32,34 @@ export const InsightApp: Component<InsightAppProps> = ({ reconciler, onReady }) 
   const rootCommits = tree && CommitTree.getRootCommits(tree) || [];
 
   const [pendingWork, setPendingWork] = useState(false)
-  const [autoWork, setAutoWork] = useState(true);
+  const [autoWork, setAutoWork] = useState(false);
 
-  //const [counter, setCounter] = useState(0);
-
-  useEffect(() => {
-
-    const updateThread = debounce(() => {
-      const currentThread = reconciler.scheduler.getCurrentThread();
+  const updateThread = useMemo(() => {
+    return debounce(() => {
+      console.log('updating thread');
+      const currentThread = reconciler.state.thread;
       if (currentThread)
         setCurrentThread(WorkThread.clone(currentThread));
       else
         setCurrentThread(null);
     }, 100, { leading: true, trailing: true, maxWait: 100 });
+  }, []);
 
-    const renderSub = reconciler.on('render', (thread) => {
+  //const [counter, setCounter] = useState(0);
+
+  useEffect(() => {
+
+    const renderSub = reconciler.on('on-thread-complete', (thread) => {
       setRenderReports(rrs => [...rrs, WorkThread.clone(thread)])
       setTree(reconciler.tree);
       updateThread();
     });
-    reconciler.on('request-work', () => {
-      updateThread();
-      setPendingWork(true);
-    })
-    reconciler.on('thread-queued', () => {
+    
+    reconciler.on('on-thread-update', () => {
+      setTree(reconciler.tree);
       updateThread();
     })
-    reconciler.on('complete-work', () => {
-      updateThread();
-    })
+    
 
     onReady();
     return () => {
@@ -68,7 +70,7 @@ export const InsightApp: Component<InsightAppProps> = ({ reconciler, onReady }) 
   useEffect(() => {
     if (autoWork) {
       const id = setInterval(() => {
-        reconciler.work();
+        scheduler.work();
       }, 5);
       return () => clearInterval(id);
     }
@@ -76,7 +78,8 @@ export const InsightApp: Component<InsightAppProps> = ({ reconciler, onReady }) 
 
   const onWorkClick = () => {
     setPendingWork(false);
-    reconciler.work();
+    scheduler.work();
+    updateThread();
   }
   const onToggleAutoWork = (e: Event) => {
     setAutoWork((e.target as HTMLInputElement).checked);
@@ -90,7 +93,23 @@ export const InsightApp: Component<InsightAppProps> = ({ reconciler, onReady }) 
       setSelectedCommit(id)
   }
 
-  return h('div', {}, [
+  const renderCommit = (depth: number) => (commit: Commit) => {
+    if (!tree)
+      return null;
+    return h(CommitPreview, {
+      commit,
+      tree,
+      depth,
+      renderCommit: renderCommit(depth + 1),
+      onSelectCommit,
+      attributes: [
+        ['Id', commit.id.toString()]
+      ],
+      selectedCommits: new Set(selectedCommit ? [selectedCommit] : [])
+    })
+  }
+
+  return h('div', { className: classes.insight }, [
     h(MenuBar, { currentMode: mode, onSelectMode: setMode }),
     mode === 'thread' && hs('div', {}, [
       hs('button', { onClick: onWorkClick }, pendingWork ? 'Do Pending Work' : 'Work'),
@@ -99,31 +118,13 @@ export const InsightApp: Component<InsightAppProps> = ({ reconciler, onReady }) 
         hs('input', { type: 'checkbox', onInput: onToggleAutoWork, checked: autoWork }),
       ])
     ]),
-    mode === 'thread' && currentThread && [
-      hs('h3', {}, 'Fibers'),
-      hs('ul', {}, [...currentThread.pendingUpdates].map((update) => hs('li', {}, h(UpdateDesc, { update })))),
-      hs('h3', {}, 'Visited'),
-      hs('ul', {}, [...currentThread.visited].map(([id, ref]) => hs('li', {}, id))),
-      hs('h3', {}, 'Must Visit'),
-      hs('ul', {}, [...currentThread.mustVisit].map(([id, ref]) => hs('li', {}, id))),
-      hs('h3', {}, 'Must Render'),
-      hs('ul', {}, [...currentThread.mustRender].map(([id, ref]) => hs('li', {}, id))),
-      hs('h3', {}, 'Created'),
-      hs('ul', {}, currentThread.deltas.created.map(delta => hs('li', {}, [delta.next.id,' ', getElementName(delta.next.element)]))),
-      hs('h3', {}, 'Removed'),
-      hs('ul', {}, currentThread.deltas.removed.map(delta => hs('li', {}, [delta.ref.id,' ', getElementName(delta.prev.element)]))),
-      hs('h3', {}, 'Updated'),
-      hs('ul', {}, currentThread.deltas.updated.map(delta => hs('li', {}, [delta.next.id,' ', getElementName(delta.next.element)]))),
-      hs('h3', {}, 'Reasons'),
-      hs('ul', {}, currentThread.reasons.map(reason => hs('li', {}, [
-        reason.type === 'mount' && `MOUNT ${getElementName(reason.element)}`,
-        reason.type === 'target' && `TARGET ${reason.ref.id}`,
-      ]))),
-    ],
+    mode === 'thread' && currentThread && h(ThreadViewer, { thread: currentThread, tree: tree || CommitTree.new() }),
     //hs('pre', {}, counter),
     mode === 'tree' && hs('div', { className: classes.treeExplorer }, [
       tree && [
-        h(TreeViewer, { tree, selectedCommits: new Set(selectedCommit ? [selectedCommit] : []), onSelectCommit }),
+        h(TreeViewer, { tree, selectedCommits: new Set(selectedCommit ? [selectedCommit] : []), onSelectCommit,
+          renderCommit: renderCommit(0)
+         }),
       ],
       selectedCommit && tree && [
         h(CommitViewer, { tree, commitId: selectedCommit, reconciler })

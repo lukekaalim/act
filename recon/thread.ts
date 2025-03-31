@@ -9,7 +9,7 @@ import { ErrorBoundaryState } from "./errors.ts";
 import { first, last } from "./algorithms.ts";
 
 export type WorkReason =
-  | { type: 'mount', element: Element }
+  | { type: 'mount', element: Element, ref: CommitRef }
   | { type: 'target', ref: CommitRef }
 
 /**
@@ -60,7 +60,6 @@ const rollbackWorkThread = (thread: WorkThread, from: CommitRef) => {
 
 const updateWorkThread = (thread: WorkThread, update: Update, tree: CommitTree, element: ElementService) => {
   const { next, prev, ref, moved } = update;
-  thread.visited.set(ref.id, ref);
 
   const identicalChange = next && prev && (next.id === prev.element.id);
   const prevChildren = prev && prev.children
@@ -81,6 +80,7 @@ const updateWorkThread = (thread: WorkThread, update: Update, tree: CommitTree, 
       return;
     }
   }
+  thread.visited.set(ref.id, ref);
   
   if (next) {
     const output = element.render(next, ref);
@@ -159,6 +159,9 @@ const startWorkThreadUpdate = (thread: WorkThread, ref: CommitRef, prev: Commit 
 
 /**
  * Request that a commit be re-rendered
+ * 
+ * If returns false, the update cannot be queued in the current
+ * thread (maybe it already re-rendered?).
  * @param thread 
  * @param ref 
  * @returns 
@@ -186,9 +189,9 @@ const queueWorkThreadTarget = (thread: WorkThread, ref: CommitRef, tree: CommitT
     thread.mustVisit.set(ref.id, ref);
 
     for (const update of thread.pendingUpdates) {
+      // Found an ancestor pending update - it should
+      // handle our target eventually
       if (update.ref.id === id)
-        // Found an ancestor pending update - it should
-        // handle our target eventually
         return true;
     }
   }
@@ -198,7 +201,7 @@ const queueWorkThreadTarget = (thread: WorkThread, ref: CommitRef, tree: CommitT
   return true;
 }
 const queueWorkThreadMount = (thread: WorkThread, ref: CommitRef, element: Element) => {
-  thread.reasons.push({ type: 'mount', element });
+  thread.reasons.push({ type: 'mount', element, ref });
   startWorkThreadUpdate(thread, ref, null, element);
 };
 

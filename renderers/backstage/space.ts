@@ -41,6 +41,18 @@ export type NodeRef<T> = {
   node: T,
 }
 
+/**
+ * A "simple" render space is just a conventional
+ * render space where we keep track of each commit
+ * in a map - and take a "SimpleRenderSpaceArgs"
+ * args object that tells us how we make, link,
+ * sort, and update our nodes.
+ * 
+ * @param tree 
+ * @param args 
+ * @param nodeByCommit 
+ * @returns 
+ */
 export const createSimpleRenderSpace = <T, R extends string | Symbol>(
   tree: recon.CommitTree,
   args: SimpleRenderSpaceArgs<T, R>,
@@ -79,7 +91,7 @@ export const createSimpleRenderSpace = <T, R extends string | Symbol>(
       if (node)
         return { id, node }
     }
-    // this element has no parents - it is probably a "root" commit
+    // this element has no "node" parents - it is probably a "root" commit
     return null;
   }
   const findRootId = (ref: recon.CommitRef) => {

@@ -1,0 +1,12 @@
+{
+  "name": "@lukekaalim/act-web-extension",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@types/firefox-webext-browser": "^120.0.4",
+    "vite": "^6.2.0",
+    "vite-plugin-web-extension": "^4.4.3"
+  }
+}

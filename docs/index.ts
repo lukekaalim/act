@@ -1,14 +1,15 @@
-import { h, useEffect, useState } from "@lukekaalim/act";
+import { h, Props, useEffect, useState } from "@lukekaalim/act";
 import { createReconciler } from "@lukekaalim/act-recon";
-import { createWebSpace, render as renderWeb } from "@lukekaalim/act-web";
+import { createDOMScheduler, createWebSpace, render as renderWeb } from "@lukekaalim/act-web";
 import { InsightApp } from '@lukekaalim/act-insight';
 
 import { Component, ErrorBoundary, primitiveNodeTypes, useMemo, useRef } from '@lukekaalim/act';
 import { hs, HTML, SVG } from '@lukekaalim/act-web';
-import { render, three, ThreeJS, node, createFinaleSpace } from '@lukekaalim/act-three';
+import { three, ThreeJS, node, createFinaleSpace, createThreeWebSpace } from '@lukekaalim/act-three';
 import { TextGeometry, FontLoader, Font } from 'three/addons';
 import fontURL from 'three/examples/fonts/helvetiker_regular.typeface.json?url';
 import { createRenderFunction, RenderSpace } from "@lukekaalim/act-backstage";
+import { renderDebug } from "@lukekaalim/act-insight/debug";
 
 const material = new three.MeshBasicMaterial({ color: 'red' });
 
@@ -119,7 +120,13 @@ const App = () => {
 
 class TooHighError extends Error {}
 
-const Ticker = () => {
+const WrapMemo = <T extends Props>(component: Component<T>): Component<T> => {
+  return function MemoWrappedComponent(props) {
+    return useMemo(() => h(component, props), []);
+  }
+}
+
+const Ticker = WrapMemo(function Ticker() {
   const [counter, setCounter] = useState(0);
 
   useEffect(() => {
@@ -132,7 +139,7 @@ const Ticker = () => {
   }
 
   return  hs('button', { onClick: () => (setCounter(c => c + 1), setCounter(c => c + 1)) }, counter);
-}
+});
 
 const A = () => h(RenderCounter, { key: 'a' });
 const B = () => h(RenderCounter, { key: 'b' });
@@ -148,42 +155,9 @@ const RenderCounter: Component = ({ key }) => {
 };
 
 const main = () => {
-  const reconciler = createReconciler();
-
-  const onReady = () => {
-    reconciler.scheduler.mount(h(HTML, {}, h(App)))
-  }
-
-  const debugWindow = window.open('', 'debug', 'popup');
-  if (debugWindow) {
-    const node = h(InsightApp, { reconciler, onReady });
-    const root = debugWindow.document.body;
-    for (const child of [...debugWindow.document.body.children, ...debugWindow.document.head.children])
-      child.remove()
-
-    for (const child of document.head.children) {
-      if (child instanceof HTMLStyleElement) {
-        debugWindow.document.head.append(child.cloneNode(true));
-      }
-    }
-
-    const renderWeb = createRenderFunction<unknown, HTMLElement>(
-      null as any,
-      (tree, root) => createWebSpace(tree, root, debugWindow)
-    )(h(HTML, {}, node), root);
-  }
-
-  const mainRoot = document.getElementById('main_root');
-  if (mainRoot) {
-    const space = RenderSpace.combine([
-      createWebSpace(reconciler.tree, mainRoot),
-      createFinaleSpace(reconciler.tree),
-    ])
-    reconciler.on('render', (thread) => {
-      space.create(thread.deltas).configure();
-    })
-  }
+  const root = document.getElementById('main_root');
+  if (root)
+    renderDebug(h(HTML, {}, h(App)), tree => createThreeWebSpace(tree, root))
 };
 
-//if (document.location.pathname === '/')
-  main();
+main();
