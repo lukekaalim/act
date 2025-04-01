@@ -102,7 +102,8 @@ export const setStyleProp = (
   style: null | Record<keyof CSSStyleDeclaration, string | number>,
   prevStyle: null | Record<keyof CSSStyleDeclaration, string | number>,
 ) => {
-  setPropObject(node as any, style, prevStyle)
+  setPropObject(node as any, style, prevStyle, (name, value) =>
+    (node.setProperty(name, value as string), true))
 }
 
 const setPropObject = (
