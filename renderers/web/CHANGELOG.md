@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 3.2.2
+
+### Patch Changes
+
+- cece5b4: Fixes CSS vars in the "style" prop not being applied
+
 ## 3.2.1
 
 ### Patch Changes
