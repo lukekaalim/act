@@ -1,5 +1,18 @@
 # @lukekaalim/act-three
 
+## 6.2.0
+
+### Minor Changes
+
+- Scheduling refactor
+
+### Patch Changes
+
+- Updated dependencies
+  - @lukekaalim/act-backstage@2.0.0
+  - @lukekaalim/act-recon@2.0.0
+  - @lukekaalim/act-web@3.3.0
+
 ## 6.1.0
 
 ### Minor Changes

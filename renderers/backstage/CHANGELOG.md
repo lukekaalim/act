@@ -1,5 +1,16 @@
 # @lukekaalim/act-backstage
 
+## 2.0.0
+
+### Major Changes
+
+- Scheduling refactor
+
+### Patch Changes
+
+- Updated dependencies
+  - @lukekaalim/act-recon@2.0.0
+
 ## 1.3.0
 
 ### Minor Changes

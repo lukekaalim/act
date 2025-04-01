@@ -1,5 +1,11 @@
 # @lukekaalim/act-recon
 
+## 2.0.0
+
+### Major Changes
+
+- Scheduling refactor
+
 ## 1.2.0
 
 ### Minor Changes
