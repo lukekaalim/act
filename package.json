@@ -14,11 +14,9 @@
     "testw": "tsx --test --watch"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.11",
+    "@changesets/cli": "^2.29.4",
     "@types/lodash-es": "^4.17.12",
     "esbuild": "^0.25.0",
-    "lodash-es": "^4.17.21",
-    "tsx": "^4.19.3",
-    "typescript": "^5.7.2"
+    "tsx": "^4.19.3"
   }
 }

@@ -3,7 +3,6 @@
   "name": "devtools-panels",
   "version": "1.0.0",
   
-
   "icons": {
     "48": "icons/star.png"
   },
@@ -12,13 +11,15 @@
       "<all_urls>"
   ],
 
+  "background": {
+    "scripts": ["dist/background.js"],
+    "type": "module"
+  },
   "content_scripts": [
     {
-      "matches": ["*://*/*"],
-      "js": ["content/index.ts"]
+      "matches": ["<all_urls>"],
+      "js": ["dist/content.js"]
     }
   ],
-  
-  "devtools_page": "devtool_page/page.html"
-
+  "devtools_page": "devtool_page.html"
 }

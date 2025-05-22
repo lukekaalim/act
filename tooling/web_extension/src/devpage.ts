@@ -1,10 +1,10 @@
-/// <reference types="@types/firefox-webext-browser" />
+console.log('I... am a devpage script!')
 
 browser.devtools.panels
   .create(
     "My Panel", // title
-    "/icons/star.png", // icon
-    "/panel/index.html", // content
+    "/public/icons/star.png", // icon
+    "/devtool_panel.html", // content
   )
   .then((newPanel) => {
     console.log('made a new panel!')

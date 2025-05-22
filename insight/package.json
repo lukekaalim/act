@@ -1,13 +1,7 @@
 {
   "name": "@lukekaalim/act-insight",
   "main": "index.ts",
-  "scripts": {
-    "build:extension": "esbuild extension_main.ts --bundle --outfile=dist/extension_main.js",
-    "build:devtools-page": "vite build",
-    "dev": "vite dev",
-    "build": "npm run build:devtools-page",
-    "start:firefox": "web-ext run --source-dir ./"
-  },
+  "scripts": {},
   "dependencies": {
     "@lukekaalim/act": "*",
     "@lukekaalim/act-recon": "*",
@@ -18,7 +12,6 @@
   },
   "devDependencies": {
     "@types/firefox": "^0.0.34",
-    "esbuild": "^0.25.0",
-    "vite-plugin-web-extension": "^4.4.3"
+    "@types/lodash-es": "^4.17.12"
   }
 }
