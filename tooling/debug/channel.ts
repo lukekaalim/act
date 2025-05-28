@@ -1,22 +1,27 @@
-import { WorkThread } from "@lukekaalim/act-recon"
-import { EventEmitter } from "@lukekaalim/act-recon"
+import { WorkThread, EventEmitter, createEventEmitter } from "@lukekaalim/act-recon"
 
 type UnionToMap<T extends { type: string }> = { [K in T["type"]]: Omit<Extract<T, { type: K }>, "type"> };
+
+export type TargetID = string;
+
+export type MessageType<T extends string, Fields extends Record<string, unknown> = {}> = {
+  readonly type: T,
+} & Fields;
 
 export type DebugOptions = {
   stepWork: boolean,
 };
 
-export type DebuggerEvent =
-  | { type: 'work:perform' } // Advance the thread by a single "work" cycle
-  | { type: 'debug:options', options: DebugOptions }
+export type DebuggerMessage =
+  | MessageType<'work:perform'> // Advance the thread by a single "work" cycle
+  | MessageType<'debug:options', { options: DebugOptions }>
 
-export type TargetEvent =
-  | { type: 'debug:ready' }
-  | { type: 'thread:start', thread: WorkThread }
-  | { type: 'thread:update', thread: WorkThread }
-  | { type: 'thread:finish', thread: WorkThread }
-  | { type: 'work:request' }
+export type TargetMessage =
+  | MessageType<'debug:ready'>
+  | MessageType<'thread:start', { thread: WorkThread }>
+  | MessageType<'thread:update', { thread: WorkThread }>
+  | MessageType<'thread:finish', { thread: WorkThread }>
+  | MessageType<'work:request'>
 
 export type TargetClient = {
   performWork(): void,
@@ -30,19 +35,32 @@ export type DebuggerClient = {
   requestWork(): void,
   ready(): void,
 
-  on: EventEmitter<UnionToMap<DebuggerEvent>>['on']
+  on: EventEmitter<UnionToMap<DebuggerMessage>>['on']
 }
+export const createDebuggerClient = (): DebuggerClient => {
+  const recieveMessage = createEventEmitter();
+  const sendMessage = (payload: TargetMessage) => {
+    window.postMessage({
+      key: '@lukekaalim/act-debug',
+      payload,
+    })
+  }
 
-export const LUKEKAALIM_ACT_DEBUGGER_KEY = 'LUKEKAALIM_ACT_DEBUGGER_KEY';
 
-declare global {
-  var LUKEKAALIM_ACT_DEBUGGER_KEY: DebuggerClient;
+  window.addEventListener('message', (message) => {
+    message.data
+    console.log('GOT MESSAGE in DEBUGGER CLIENT', message);
+  });
+
+  return {
+    startThread(thread) {
+      sendMessage()
+    },
+    updateThread(thread) {
+      
+    },
+    finishThread(thread) {
+      
+    },
+  }
 };
-
-export const setDebuggerClient = (client: DebuggerClient) => {
-  globalThis[LUKEKAALIM_ACT_DEBUGGER_KEY] = client;
-}
-
-export const getDebuggerClient = async () => {
-  return globalThis[LUKEKAALIM_ACT_DEBUGGER_KEY];
-}

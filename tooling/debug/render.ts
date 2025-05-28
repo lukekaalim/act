@@ -1,7 +1,7 @@
 import { CommitTree, createReconciler, Scheduler, WorkID, WorkThread } from "@lukekaalim/act-recon";
 import { createId, Node } from "@lukekaalim/act";
 import { RenderSpace } from "@lukekaalim/act-backstage";
-import { DebugOptions, getDebuggerClient } from "./channel";
+import { createDebuggerClient, DebugOptions } from "./channel";
 import { recon } from "@lukekaalim/act-three/deps";
 
 export type DebugScheduler = {
@@ -40,7 +40,10 @@ export const createDebugScheduler = (): DebugScheduler => {
 }
 
 export const renderDebug = async (node: Node, createSpace: (tree: CommitTree) => RenderSpace) => {
-  const debug = await getDebuggerClient();
+  console.log(`Searching for debugger...`);
+  const debug = await createDebuggerClient();
+  console.info(`Aquired debugger`, debug);
+
   let options: DebugOptions = {
     stepWork: true,
   };

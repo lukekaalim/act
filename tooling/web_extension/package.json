@@ -1,6 +1,7 @@
 {
   "name": "@lukekaalim/act-web-extension",
   "type": "module",
+  "version": "0.0.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build"
@@ -8,5 +9,10 @@
   "devDependencies": {
     "@types/firefox-webext-browser": "^120.0.4",
     "esbuild": "^0.25.4"
+  },
+  "webExt": {
+    "run": {
+      "firefox": "flatpak:org.mozilla.firefox"
+    }
   }
 }

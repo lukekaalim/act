@@ -9,7 +9,7 @@ import { three, ThreeJS, node, createFinaleSpace, createThreeWebSpace } from '@l
 import { TextGeometry, FontLoader, Font } from 'three/addons';
 import fontURL from 'three/examples/fonts/helvetiker_regular.typeface.json?url';
 import { createRenderFunction, RenderSpace } from "@lukekaalim/act-backstage";
-import { renderDebug } from "@lukekaalim/act-insight/debug";
+import { renderDebug } from "@lukekaalim/act-debug";
 
 const material = new three.MeshBasicMaterial({ color: 'red' });
 

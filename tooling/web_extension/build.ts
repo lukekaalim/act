@@ -1,7 +1,8 @@
 import { context } from 'esbuild';
+import pkg from './package.json'
 
 const createExtensionContext = async () => {
-  return context({
+  const extensionContext =  context({
     entryPoints: [
       'src/content.ts',
       'src/background.ts',
@@ -10,7 +11,16 @@ const createExtensionContext = async () => {
     ],
     bundle: true,
     outdir: 'dist',
-  })
+    plugins: [
+      { name: 'printer', setup(build) {
+        build.onEnd(() => {
+          console.log('Build Complete', new Date())
+        })
+      } }
+    ]
+  });
+
+  return extensionContext;
 }
 
 const main = async (mode: string = "build") => {
@@ -18,14 +28,18 @@ const main = async (mode: string = "build") => {
 
   switch (mode) {
     case 'build':
-      console.log(`Building`);
-      return extensionContext.rebuild();
+      console.log(`Building`, pkg.name, pkg.version);
+      await extensionContext.rebuild();
+      return;
     case 'watch':
-      console.log(`Watching`);
-      return extensionContext.watch();
+      console.log(`Watching`, pkg.name, pkg.version);
+      await extensionContext.watch();
+      return;
     case 'serve':
-      console.log(`Serving`);
+      console.log(`Serving`, pkg.name, pkg.version);
       return extensionContext.serve();
+    default:
+      console.warn(`Unknown command "${mode}"`)
   }
 };
 main(...process.argv.slice(2))
