@@ -1,17 +1,33 @@
 /// <reference types="@types/firefox-webext-browser" />
+import {
+  bridgeChannels,
+  createBrowserRuntimeClient,
+  createPortClient
+} from "@lukekaalim/act-debug";
 
 console.log('I... am a background script!')
 
-const handleMessage = (event: unknown) => {
-  console.log('I, the background script, recieved an event!', event);
-  if (event.type === 'devpanel-init') {
-    console.log(`launching a connection to ${event.tab}`)
-    const port = browser.tabs.connect(event.tab);
-    console.log(`Sending ${event.tab} a greeting`)
-    port.postMessage({ greeting: "Hi from background script" });
-  }
-};
+const initTabBridge = (port: browser.runtime.Port) => {
+  const contentClient = createPortClient(port);
+  const devtoolsClient = createBrowserRuntimeClient(
+    browser.runtime,
+    '@lukekaalim/act-debug:background-to-devtools'
+  )
+  bridgeChannels(contentClient, devtoolsClient);
+}
 
-browser.runtime.onMessage.addListener(handleMessage);
+const main = () => {
+  const handleMessage = (event: unknown) => {
+    if (event.type === 'devpanel-init') {
+      console.log('I, the background script, recieved an event!', event);
+      console.log(`launching a connection to ${event.tab}`)
+  
+      const port = browser.tabs.connect(event.tab);
+      initTabBridge(port);
+    }
+  };
+  
+  browser.runtime.onMessage.addListener(handleMessage);
+}
 
-export {};
+main();

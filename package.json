@@ -5,8 +5,7 @@
     "tooling/*",
     "recon",
     "core",
-    "docs",
-    "insight"
+    "docs"
   ],
   "scripts": {
     "change": "changeset",

@@ -1,66 +1,72 @@
 import { WorkThread, EventEmitter, createEventEmitter } from "@lukekaalim/act-recon"
 
-type UnionToMap<T extends { type: string }> = { [K in T["type"]]: Omit<Extract<T, { type: K }>, "type"> };
 
-export type TargetID = string;
-
-export type MessageType<T extends string, Fields extends Record<string, unknown> = {}> = {
-  readonly type: T,
-} & Fields;
-
-export type DebugOptions = {
-  stepWork: boolean,
-};
-
-export type DebuggerMessage =
-  | MessageType<'work:perform'> // Advance the thread by a single "work" cycle
-  | MessageType<'debug:options', { options: DebugOptions }>
-
-export type TargetMessage =
-  | MessageType<'debug:ready'>
-  | MessageType<'thread:start', { thread: WorkThread }>
-  | MessageType<'thread:update', { thread: WorkThread }>
-  | MessageType<'thread:finish', { thread: WorkThread }>
-  | MessageType<'work:request'>
-
-export type TargetClient = {
-  performWork(): void,
-}
-
-export type DebuggerClient = {
-  startThread(thread: WorkThread): void,
-  updateThread(thread: WorkThread): void,
-  finishThread(thread: WorkThread): void,
-
-  requestWork(): void,
-  ready(): void,
-
-  on: EventEmitter<UnionToMap<DebuggerMessage>>['on']
-}
-export const createDebuggerClient = (): DebuggerClient => {
-  const recieveMessage = createEventEmitter();
-  const sendMessage = (payload: TargetMessage) => {
+export const createPostMessageClient = <Incoming, Outgoing>(
+  incomingKey: string,
+  outgoingKey: string,
+): ChannelClient<Incoming, Outgoing> => {
+  const events = createEventEmitter<Incoming>();
+  const send = (payload: Outgoing) => {
     window.postMessage({
-      key: '@lukekaalim/act-debug',
+      key: outgoingKey,
       payload,
     })
-  }
-
-
+  };
   window.addEventListener('message', (message) => {
-    message.data
-    console.log('GOT MESSAGE in DEBUGGER CLIENT', message);
+    if (typeof message.data !== "object" || !message.data)
+      return;
+
+    if (message.data.key !== incomingKey)
+      return;
+
+    events.emit(message.data.payload as Incoming);
+  });
+  return { send, subscribe: events.subscribe };
+}
+
+export const createPortClient = <Incoming, Outgoing>(
+  port: browser.runtime.Port
+): ChannelClient<Incoming, Outgoing> => {
+  const events = createEventEmitter<Incoming>();
+
+  port.onMessage.addListener(message => events.emit(message as Incoming));
+
+  return {
+    send(message) {
+      port.postMessage(message);
+    },
+    subscribe: events.subscribe
+  }
+}
+
+export const createBrowserRuntimeClient = <Incoming, Outgoing>(
+  runtime: typeof browser.runtime,
+  key: string,
+): ChannelClient<Incoming, Outgoing> => {
+  const events = createEventEmitter<Incoming>();
+
+  runtime.onMessage.addListener(message => {
+    if (message.key === key)
+      events.emit(message.payload)
   });
 
   return {
-    startThread(thread) {
-      sendMessage()
+    send(payload) {
+      runtime.sendMessage({ key, payload });
     },
-    updateThread(thread) {
-      
-    },
-    finishThread(thread) {
-      
-    },
+    subscribe: events.subscribe
   }
-};
+}
+
+export type ChannelClient<Incoming, Outgoing> = {
+  send(message: Outgoing): void,
+  subscribe: EventEmitter<Incoming>["subscribe"],
+}
+
+export const bridgeChannels = <Left, Right>(
+  left: ChannelClient<Left, Right>,
+  right: ChannelClient<Right, Left>
+) => {
+  left.subscribe(event => right.send(event));
+  right.subscribe(event => left.send(event));
+}

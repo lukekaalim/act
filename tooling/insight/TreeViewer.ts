@@ -6,62 +6,61 @@ import stringHash from '@sindresorhus/string-hash';
 
 import classes from './TreeViewer.module.css';
 import { CommitAttributeTag } from "./AttributeTag";
+import { CommitReport, TreeReport } from "@lukekaalim/act-debug";
 
 export type TreeViewerProps = {
-  tree: CommitTree,
-  roots?: Commit[],
-  
-  selectedCommits: ReadonlySet<CommitID>,
-  onSelectCommit?: (id: CommitID) => unknown,
+  tree: TreeReport,
 
-  renderCommit: (commit: Commit) => Node,
+  renderCommit: (commit: CommitReport) => Node,
 }
 
 export const TreeViewer: Component<TreeViewerProps> = ({
-  tree, roots, selectedCommits, onSelectCommit = _ => {},
-  renderCommit
+  tree, renderCommit
 }) => {
-  const commits = roots || CommitTree.getRootCommits(tree);
-  console.log(commits)
+  const rootCommits = tree.roots
+    .map(root => tree.commits.get(root.id))
+    .filter(Boolean) as CommitReport[];
 
-  return h('ol', { className: [classes.commitList, classes.top].join(' ') }, commits.map(root =>
+  const className = [classes.commitList, classes.top].join(' ')
+
+  return h('ol', { className }, rootCommits.map(root =>
     h('li', {}, renderCommit(root))));
 };
 
 export type CommitPreviewProps = {
-  commit: Commit,
-  tree: CommitTree,
+  commit: CommitReport,
+  tree: TreeReport,
 
   attributes?: [string, string][],
 
   color?: string,
 
   depth?: number,
-  selectedCommits: ReadonlySet<CommitID>,
-  onSelectCommit: (id: CommitID) => unknown,
 
-  renderCommit: (commit: Commit) => Node,
+  renderCommit: (commit: CommitReport) => Node,
 }
 
 export const CommitPreview: Component<CommitPreviewProps> = ({
   commit, tree, depth = 0,
   attributes = [],
-  selectedCommits, onSelectCommit, renderCommit,
+  renderCommit,
   color,
 }) => {
-  const children = commit.children.map(childRef => tree.commits.get(childRef.id)).filter(c => !!c);
-  const background = `hsl(${(depth * 22.3) % 360}deg, 50%, 80%)`;
-  const elementBackground = color || `hsl(${stringHash(getElementName(commit.element)) % 360}deg, 60%, 80%)`;
+  const children = commit.children
+    .map(childRef => tree.commits.get(childRef.id)).filter(c => !!c);
 
-  const selected = selectedCommits.has(commit.id);
+  const background = `hsl(${(depth * 22.3) % 360}deg, 50%, 80%)`;
+  const elementBackground = color || `hsl(${stringHash(commit.element.type) % 360}deg, 60%, 80%)`;
+
+  const selected = false; // selectedCommits.has(commit.id);
   const onClick = () => {
-    onSelectCommit(commit.id);
+    //onSelectCommit(commit.id);
   }
 
   return hs('div', { className: classes.commit, style: { background } }, [
     hs('div', { className: [classes.elementBar, selected && classes.selected].join(' ') }, [
       hs('button', { onClick, className: classes.elementName, style: { background: elementBackground } },
-        getElementName(commit.element)),
+        commit.element.type),
       //h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
       attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
       //h(CommitAttributeTag, { name: 'Version', value: commit.version.toString() }),

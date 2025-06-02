@@ -6,6 +6,7 @@
     "@lukekaalim/act": "*",
     "@lukekaalim/act-recon": "*",
     "@lukekaalim/act-web": "*",
+    "@lukekaalim/act-debug": "*",
     "@sindresorhus/string-hash": "^2.0.0",
     "@types/firefox-webext-browser": "^120.0.4",
     "lodash-es": "^4.17.21"

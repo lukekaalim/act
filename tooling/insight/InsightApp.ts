@@ -1,5 +1,5 @@
-import { Component, Element, h, useEffect, useMemo, useState } from '@lukekaalim/act';
-import { Commit, CommitID, CommitTree, Reconciler, Update, WorkThread } from '@lukekaalim/act-recon';
+import { Component, Element, h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
+import { Commit, CommitID, CommitTree, DeltaSet, Reconciler, Update, WorkThread } from '@lukekaalim/act-recon';
 import { hs } from '@lukekaalim/act-web';
 
 import { CommitPreview, TreeViewer } from './TreeViewer';
@@ -11,15 +11,48 @@ import classes from './InsightApp.module.css';
 import { InsightMode } from './mode';
 import { MenuBar } from './MenuBar';
 import { ThreadViewer } from './ThreadViewer';
-import { DebugScheduler } from './debug';
+import { DebuggerServer } from '@lukekaalim/act-debug';
+import { CommitReport, TreeReport, updateTreeReport } from '@lukekaalim/act-debug/report';
 
 export type InsightAppProps = {
-  reconciler: Reconciler,
-  scheduler: DebugScheduler,
-  onReady: () => void,
+  server: DebuggerServer,
 }
 
-export const InsightApp: Component<InsightAppProps> = ({ reconciler, onReady, scheduler }) => {
+export const InsightApp2: Component<InsightAppProps> = ({ server }) => {
+  const [tree, setTree] = useState<TreeReport>({ commits: new Map(), roots: [] });
+
+  useEffect(() => {
+    server.subscribe((event) => {
+      switch (event.type) {
+        case 'thread:finish':
+          setTree(tree => {
+            return updateTreeReport(tree, event.thread);
+          });
+          break;
+        case 'tree:root-update':
+          setTree(tree => {
+            return { ...tree, roots: event.roots };
+          });
+      }
+    })
+    server.ready();
+    return;
+  }, [server])
+
+  console.log(tree);
+
+  const renderCommit = (commit: CommitReport) => {
+    return h(CommitPreview, { commit, renderCommit, tree });
+  }
+
+  return [
+    h(TreeViewer, { tree, renderCommit, }),
+  ];
+}
+
+export const InsightApp: Component<InsightAppProps> = () => {
+  throw new Error();
+
   const [mode, setMode] = useState<InsightMode>('tree');
 
   const [renderReportIndex, setRenderReportIndex] = useState(0);

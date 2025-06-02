@@ -1,8 +1,11 @@
 import { CommitTree, createReconciler, Scheduler, WorkID, WorkThread } from "@lukekaalim/act-recon";
 import { createId, Node } from "@lukekaalim/act";
 import { RenderSpace } from "@lukekaalim/act-backstage";
-import { createDebuggerClient, DebugOptions } from "./channel";
+import { createPostMessageClient } from "./channel";
 import { recon } from "@lukekaalim/act-three/deps";
+import { createDebuggerClient, DebuggerClient, DebugOptions } from "./protocol";
+import { createDOMScheduler } from "@lukekaalim/act-web";
+import { createThreadReport } from "./report";
 
 export type DebugScheduler = {
   isWorkPending(): boolean,
@@ -11,71 +14,70 @@ export type DebugScheduler = {
   inner: Scheduler,
 }
 
-export const createDebugScheduler = (): DebugScheduler => {
-  const pending = new Map<WorkID, () => void>();
-
-  const inner: Scheduler = {
-    requestWork(callback) {
-      const id = createId<'WorkID'>();
-      pending.set(id, callback);
-      return id;
-    },
-    cancelWork(workId) {
-      pending.delete(workId)
-    },
-  }
-
-  return {
-    isWorkPending() {
-      return pending.size > 0;
-    },
-    work() {
-      const pendingWork = [...pending];
-      pending.clear();
-      for (const [,callback] of pendingWork)
-        callback();
-    },
-    inner,
-  }
-}
-
 export const renderDebug = async (node: Node, createSpace: (tree: CommitTree) => RenderSpace) => {
-  console.log(`Searching for debugger...`);
-  const debug = await createDebuggerClient();
-  console.info(`Aquired debugger`, debug);
+  const debug = createDebuggerClient(createPostMessageClient(
+    '@lukekaalim/act-debug:debugger',
+    '@lukekaalim/act-debug:target',
+  ));
 
   let options: DebugOptions = {
     stepWork: true,
   };
   
-  const debugScheduler = createDebugScheduler();
-
-  debug.on('work:perform', () => debugScheduler.work());
-
-  const reconciler = createReconciler(debugScheduler.inner);
-
-  reconciler.on('on-thread-start', thread => {
-    debug.startThread(WorkThread.clone(thread));
-  });
-  reconciler.on('on-thread-update', thread => {
-    if (options.stepWork)
-      debug.updateThread(WorkThread.clone(thread));
-  });
-
-  const threadCompleteSub = reconciler.on('on-thread-complete', (thread: WorkThread) => {
-    debug.finishThread(WorkThread.clone(thread));
-    space.create(thread.deltas).configure();
-  });
-
+  const scheduler = createDOMScheduler();
+  const reconciler = createReconciler(scheduler);
   const space = createSpace(reconciler.tree);
 
-  debug.ready();
-  
+  reconciler.subscribe(event => {
+    switch (event.type) {
+      case 'thread:new-root':
+        debug.rootUpdate([...reconciler.tree.roots]);
+        break;
+      case 'thread:complete':
+        console.time('sending_report')
+        debug.finishThread(createThreadReport(event.thread));
+        space.create(event.thread.deltas).configure();
+        console.timeEnd('sending_report')
+        break;
+      case 'thread:start':
+        //debug.startThread(event.thread);
+        break;
+      case 'thread:update':
+        //debug.updateThread(event.thread);
+        break;
+    }
+  });
+  debug.subscribe(event => {
+    switch (event.type) {
+      case 'work:perform':
+        //debugScheduler.work();
+        break;
+      case 'debug:options':
+        options = event.options;
+        break;
+    }
+  });
+
+  await new Promise<void>(r => {
+    const sub = debug.subscribe(e => {
+      switch (e.type) {
+        case 'server:accept':
+          sub.cancel();
+          r();
+          break;
+        case 'server:ready':
+          debug.ready();
+          break;
+      }
+    });
+    debug.ready();
+  });
+
   reconciler.mount(node);
 
   return {
     stop() {
-      threadCompleteSub.cancel();
+      
     },
   }
 };

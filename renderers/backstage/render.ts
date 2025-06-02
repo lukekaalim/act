@@ -15,7 +15,12 @@ export const createRenderFunction = <T>(
     };
 
     const reconciler = createReconciler(scheduler);
-    const threadCompleteSub = reconciler.on('on-thread-complete', onThreadComplete);
+    const threadCompleteSub = reconciler.subscribe(event => {
+      switch (event.type) {
+        case 'thread:complete':
+          return onThreadComplete(event.thread);
+      }
+    })
 
     const space = createSpace(reconciler.tree, root);
     

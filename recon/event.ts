@@ -1,34 +1,30 @@
 export type Subscription = { cancel: () => void };
 export type EventHandler<T> = (event: T) => unknown; 
-export type EventMap = Record<string, unknown>;
 
-export type EventEmitter<T extends EventMap> = {
-  on<K extends keyof T>(type: K, handler: EventHandler<T[K]>): Subscription,
-  call<K extends keyof T>(type: K, event: T[K]): void;
-}
+export type EventEmitter<T> = {
+  subscribe(handler: EventHandler<T>): Subscription,
+  emit(event: T): void;
+};
 
-export const createEventEmitter = <T extends EventMap>(): EventEmitter<T> => {
-  type AnyEvent = T[keyof T];
-  type AnyHandler = EventHandler<AnyEvent>
-  const handlers = new Map<keyof T, Set<AnyHandler>>();
+export const createEventEmitter = <T>(): EventEmitter<T> => {
+  const handlers = new Map<number, EventHandler<T>>();
+  let counter = 0;
 
   return {
-    on(type, handler) {
-      const set = handlers.get(type) || new Set<AnyHandler>();
-      handlers.set(type, set);
-      set.add(handler as AnyHandler);
+    subscribe(handler) {
+      const id = counter++;
+      handlers.set(id, handler);
       return {
         cancel() {
-          set.delete(handler as AnyHandler);
+          handlers.delete(id);
         },
       }
     },
-    call(type, event) {
-      const set = handlers.get(type);
-      if (!set)
-        return;
-      for (const handler of set)
-        handler(event);
+    emit(event) {
+      for (const handler of handlers.values())
+        try {
+          handler(event);
+        } finally {}
     },
   }
 };

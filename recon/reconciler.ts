@@ -13,7 +13,7 @@ export type Reconciler = {
   state: ReconcilerState,
   tree: CommitTree,
   elements: ElementService,
-  on: EventEmitter<ReconcilerEvents>["on"],
+  subscribe: EventEmitter<ReconcilerEvent>["subscribe"],
 }
 
 export type ReconcilerState = {
@@ -25,14 +25,15 @@ export type ReconcilerState = {
   pendingTargets: Map<CommitID, CommitRef>,
 }
 
-export type ReconcilerEvents = {
-  'on-thread-start': WorkThread,
-  'on-thread-update': WorkThread,
-  'on-thread-complete': WorkThread,
-}
+export type ReconcilerEvent =
+  | { type: 'thread:start', thread: WorkThread }
+  | { type: 'thread:update', thread: WorkThread }
+  | { type: 'thread:complete', thread: WorkThread }
+  | { type: 'thread:new-target', thread: WorkThread }
+  | { type: 'thread:new-root', thread: WorkThread }
 
 export const createReconciler = (scheduler: Scheduler): Reconciler => {
-  const events = createEventEmitter<ReconcilerEvents>();
+  const events = createEventEmitter<ReconcilerEvent>();
   const state: ReconcilerState = {
     thread: null,
     work: null,
@@ -59,7 +60,7 @@ export const createReconciler = (scheduler: Scheduler): Reconciler => {
         render(target);
 
       WorkThread.apply(completedThread, tree);
-      events.call('on-thread-complete', completedThread);
+      events.emit({ type: 'thread:complete', thread: completedThread });
 
       // Run side effects
       for (const effect of completedThread.pendingEffects) {
@@ -75,7 +76,7 @@ export const createReconciler = (scheduler: Scheduler): Reconciler => {
   const start = () => {
     if (!state.thread) {
       state.thread = WorkThread.new();
-      events.call('on-thread-start', state.thread);
+      events.emit({ type: 'thread:start', thread: state.thread });
     }
     if (!state.work) {
       state.work = scheduler.requestWork(work);
@@ -92,13 +93,13 @@ export const createReconciler = (scheduler: Scheduler): Reconciler => {
       tree.roots.add(ref);
       WorkThread.queueMount(thread, ref, element);
     }
-    events.call('on-thread-update', thread);
+    events.emit({ type: 'thread:new-root', thread });
   };
   const render = (ref: CommitRef) => {
     const thread = start();
 
     if (WorkThread.queueTarget(thread, ref, tree)) {
-      events.call('on-thread-update', thread);
+      events.emit({ type: 'thread:new-target', thread });
     } else {
       state.pendingTargets.set(ref.id, ref);
     }
@@ -107,5 +108,5 @@ export const createReconciler = (scheduler: Scheduler): Reconciler => {
   const tree = CommitTree.new();
   const elements = ElementService.create(tree, render);
 
-  return { mount, render, state, tree, elements, on: events.on };
+  return { mount, render, state, tree, elements, subscribe: events.subscribe };
 }
