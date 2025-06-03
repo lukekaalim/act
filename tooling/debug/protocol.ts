@@ -1,6 +1,6 @@
-import { CommitRef, EventEmitter, WorkThread } from "@lukekaalim/act-recon";
+import { CommitID, CommitRef, EventEmitter, WorkThread } from "@lukekaalim/act-recon";
 import { ChannelClient } from "./channel";
-import { ThreadReport } from "./report";
+import { ComponentStateReport, ThreadReport } from "./report";
 
 export type DebugOptions = {
   stepWork: boolean,
@@ -10,6 +10,7 @@ export type DebuggerMessage =
   | { type: 'server:ready' }
   | { type: 'server:accept' }
   | { type: 'work:perform' }
+  | { type: 'component-state:request', commitId: CommitID }
   | { type: 'debug:options', options: DebugOptions }
 
 export type TargetMessage =
@@ -18,6 +19,7 @@ export type TargetMessage =
   | { type: 'thread:update', thread: ThreadReport }
   | { type: 'thread:finish', thread: ThreadReport }
   | { type: 'tree:root-update', roots: CommitRef[], }
+  | { type: 'component-state:response', report: ComponentStateReport }
   | { type: 'work:request' }
 
 export type TargetClient = {
@@ -33,13 +35,16 @@ export type DebuggerClient = {
   requestWork(): void,
   ready(): void,
 
+  componentState(state: ComponentStateReport): void,
+
   subscribe: EventEmitter<DebuggerMessage>["subscribe"],
 }
 export type DebuggerServer = {
   ready(): void,
   work(): void,
   accept(): void,
-  setOptions(options: DebugOptions): void
+  setOptions(options: DebugOptions): void,
+  componentState(commitId: CommitID): void,
   subscribe: EventEmitter<TargetMessage>["subscribe"],
 }
 
@@ -61,6 +66,9 @@ export const createDebuggerClient = (
     },
     requestWork() {
       channelClient.send({ type: 'work:request' });
+    },
+    componentState(report) {
+      channelClient.send({ type: 'component-state:response', report });
     },
     ready() {
       channelClient.send({ type: 'target:ready' });
@@ -85,6 +93,9 @@ export const createDebuggerServer = (
     },
     accept() {
       channelClient.send({ type: 'server:accept' })
+    },
+    componentState(commitId) {
+      channelClient.send({ type: 'component-state:request', commitId })
     },
     subscribe: channelClient.subscribe,
   }

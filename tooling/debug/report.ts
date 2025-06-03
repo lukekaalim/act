@@ -1,5 +1,5 @@
 import { Element, ElementID } from "@lukekaalim/act";
-import { Commit, CommitID, CommitRef, CommitVersion, DeltaSet, WorkReason, WorkThread } from "@lukekaalim/act-recon";
+import { Commit, CommitID, CommitRef, CommitVersion, ComponentState, DeltaSet, WorkReason, WorkThread } from "@lukekaalim/act-recon";
 import { getElementName } from "./utils";
 
 /**
@@ -8,13 +8,37 @@ import { getElementName } from "./utils";
  * boundaries.
  */
 
-export type PropReport =
-  | { type: 'simple-value', name: string }
+export type ValueReport =
+  | { type: 'undefined' }
+  | { type: 'primitive', value: string | number | boolean | null }
+  | { type: 'complex', name: string }
+
+export const createValueReport = (value: unknown): ValueReport => {
+  switch (typeof value) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+      return { type: 'primitive', value };
+    case 'bigint':
+      return { type: 'complex', name: `bigint(${value.toString()})` }
+    case 'object':
+    case 'function':
+      if (!value)
+        return { type: 'primitive', value };
+      if (value.constructor)
+        return { type: 'complex', name: value.constructor.name }
+      return { type: 'complex', name: '???' }
+    case 'symbol':
+      return { type: 'complex', name: value.description || 'symbol' }
+    case 'undefined':
+      return { type: 'undefined' }
+  }
+};
 
 export type ElementReport = {
   type: string
   id: ElementID;
-  props: Record<string, PropReport>;
+  props: Record<string, ValueReport>;
 }
 
 export const createElementReport = (element: Element): ElementReport => {
@@ -48,7 +72,6 @@ export type DeltaReport = {
 }
 export const createDeltaReports = (deltaSet: DeltaSet): DeltaReport[] => {
   const reports: DeltaReport[] = [];
-  console.time('generating delta reports')
   for (const create of deltaSet.created)
     reports.push({
       type: 'create',
@@ -68,7 +91,6 @@ export const createDeltaReports = (deltaSet: DeltaSet): DeltaReport[] => {
       next: null,
     });
 
-  console.timeEnd('generating delta reports')
   return reports;
 }
 
@@ -93,7 +115,7 @@ export type TreeReport = {
 }
 
 export const updateTreeReport = (tree: TreeReport, thread: ThreadReport): TreeReport => {
-  console.log(`Transforming ${thread.deltas.length} deltas`);
+
   for (const delta of thread.deltas) {
     const next = delta.next as CommitReport;
     const prev = delta.prev as CommitReport;
@@ -112,3 +134,18 @@ export const updateTreeReport = (tree: TreeReport, thread: ThreadReport): TreeRe
   }
   return { ...tree };
 }
+
+export type ComponentStateReport = {
+  props: { name: string, value: ValueReport }[],
+  values: { id: number, value: ValueReport }[],
+}
+
+export const createComponentStateReport = (commit: Commit, state?: ComponentState): ComponentStateReport => {
+  return {
+    props: Object
+      .entries(commit.element.props)
+      .map(([key, value]) => ({ name: key, value: createValueReport(value) })),
+    values: !state ? [] : [...state.values.entries()]
+      .map(([key, value]) => ({ id: key, value: createValueReport(value) })),
+  }
+};

@@ -12,7 +12,7 @@ import { InsightMode } from './mode';
 import { MenuBar } from './MenuBar';
 import { ThreadViewer } from './ThreadViewer';
 import { DebuggerServer } from '@lukekaalim/act-debug';
-import { CommitReport, TreeReport, updateTreeReport } from '@lukekaalim/act-debug/report';
+import { CommitReport, ComponentStateReport, TreeReport, updateTreeReport } from '@lukekaalim/act-debug/report';
 
 export type InsightAppProps = {
   server: DebuggerServer,
@@ -20,6 +20,7 @@ export type InsightAppProps = {
 
 export const InsightApp2: Component<InsightAppProps> = ({ server }) => {
   const [tree, setTree] = useState<TreeReport>({ commits: new Map(), roots: [] });
+  const [componentState, setComponentState] = useState<ComponentStateReport | null>(null);
 
   useEffect(() => {
     server.subscribe((event) => {
@@ -33,21 +34,28 @@ export const InsightApp2: Component<InsightAppProps> = ({ server }) => {
           setTree(tree => {
             return { ...tree, roots: event.roots };
           });
+          break;
+        case 'component-state:response':
+          setComponentState(event.report);
+          break;
       }
     })
     server.ready();
     return;
   }, [server])
 
-  console.log(tree);
-
   const renderCommit = (commit: CommitReport) => {
-    return h(CommitPreview, { commit, renderCommit, tree });
+    const onClick = () => {
+      server.componentState(commit.id);
+    };
+
+    return h(CommitPreview, { commit, renderCommit, tree, onClick });
   }
 
-  return [
+  return h('div', { style: { display: 'flex', flexDirection: 'row' } }, [
     h(TreeViewer, { tree, renderCommit, }),
-  ];
+    componentState && h('pre', {}, JSON.stringify(componentState, null, 2))
+  ]);
 }
 
 export const InsightApp: Component<InsightAppProps> = () => {

@@ -5,7 +5,7 @@ import { createPostMessageClient } from "./channel";
 import { recon } from "@lukekaalim/act-three/deps";
 import { createDebuggerClient, DebuggerClient, DebugOptions } from "./protocol";
 import { createDOMScheduler } from "@lukekaalim/act-web";
-import { createThreadReport } from "./report";
+import { createComponentStateReport, createThreadReport } from "./report";
 
 export type DebugScheduler = {
   isWorkPending(): boolean,
@@ -34,10 +34,8 @@ export const renderDebug = async (node: Node, createSpace: (tree: CommitTree) =>
         debug.rootUpdate([...reconciler.tree.roots]);
         break;
       case 'thread:complete':
-        console.time('sending_report')
         debug.finishThread(createThreadReport(event.thread));
         space.create(event.thread.deltas).configure();
-        console.timeEnd('sending_report')
         break;
       case 'thread:start':
         //debug.startThread(event.thread);
@@ -54,6 +52,13 @@ export const renderDebug = async (node: Node, createSpace: (tree: CommitTree) =>
         break;
       case 'debug:options':
         options = event.options;
+        break;
+      case 'component-state:request':
+        const commit = reconciler.tree.commits.get(event.commitId);
+        const componentState = reconciler.tree.components.get(event.commitId);
+        if (!commit)
+          return;
+        debug.componentState(createComponentStateReport(commit, componentState));
         break;
     }
   });
