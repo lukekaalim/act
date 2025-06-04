@@ -1,5 +1,17 @@
 # @lukekaalim/act-web
 
+## 3.4.0-alpha.0
+
+### Minor Changes
+
+- b3f6c49: Added debug capabilities and protocol
+
+### Patch Changes
+
+- Updated dependencies [b3f6c49]
+  - @lukekaalim/act-backstage@3.0.0-alpha.0
+  - @lukekaalim/act-recon@3.0.0-alpha.0
+
 ## 3.3.0
 
 ### Minor Changes

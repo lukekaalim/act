@@ -1,13 +1,13 @@
 {
   "name": "@lukekaalim/act-insight",
   "main": "index.ts",
-  "version": "0.0.1",
+  "version": "0.0.2-alpha.0",
   "scripts": {},
   "dependencies": {
     "@lukekaalim/act": "*",
-    "@lukekaalim/act-recon": "*",
-    "@lukekaalim/act-web": "*",
-    "@lukekaalim/act-debug": "*",
+    "@lukekaalim/act-recon": "3.0.0-alpha.0",
+    "@lukekaalim/act-web": "3.4.0-alpha.0",
+    "@lukekaalim/act-debug": "1.0.0-alpha.0",
     "@sindresorhus/string-hash": "^2.0.0",
     "@types/firefox-webext-browser": "^120.0.4",
     "lodash-es": "^4.17.21"

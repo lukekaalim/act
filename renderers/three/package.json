@@ -1,13 +1,13 @@
 {
   "name": "@lukekaalim/act-three",
   "main": "mod.ts",
-  "version": "6.2.0",
+  "version": "6.3.0-alpha.0",
   "dependencies": {
     "@types/three": ">= 0.171.0",
-    "@lukekaalim/act-web": "^3.3.0",
+    "@lukekaalim/act-web": "^3.4.0-alpha.0",
     "@lukekaalim/act": "^3.1.0",
-    "@lukekaalim/act-recon": "^2.0.0",
-    "@lukekaalim/act-backstage": "^2.0.0"
+    "@lukekaalim/act-recon": "^3.0.0-alpha.0",
+    "@lukekaalim/act-backstage": "^3.0.0-alpha.0"
   },
   "peerDependencies": {
     "three": ">= 0.171.0"

@@ -7,7 +7,11 @@
     "@lukekaalim/act-backstage": "2.0.0",
     "@lukekaalim/act-three": "6.2.0",
     "@lukekaalim/act-web": "3.3.0",
-    "@lukekaalim/act-debug": "0.0.1"
+    "@lukekaalim/act-debug": "0.0.1",
+    "@lukekaalim/act-insight": "0.0.1",
+    "@lukekaalim/act-web-extension": "0.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "tired-knives-bathe"
+  ]
 }

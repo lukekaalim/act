@@ -1,5 +1,11 @@
 # @lukekaalim/act-recon
 
+## 3.0.0-alpha.0
+
+### Major Changes
+
+- b3f6c49: Added debug capabilities and protocol
+
 ## 2.0.0
 
 ### Major Changes
