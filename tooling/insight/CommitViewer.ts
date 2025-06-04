@@ -4,29 +4,21 @@ import { hs } from "@lukekaalim/act-web"
 import { getElementName } from "./utils";
 import { CommitAttributeTag } from "./AttributeTag";
 import classes from './CommitViewer.module.css';
+import { CommitReport, CommitStateReport, ValueReport } from "@lukekaalim/act-debug";
 
 export type CommitViewerProps = {
-  reconciler: Reconciler,
-  tree: CommitTree,
-
-  commitId: CommitID
+  commit: CommitReport,
+  state: CommitStateReport,
 };
 
-export const CommitViewer: Component<CommitViewerProps> = ({ reconciler, tree, commitId }) => {
-  const commit = tree.commits.get(commitId);
-  if (!commit)
-    return null;
-
-  const state = tree.components.get(commitId);
+export const CommitViewer: Component<CommitViewerProps> = ({ commit, state }) => {
 
   const isRef = (value: unknown): value is Ref<unknown> => (
     typeof value === 'object' && !!value && (refSymbol in value)
   );
 
-  const refs = state && [...state.values]
-    .filter(([id, value]) => isRef(value))
-  const states = state && [...state.values]
-    .filter(([id, value]) => !isRef(value))
+  //const refs = state && [...state.values]
+  //  .filter(([id, value]) => isRef(value))
 
   const [, setRender] = useState(0);
   const rerender = () => {
@@ -34,59 +26,55 @@ export const CommitViewer: Component<CommitViewerProps> = ({ reconciler, tree, c
   }
 
   return hs('div', { className: classes.commitViewer }, [
-    hs('h3', {}, getElementName(commit.element)),
+    hs('h3', {}, commit.element.type),
     hs('div', {}, [
       h(CommitAttributeTag, { name: 'Version', value: commit.version.toString() }),
       h(CommitAttributeTag, { name: 'ID', value: commit.id.toString() }),
-      !!commit.element.props.key && [
-        h(CommitAttributeTag, { name: 'Key', value: getValueName(commit.element.props.key) }),
-      ]
+      //!!state.props.key && [
+      //  h(CommitAttributeTag, { name: 'Key', value: getValueName(commit.element.props.key) }),
+      //]
     ]),
-    Object.keys(commit.element.props).length > 0 && [
+    state.props.length > 0 && [
       hs('h4', {}, 'Props'),
-      hs('ul', {}, Object.keys(commit.element.props)
-        .map(key => hs('li', {}, [
-          h(CommitAttributeTag, { name: 'Key', value: key }),
-          h(CommitAttributeTag, { name: 'Value', value: getValueName(commit.element.props[key]) }),
+      hs('ul', {}, state.props.map(prop => 
+        hs('li', {}, [
+          h(CommitAttributeTag, { name: 'Key', value: prop.name }),
+          h(CommitAttributeTag, { name: 'Value', value: getTextForValue(prop.value) }),
         ]))),
     ],
-    !!state && [
-      !!states && states.length > 0 && [
-        hs('h4', {}, 'State'),
-        hs('ul', {}, [...state.values]
-          .filter(([id, value]) => !isRef(value))
-          .map(([id, value]) => h('li', {}, [
-          h(CommitAttributeTag, { name: 'ID', value: id.toString() }),
-          ' ',
-          hs('pre', { style: { display: 'inline' } }, getValueName(value)),
-        ])))
-      ],
-      !!refs && refs.length > 0 && [
-        hs('h4', {}, ['Refs ', hs('button', { onClick: rerender }, 'Reload')]),
-        hs('ul', {}, [...state.values]
-          .filter(([id, value]) => isRef(value))
-          .map(([id, value]) => isRef(value) && h('li', {}, [
-          h(CommitAttributeTag, { name: 'ID', value: id.toString() }),
-          ' ',
-          hs('pre', { style: { display: 'inline' } }, getValueName(value.current)),
-        ])))
-      ],
-      state.effects.size > 0 && [
-        hs('h4', {}, 'Effects'),
-        hs('ul', {}, [...state.effects]
-          .map(([id, value]) => h('li', {}, [
-          h(CommitAttributeTag, { name: 'ID', value: id.toString() }),
-          h(CommitAttributeTag, { name: 'EffectID', value: value.toString() }),
-          hs('h5', {}, 'Dependencies'),
-          hs('ol', {}, (state.deps.get(id) as unknown[]).map(dep => {
-            return h('li', {}, [
-              h(CommitAttributeTag, { name: 'Value', value: getValueName(dep) }),
-            ])
-          }))
-        ])))
-      ]
-    ]
+    state.values.length && [
+      hs('h4', {}, 'useState'),
+      hs('ul', {}, state.values.map(value => 
+        hs('li', {}, [
+          h(CommitAttributeTag, { name: 'Key', value: value.id.toString() }),
+          h(CommitAttributeTag, { name: 'Value', value: getTextForValue(value.value) }),
+        ]))),
+    ],
   ])
+}
+
+export type ValueViewerProps = {
+  value: ValueReport,
+}
+
+export const getTextForValue = (value: ValueReport) => {
+  switch (value.type) {
+    case 'primitive':
+      switch (typeof value.value) {
+        case 'object':
+          return `null`;
+        case 'string':
+        case 'boolean':
+        case 'number':
+          return value.value.toString();
+      }
+    case 'complex':
+      return value.name;
+    case 'undefined':
+      return `undefined`;
+    default:
+      return `${value.type}`;
+  }
 }
 
 export const getValueName = (value: unknown) => {

@@ -22,12 +22,13 @@ export const createValueReport = (value: unknown): ValueReport => {
     case 'bigint':
       return { type: 'complex', name: `bigint(${value.toString()})` }
     case 'object':
-    case 'function':
       if (!value)
         return { type: 'primitive', value };
       if (value.constructor)
         return { type: 'complex', name: value.constructor.name }
       return { type: 'complex', name: '???' }
+    case 'function':
+      return { type: 'complex', name: value.name };
     case 'symbol':
       return { type: 'complex', name: value.description || 'symbol' }
     case 'undefined':
@@ -38,14 +39,12 @@ export const createValueReport = (value: unknown): ValueReport => {
 export type ElementReport = {
   type: string
   id: ElementID;
-  props: Record<string, ValueReport>;
 }
 
 export const createElementReport = (element: Element): ElementReport => {
   return {
     id: element.id,
     type: getElementName(element),
-    props: {},
   }
 }
 
@@ -135,12 +134,12 @@ export const updateTreeReport = (tree: TreeReport, thread: ThreadReport): TreeRe
   return { ...tree };
 }
 
-export type ComponentStateReport = {
+export type CommitStateReport = {
   props: { name: string, value: ValueReport }[],
   values: { id: number, value: ValueReport }[],
 }
 
-export const createComponentStateReport = (commit: Commit, state?: ComponentState): ComponentStateReport => {
+export const createCommitStateReport = (commit: Commit, state?: ComponentState): CommitStateReport => {
   return {
     props: Object
       .entries(commit.element.props)

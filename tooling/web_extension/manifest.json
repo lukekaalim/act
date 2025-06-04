@@ -4,7 +4,7 @@
   "version": "1.0.0",
   
   "icons": {
-    "48": "icons/star.png"
+    "48": "public/icons/star.png"
   },
   
   "permissions": [

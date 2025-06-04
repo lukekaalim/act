@@ -12,7 +12,7 @@ import { InsightMode } from './mode';
 import { MenuBar } from './MenuBar';
 import { ThreadViewer } from './ThreadViewer';
 import { DebuggerServer } from '@lukekaalim/act-debug';
-import { CommitReport, ComponentStateReport, TreeReport, updateTreeReport } from '@lukekaalim/act-debug/report';
+import { CommitReport, CommitStateReport, TreeReport, updateTreeReport } from '@lukekaalim/act-debug/report';
 
 export type InsightAppProps = {
   server: DebuggerServer,
@@ -20,7 +20,8 @@ export type InsightAppProps = {
 
 export const InsightApp2: Component<InsightAppProps> = ({ server }) => {
   const [tree, setTree] = useState<TreeReport>({ commits: new Map(), roots: [] });
-  const [componentState, setComponentState] = useState<ComponentStateReport | null>(null);
+  const [commitId, setCommitId] = useState<CommitID | null>(null);
+  const [commitState, setCommitState] = useState<CommitStateReport | null>(null);
 
   useEffect(() => {
     server.subscribe((event) => {
@@ -35,8 +36,9 @@ export const InsightApp2: Component<InsightAppProps> = ({ server }) => {
             return { ...tree, roots: event.roots };
           });
           break;
-        case 'component-state:response':
-          setComponentState(event.report);
+        case 'commit-state:response':
+          setCommitState(event.report);
+          setCommitId(event.commitId);
           break;
       }
     })
@@ -44,17 +46,25 @@ export const InsightApp2: Component<InsightAppProps> = ({ server }) => {
     return;
   }, [server])
 
+  useEffect(() => {
+    if (commitId)
+      server.commitState(commitId);
+  }, [tree, commitId])
+
   const renderCommit = (commit: CommitReport) => {
     const onClick = () => {
-      server.componentState(commit.id);
+      server.commitState(commit.id);
     };
 
     return h(CommitPreview, { commit, renderCommit, tree, onClick });
   }
 
+  const selectedCommit = commitId && tree.commits.get(commitId) || null;
+
   return h('div', { style: { display: 'flex', flexDirection: 'row' } }, [
     h(TreeViewer, { tree, renderCommit, }),
-    componentState && h('pre', {}, JSON.stringify(componentState, null, 2))
+    commitState && selectedCommit &&
+      h(CommitViewer, { commit: selectedCommit, state: commitState }),
   ]);
 }
 

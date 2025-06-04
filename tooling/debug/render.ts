@@ -5,7 +5,7 @@ import { createPostMessageClient } from "./channel";
 import { recon } from "@lukekaalim/act-three/deps";
 import { createDebuggerClient, DebuggerClient, DebugOptions } from "./protocol";
 import { createDOMScheduler } from "@lukekaalim/act-web";
-import { createComponentStateReport, createThreadReport } from "./report";
+import { createCommitStateReport, createThreadReport } from "./report";
 
 export type DebugScheduler = {
   isWorkPending(): boolean,
@@ -53,12 +53,12 @@ export const renderDebug = async (node: Node, createSpace: (tree: CommitTree) =>
       case 'debug:options':
         options = event.options;
         break;
-      case 'component-state:request':
+      case 'commit-state:request':
         const commit = reconciler.tree.commits.get(event.commitId);
         const componentState = reconciler.tree.components.get(event.commitId);
         if (!commit)
           return;
-        debug.componentState(createComponentStateReport(commit, componentState));
+        debug.commitState(createCommitStateReport(commit, componentState), commit.id);
         break;
     }
   });

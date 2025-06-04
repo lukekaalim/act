@@ -1,6 +1,7 @@
 {
   "name": "@lukekaalim/act-insight",
   "main": "index.ts",
+  "version": "0.0.1",
   "scripts": {},
   "dependencies": {
     "@lukekaalim/act": "*",

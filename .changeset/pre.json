@@ -1,0 +1,13 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@lukekaalim/act": "3.2.0",
+    "@lukekaalim/act-recon": "2.0.0",
+    "@lukekaalim/act-backstage": "2.0.0",
+    "@lukekaalim/act-three": "6.2.0",
+    "@lukekaalim/act-web": "3.3.0",
+    "@lukekaalim/act-debug": "0.0.1"
+  },
+  "changesets": []
+}
