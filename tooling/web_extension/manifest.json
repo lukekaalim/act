@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
-  "name": "devtools-panels",
+  "name": "@lukekaalim/act Debugger",
   "version": "1.0.0",
   
   "icons": {
-    "48": "public/icons/star.png"
+    "48": "public/icons/act-logo.png"
   },
   
   "permissions": [

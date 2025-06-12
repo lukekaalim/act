@@ -10,7 +10,8 @@
   "scripts": {
     "change": "changeset",
     "test": "tsx --test",
-    "testw": "tsx --test --watch"
+    "testw": "tsx --test --watch",
+    "ext": "npx web-ext run --source-dir=tooling/web_extension"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.4",
