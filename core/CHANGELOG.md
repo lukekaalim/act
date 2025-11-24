@@ -1,5 +1,11 @@
 # @lukekaalim/act
 
+## 3.2.1
+
+### Patch Changes
+
+- Fix typeerror with missing "ref" property on ErrorBoundaryProps
+
 ## 3.2.0
 
 ### Minor Changes

@@ -2,7 +2,7 @@
   "name": "docs",
   "private": true,
   "devDependencies": {
-    "vite": "^6.3.5"
+    "vite": "^7.2.4"
   },
   "dependencies": {
     "three": "^0.171.0"
