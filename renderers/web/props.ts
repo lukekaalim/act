@@ -43,6 +43,8 @@ export const setSVGElementProps = (
       case 'ref':
         (next as any).current = node;
         return true;
+      case 'style':
+        return (setStyleProp(node.style, next as any, prev as any), true);
       default:
         node.setAttribute(name, next as any);
         return true;
