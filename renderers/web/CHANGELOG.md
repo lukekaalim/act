@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 3.4.0-alpha.1
+
+### Patch Changes
+
+- Added "Style" prop support to SVG
+
 ## 3.4.0-alpha.0
 
 ### Minor Changes

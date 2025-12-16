@@ -12,6 +12,7 @@
     "@lukekaalim/act-web-extension": "0.0.0"
   },
   "changesets": [
+    "smooth-hands-press",
     "tired-knives-bathe"
   ]
 }
