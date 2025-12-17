@@ -64,6 +64,12 @@ export const setHTMLElementProps = (
       setEventProp(node as any, eventName, next, prev);
       return true;
     }
+    if (name.startsWith('data-')) {
+      if (next === undefined)
+        node.removeAttribute(name);
+      else
+        node.setAttribute(name, next as string);
+    }
     switch (name) {
       case 'ref':
         (next as any).current = node;
