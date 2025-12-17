@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 3.4.0-alpha.2
+
+### Minor Changes
+
+- Add support for data-\* attributes on HTML elements
+
 ## 3.4.0-alpha.1
 
 ### Patch Changes
