@@ -187,7 +187,7 @@ const queueWorkThreadTarget = (thread: WorkThread, ref: CommitRef, tree: CommitT
   // eventually
   for (let i = ref.path.length - 1; i >= 0; i--) {
     const id = ref.path[i];
-    thread.mustVisit.set(id, { id, path: ref.path.slice(0, i) });
+    thread.mustVisit.add(id);
 
     for (const update of thread.pendingUpdates) {
       // Found an ancestor pending update - it should
@@ -222,7 +222,7 @@ export type WorkThread = {
   reasons: WorkReason[],
   
   mustRender: Map<CommitID, CommitRef>,
-  mustVisit: Map<CommitID, CommitRef>,
+  mustVisit: Set<CommitID>,
   
   pendingUpdates: Update[],
   pendingEffects: EffectTask[],
@@ -243,7 +243,7 @@ export const cloneWorkThread = (thread: WorkThread): WorkThread => {
     pendingUpdates: [...thread.pendingUpdates],
     errorNotifications: new Map(thread.errorNotifications),
 
-    mustVisit: new Map(thread.mustVisit),
+    mustVisit: new Set(thread.mustVisit),
     mustRender: new Map(thread.mustRender),
 
     visited: new Map(thread.visited),
@@ -260,7 +260,7 @@ export const WorkThread = {
       pendingUpdates: [],
       errorNotifications: new Map(),
 
-      mustVisit: new Map(),
+      mustVisit: new Set(),
       mustRender: new Map(),
 
       visited: new Map(),

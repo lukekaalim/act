@@ -72,7 +72,7 @@ export const ThreadViewer: Component<ThreadViewerProps> = ({ thread, tree }) => 
     hs('h3', {}, 'Visited'),
     hs('ul', {}, [...thread.visited].map(([id, ref]) => hs('li', {}, id))),
     hs('h3', {}, 'Must Visit'),
-    hs('ul', {}, [...thread.mustVisit].map(([id, ref]) => hs('li', {}, id))),
+    hs('ul', {}, [...thread.mustVisit].map((id) => hs('li', {}, id))),
     hs('h3', {}, 'Must Render'),
     hs('ul', {}, [...thread.mustRender].map(([id, ref]) => hs('li', {}, id))),
     hs('h3', {}, 'Created'),
