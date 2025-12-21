@@ -185,8 +185,9 @@ const queueWorkThreadTarget = (thread: WorkThread, ref: CommitRef, tree: CommitT
   // lead to this commit. If so, make sure ancestor commit
   // is on the MustVisit so they should make their way down
   // eventually
-  for (const id of [...ref.path].reverse().slice(1)) {
-    thread.mustVisit.set(ref.id, ref);
+  for (let i = ref.path.length - 1; i >= 0; i--) {
+    const id = ref.path[i];
+    thread.mustVisit.set(id, { id, path: ref.path.slice(0, i) });
 
     for (const update of thread.pendingUpdates) {
       // Found an ancestor pending update - it should
