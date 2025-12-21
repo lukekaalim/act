@@ -1,5 +1,12 @@
 # @lukekaalim/act-insight
 
+## 0.0.2-alpha.3
+
+### Patch Changes
+
+- Updated dependencies [fdf1557]
+  - @lukekaalim/act-recon@3.0.0-alpha.1
+
 ## 0.0.2-alpha.2
 
 ### Patch Changes

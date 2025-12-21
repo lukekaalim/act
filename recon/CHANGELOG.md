@@ -1,5 +1,11 @@
 # @lukekaalim/act-recon
 
+## 3.0.0-alpha.1
+
+### Patch Changes
+
+- fdf1557: Fixed issue with multiple changes (where changes after first were children of first) being ignored due to "MustVisit" being misinput each time
+
 ## 3.0.0-alpha.0
 
 ### Major Changes
