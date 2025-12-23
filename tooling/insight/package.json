@@ -1,12 +1,12 @@
 {
   "name": "@lukekaalim/act-insight",
   "main": "index.ts",
-  "version": "0.0.2-alpha.4",
+  "version": "0.0.2-alpha.5",
   "scripts": {},
   "dependencies": {
     "@lukekaalim/act": "*",
-    "@lukekaalim/act-recon": "3.0.0-alpha.2",
-    "@lukekaalim/act-web": "3.4.0-alpha.2",
+    "@lukekaalim/act-recon": "3.0.0-alpha.3",
+    "@lukekaalim/act-web": "3.4.0-alpha.3",
     "@lukekaalim/act-debug": "1.0.0-alpha.0",
     "@sindresorhus/string-hash": "^2.0.0",
     "@types/firefox-webext-browser": "^120.0.4",

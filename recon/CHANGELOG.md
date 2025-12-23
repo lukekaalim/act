@@ -1,5 +1,13 @@
 # @lukekaalim/act-recon
 
+## 3.0.0-alpha.3
+
+### Patch Changes
+
+- ccb3900: Reconciler should apply all changes in the correct order, and not skip any.
+  - Reconciler does send out a Render command once it completes all pending renders (called a "ThreadStack")
+    Scheduler has been updated to perform some updates in Sync.
+
 ## 3.0.0-alpha.2
 
 ### Patch Changes

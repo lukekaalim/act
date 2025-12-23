@@ -1,5 +1,13 @@
 # @lukekaalim/act-insight
 
+## 0.0.2-alpha.5
+
+### Patch Changes
+
+- Updated dependencies [ccb3900]
+  - @lukekaalim/act-web@3.4.0-alpha.3
+  - @lukekaalim/act-recon@3.0.0-alpha.3
+
 ## 0.0.2-alpha.4
 
 ### Patch Changes
