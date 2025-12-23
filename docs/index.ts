@@ -1,6 +1,6 @@
-import { h, Props, useEffect, useState } from "@lukekaalim/act";
+import { createContext, h, Props, useContext, useEffect, useState } from "@lukekaalim/act";
 import { createReconciler } from "@lukekaalim/act-recon";
-import { createDOMScheduler, createWebSpace, render as renderWeb } from "@lukekaalim/act-web";
+import { createDOMScheduler, createWebSpace, render, render as renderWeb } from "@lukekaalim/act-web";
 import { InsightApp } from '@lukekaalim/act-insight';
 
 import { Component, ErrorBoundary, primitiveNodeTypes, useMemo, useRef } from '@lukekaalim/act';
@@ -15,6 +15,8 @@ const material = new three.MeshBasicMaterial({ color: 'red' });
 
 const loader = new FontLoader();
 const font = await new Promise<Font>(r => loader.load(fontURL, font => r(font)));
+
+const TestContext = createContext("EMPTY NAME");
 
 const App = () => {
   const [name, setName] = useState("World");
@@ -101,7 +103,8 @@ const App = () => {
               h(node.perspectiveCamera, { ref: refF, position: new three.Vector3(0, 0, 100) }),
             ])
           ])
-        ])
+        ]),
+        h(TestContext.Provider, { value: name }, h(ContextTester))
       ],
       h('br', { key: 10 }),
       h('button', { onClick: () => setOrder(order === 'forward' ? 'backward' : 'forward')}, 'Swap'),
@@ -124,6 +127,16 @@ const WrapMemo = <T extends Props>(component: Component<T>): Component<T> => {
   return function MemoWrappedComponent(props) {
     return useMemo(() => h(component, props), []);
   }
+}
+
+const ContextTester = () => {
+  return useMemo(() => h(ChildValue), [])
+}
+
+const ChildValue = () => {
+  const name = useContext(TestContext);
+
+  return hs('pre', {}, `name=${name}`);
 }
 
 const Ticker = WrapMemo(function Ticker() {
@@ -157,7 +170,7 @@ const RenderCounter: Component = ({ key }) => {
 const main = () => {
   const root = document.getElementById('main_root');
   if (root)
-    renderDebug(h(HTML, {}, h(App)), tree => createThreeWebSpace(tree, root))
+    render(h(HTML, {}, h(App)), document.body);// tree => createThreeWebSpace(tree, root))
 };
 
 main();

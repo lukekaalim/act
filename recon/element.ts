@@ -7,6 +7,7 @@ import { loadHooks } from "./hooks";
 import { ContextState } from "./context";
 import { ComponentState, EffectID, EffectTask } from "./state";
 import { CommitTree } from "./tree";
+import { addRenderTargetToThread, WorkThread } from "./thread";
 
 /**
  * When processing an element, it may produce additional
@@ -17,19 +18,17 @@ export type ElementOutput = {
   child: Node,
   reject: null | unknown,
   effects: EffectTask[],
-  targets: CommitRef[],
 };
 export const ElementOutput = {
   new: (child: Node): ElementOutput => ({
     child,
     reject: null,
     effects: [],
-    targets: [],
   })
 }
 
 export type ElementService = {
-  render(element: Element, ref: CommitRef): ElementOutput,
+  render(element: Element, ref: CommitRef, thread: WorkThread): ElementOutput,
   clear(ref: Commit): ElementOutput,
 
   boundary: Map<CommitID, unknown>,
@@ -45,6 +44,7 @@ export const createElementService = (
   const render = (
     element: Element,
     ref: CommitRef,
+    thread: WorkThread,
   ): ElementOutput => {
     const output = ElementOutput.new(element.children);
   
@@ -66,7 +66,13 @@ export const createElementService = (
             }
             if (state.value !== element.props.value) {
               state.value = element.props.value;
-              output.targets.push(...state.consumers.values());
+              
+              for (const [, consumer] of state.consumers) {
+                // there should be no way for the children of the
+                // provider to already have been renderer,
+                // so we don't check the return value.
+                addRenderTargetToThread(thread, consumer);
+              }
             }
             break;
           }

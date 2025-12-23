@@ -83,7 +83,7 @@ const updateWorkThread = (thread: WorkThread, update: Update, tree: CommitTree, 
   thread.visited.set(ref.id, ref);
   
   if (next) {
-    const output = element.render(next, ref);
+    const output = element.render(next, ref, thread);
     if (output.reject) {
       const errorBoundary = WorkThread.findClosestBoundary(thread, tree, ref);
       if (errorBoundary) {
@@ -158,6 +158,51 @@ const startWorkThreadUpdate = (thread: WorkThread, ref: CommitRef, prev: Commit 
 }
 
 /**
+ * For a running thread, add an additional "target" to render,
+ * which forces the thread to VISIT each commit on the path to the target,
+ * and to RENDER the target specifically.
+ * 
+ * @param thread
+ * @param target 
+ * @returns `true` if the target was added successfully (or was already in the thread),
+ * or `false` if it could not be added for some reason, such as:
+ *    - The thread has already visited the Commit (a thread will never backtrack)
+ */
+export const addRenderTargetToThread = (thread: WorkThread, target: CommitRef): boolean => {
+  // If the thread _already_ has this ref as a target,
+  // do nothing
+  if (thread.mustRender.has(target.id))
+    return true;
+
+  // We cant do work on a commit that has
+  // already been visited
+  if (thread.visited.has(target.id))
+    return false;
+
+  thread.reasons.push({ type: 'target', ref: target });
+  thread.mustRender.set(target.id, target);
+
+  // Search through all the parents, looking to see if
+  // there are any pendingUpdates that might
+  // lead to this commit. If so, make sure ancestor commit
+  // is on the MustVisit so they should make their way down
+  // eventually
+  for (let i = target.path.length - 1; i >= 0; i--) {
+    const id = target.path[i];
+    thread.mustVisit.add(id);
+
+    for (const update of thread.pendingUpdates) {
+      // Found an ancestor pending update - it should
+      // handle our target eventually
+      if (update.ref.id === id)
+        return true;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Request that a commit be re-rendered
  * 
  * If returns false, the update cannot be queued in the current
@@ -167,34 +212,9 @@ const startWorkThreadUpdate = (thread: WorkThread, ref: CommitRef, prev: Commit 
  * @returns 
  */
 const queueWorkThreadTarget = (thread: WorkThread, ref: CommitRef, tree: CommitTree): boolean => {
-  // If the thread _already_ has this ref as a target,
-  // do nothing
-  if (thread.mustRender.has(ref.id))
-    return true;
-
-  // We cant do work on a commit that has
-  // already been visited
-  if (thread.visited.has(ref.id))
+  // Try to add to the thread
+  if (!addRenderTargetToThread(thread, ref)) {
     return false;
-
-  thread.reasons.push({ type: 'target', ref });
-  thread.mustRender.set(ref.id, ref);
-
-  // Search through all the parents, looking to see if
-  // there are any pendingUpdates that might
-  // lead to this commit. If so, make sure ancestor commit
-  // is on the MustVisit so they should make their way down
-  // eventually
-  for (let i = ref.path.length - 1; i >= 0; i--) {
-    const id = ref.path[i];
-    thread.mustVisit.add(id);
-
-    for (const update of thread.pendingUpdates) {
-      // Found an ancestor pending update - it should
-      // handle our target eventually
-      if (update.ref.id === id)
-        return true;
-    }
   }
   // otherwise, start a new update from the root
   const prev = tree.commits.get(ref.id) as Commit;
