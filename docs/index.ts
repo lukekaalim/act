@@ -61,6 +61,8 @@ const App = () => {
 
   const [order, setOrder] = useState<'forward' | 'backward'>('forward');
 
+  const [toggle, setToggle] = useState(false);
+
   return [
     hs('div', {}, [
       hs('input', {
@@ -72,6 +74,8 @@ const App = () => {
         value: name
       }),
       h(Ticker),
+      toggle && hs('button', { onClick: () => setToggle(!toggle) }, 'Off!'),
+      !toggle && hs('button', { onClick: () => setToggle(!toggle) }, 'On!'),
       hs('button', { onClick: () => {
         boundaryClearer()
         setBoundaryClearer(() => () => {});

@@ -109,7 +109,12 @@ const updateWorkThread = (thread: WorkThread, update: Update, tree: CommitTree, 
     const [childRefs, updates] = calculateUpdates(ref, prevChildren, output.child);
 
     thread.pendingEffects.push(...output.effects);
-    thread.pendingUpdates.push(...updates);
+    for (const update of updates) {
+      // if someone has already marked the update as needing rendering, assume
+      // that there is already an update in the stack to handle it.
+      if (!thread.mustRender.has(update.ref.id))
+        thread.pendingUpdates.push(update);
+    }
 
     const commit = Commit.update(ref, next, childRefs);
 
