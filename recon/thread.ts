@@ -168,16 +168,16 @@ const startWorkThreadUpdate = (thread: WorkThread, ref: CommitRef, prev: Commit 
  * or `false` if it could not be added for some reason, such as:
  *    - The thread has already visited the Commit (a thread will never backtrack)
  */
-export const addRenderTargetToThread = (thread: WorkThread, target: CommitRef): boolean => {
-  // If the thread _already_ has this ref as a target,
-  // do nothing
-  if (thread.mustRender.has(target.id))
-    return true;
-
+const queueWorkThreadTarget = (thread: WorkThread, target: CommitRef, tree: CommitTree): boolean => {
   // We cant do work on a commit that has
   // already been visited
   if (thread.visited.has(target.id))
     return false;
+
+  // If the thread _already_ has this ref as a target,
+  // do nothing
+  if (thread.mustRender.has(target.id))
+    return true;
 
   thread.reasons.push({ type: 'target', ref: target });
   thread.mustRender.set(target.id, target);
@@ -199,28 +199,12 @@ export const addRenderTargetToThread = (thread: WorkThread, target: CommitRef): 
     }
   }
 
+  // otherwise, start a new update from the root
+  const prev = tree.commits.get(target.id) as Commit;
+  startWorkThreadUpdate(thread, target, prev, prev.element);
   return true;
 }
 
-/**
- * Request that a commit be re-rendered
- * 
- * If returns false, the update cannot be queued in the current
- * thread (maybe it already re-rendered?).
- * @param thread 
- * @param ref 
- * @returns 
- */
-const queueWorkThreadTarget = (thread: WorkThread, ref: CommitRef, tree: CommitTree): boolean => {
-  // Try to add to the thread
-  if (!addRenderTargetToThread(thread, ref)) {
-    return false;
-  }
-  // otherwise, start a new update from the root
-  const prev = tree.commits.get(ref.id) as Commit;
-  startWorkThreadUpdate(thread, ref, prev, prev.element);
-  return true;
-}
 const queueWorkThreadMount = (thread: WorkThread, ref: CommitRef, element: Element) => {
   thread.reasons.push({ type: 'mount', element, ref });
   startWorkThreadUpdate(thread, ref, null, element);

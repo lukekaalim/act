@@ -3,7 +3,7 @@ import { CommitID, CommitRef } from "./commit";
 import { WorkThread } from "./thread"
 import { CommitTree } from "./tree";
 import { ElementService } from "./element";
-import { Scheduler, WorkID } from "./scheduler";
+import { Scheduler } from "./scheduler";
 import { createEventEmitter, EventEmitter } from "./event";
 
 export type Reconciler = {
@@ -18,7 +18,7 @@ export type Reconciler = {
 
 export type ReconcilerState = {
   thread: WorkThread | null,
-  work: WorkID | null,
+  pendingThreadStack: WorkThread[],
   /**
    * These are targets that can't be fulfilled with the current thread
    * */
@@ -36,56 +36,66 @@ export const createReconciler = (scheduler: Scheduler): Reconciler => {
   const events = createEventEmitter<ReconcilerEvent>();
   const state: ReconcilerState = {
     thread: null,
-    work: null,
+    pendingThreadStack: [],
     pendingTargets: new Map(),
   };
 
   const work = () => {
-    state.work = null;
     if (!state.thread)
       return;
 
     const update = state.thread.pendingUpdates.pop();
     if (update) {
       WorkThread.update(state.thread, update, tree, elements);
-      state.work = scheduler.requestWork(work);
+      
+      scheduler.requestCallback();
     } else {
       const completedThread = state.thread;
       state.thread = null;
 
       const pendingTargets = [...state.pendingTargets]
       state.pendingTargets.clear();
-
-      for (const [,target] of pendingTargets)
-        render(target);
-
+      state.pendingThreadStack.push(completedThread);
       WorkThread.apply(completedThread, tree);
-      events.emit({ type: 'thread:complete', thread: completedThread });
 
-      // Run side effects
-      for (const effect of completedThread.pendingEffects) {
-        try {
-          effect.func();
-        } catch (error) {
-          console.error(error);
+      if (pendingTargets.length === 0) {
+        for (const thread of state.pendingThreadStack) {
+          // fire off all renders
+          events.emit({ type: 'thread:complete', thread });
+
+          // Run side effects
+          for (const effect of thread.pendingEffects) {
+            try {
+              effect.func();
+            } catch (error) {
+              console.error(error);
+            }
+          }
         }
+
+        state.pendingThreadStack = [];
+      } else {
+        const nextThread = getOrStartThread();
+        for (const [,target] of pendingTargets) {
+          render(target);
+        }
+        nextThread.pendingEffects.push(...completedThread.pendingEffects);
       }
     }
   }
 
-  const start = () => {
+  const getOrStartThread = () => {
     if (!state.thread) {
       state.thread = WorkThread.new();
       events.emit({ type: 'thread:start', thread: state.thread });
+    } else {
     }
-    if (!state.work) {
-      state.work = scheduler.requestWork(work);
-    }
+    scheduler.requestCallback();
     return state.thread;
   }
 
   const mount = (node: Node) => {
-    const thread = start();
+    const thread = getOrStartThread();
     const elements = convertNodeToElements(node)
 
     for (const element of elements) {
@@ -96,7 +106,7 @@ export const createReconciler = (scheduler: Scheduler): Reconciler => {
     events.emit({ type: 'thread:new-root', thread });
   };
   const render = (ref: CommitRef) => {
-    const thread = start();
+    const thread = getOrStartThread();
 
     if (WorkThread.queueTarget(thread, ref, tree)) {
       events.emit({ type: 'thread:new-target', thread });
@@ -107,6 +117,9 @@ export const createReconciler = (scheduler: Scheduler): Reconciler => {
 
   const tree = CommitTree.new();
   const elements = ElementService.create(tree, render);
+
+
+  scheduler.setCallbackFunc(work);
 
   return { mount, render, state, tree, elements, subscribe: events.subscribe };
 }

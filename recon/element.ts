@@ -7,7 +7,7 @@ import { loadHooks } from "./hooks";
 import { ContextState } from "./context";
 import { ComponentState, EffectID, EffectTask } from "./state";
 import { CommitTree } from "./tree";
-import { addRenderTargetToThread, WorkThread } from "./thread";
+import { WorkThread } from "./thread";
 
 /**
  * When processing an element, it may produce additional
@@ -71,7 +71,7 @@ export const createElementService = (
                 // there should be no way for the children of the
                 // provider to already have been renderer,
                 // so we don't check the return value.
-                addRenderTargetToThread(thread, consumer);
+                WorkThread.queueTarget(thread, consumer, tree);
               }
             }
             break;

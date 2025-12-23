@@ -5,11 +5,9 @@ import { InsightApp } from '@lukekaalim/act-insight';
 
 import { Component, ErrorBoundary, primitiveNodeTypes, useMemo, useRef } from '@lukekaalim/act';
 import { hs, HTML, SVG } from '@lukekaalim/act-web';
-import { three, ThreeJS, node, createFinaleSpace, createThreeWebSpace } from '@lukekaalim/act-three';
+import { three, ThreeJS, node } from '@lukekaalim/act-three';
 import { TextGeometry, FontLoader, Font } from 'three/addons';
 import fontURL from 'three/examples/fonts/helvetiker_regular.typeface.json?url';
-import { createRenderFunction, RenderSpace } from "@lukekaalim/act-backstage";
-import { renderDebug } from "@lukekaalim/act-debug";
 
 const material = new three.MeshBasicMaterial({ color: 'red' });
 
@@ -67,7 +65,10 @@ const App = () => {
     hs('div', {}, [
       hs('input', {
         type: 'text',
-        onInput: e => setName((e.currentTarget as HTMLInputElement).value),
+        onInput: e => {
+          const newName = (e.currentTarget as HTMLInputElement).value;
+          setName(newName);
+        },
         value: name
       }),
       h(Ticker),
