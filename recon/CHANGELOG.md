@@ -1,5 +1,11 @@
 # @lukekaalim/act-recon
 
+## 3.0.0-alpha.4
+
+### Patch Changes
+
+- 2984273: Check if immediate child update is already handlded by some other system (avoiding double-rendering)
+
 ## 3.0.0-alpha.3
 
 ### Patch Changes

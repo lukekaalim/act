@@ -1,5 +1,12 @@
 # @lukekaalim/act-insight
 
+## 0.0.2-alpha.6
+
+### Patch Changes
+
+- Updated dependencies [2984273]
+  - @lukekaalim/act-recon@3.0.0-alpha.4
+
 ## 0.0.2-alpha.5
 
 ### Patch Changes
