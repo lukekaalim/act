@@ -1,5 +1,11 @@
 # @lukekaalim/act-recon
 
+## 3.0.0-alpha.2
+
+### Patch Changes
+
+- c5e8775: Fix context updates not actually being pushed to the MustRender list
+
 ## 3.0.0-alpha.1
 
 ### Patch Changes
