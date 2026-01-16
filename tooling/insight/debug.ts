@@ -1,4 +1,4 @@
-import { Commit, CommitTree, createReconciler, Scheduler, WorkID, WorkThread } from "@lukekaalim/act-recon";
+import { Commit, CommitTree, createReconciler, Scheduler, WorkThread } from "@lukekaalim/act-recon";
 import { createId, h, Node } from "@lukekaalim/act";
 import { createRenderFunction, RenderFunction, RenderSpace } from "@lukekaalim/act-backstage";
 import { createDOMScheduler, createWebSpace, HTML, render } from "@lukekaalim/act-web";
@@ -12,6 +12,8 @@ export type DebugScheduler = {
 }
 
 export const createDebugScheduler = (): DebugScheduler => {
+  throw new Error();
+  /*
   const pending = new Map<WorkID, () => void>();
 
   const inner: Scheduler = {
@@ -37,6 +39,7 @@ export const createDebugScheduler = (): DebugScheduler => {
     },
     inner,
   }
+  */
 }
 
 export const renderDebug = (node: Node, createSpace: (tree: CommitTree) => RenderSpace) => {
@@ -56,7 +59,7 @@ export const renderDebug = (node: Node, createSpace: (tree: CommitTree) => Rende
 
   const debugWindow = window.open('', 'debug', 'popup');
   if (debugWindow) {
-    const node = h(InsightApp, { reconciler, onReady, scheduler: debugScheduler });
+    const node =  null;//h(InsightApp, { reconciler, onReady, scheduler: debugScheduler });
     const root = debugWindow.document.body;
     for (const child of [...debugWindow.document.body.children, ...debugWindow.document.head.children])
       child.remove()

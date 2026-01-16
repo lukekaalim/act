@@ -18,7 +18,7 @@ import * as recon from '@lukekaalim/act-recon';
  * 
  * #### Configure
  * This is where props are assigned, and children +
- * heirarchial elements can be setup.
+ * hierarchal elements can be setup.
  */
 export type RenderSpace = {
   create(deltas: recon.DeltaSet): { configure: () => unknown },

@@ -1,181 +1,132 @@
-import { createContext, h, Props, useContext, useEffect, useState } from "@lukekaalim/act";
-import { createReconciler } from "@lukekaalim/act-recon";
-import { createDOMScheduler, createWebSpace, render, render as renderWeb } from "@lukekaalim/act-web";
-import { InsightApp } from '@lukekaalim/act-insight';
+import { createDocApp, BoneTheme } from '@lukekaalim/grimoire';
+import { TypeDocPlugin } from '@lukekaalim/grimoire-ts';
+import { createDOMScheduler, createWebNodeBuilder, hs, render } from '@lukekaalim/act-web';
+import { h, primitiveNodeTypes, renderNodeType, useEffect, useRef, useState } from '@lukekaalim/act';
 
-import { Component, ErrorBoundary, primitiveNodeTypes, useMemo, useRef } from '@lukekaalim/act';
-import { hs, HTML, SVG } from '@lukekaalim/act-web';
-import { three, ThreeJS, node } from '@lukekaalim/act-three';
-import { TextGeometry, FontLoader, Font } from 'three/addons';
-import fontURL from 'three/examples/fonts/helvetiker_regular.typeface.json?url';
+import rootReadmeMd from '../README.md?parse';
+import coreReadmeMd from '../core/README.md?parse';
+import reconReadmeMd from '../recon/readme.md?parse';
 
-const material = new three.MeshBasicMaterial({ color: 'red' });
+import recon from 'typedoc:../recon/mod.ts';
+import core from 'typedoc:../core/mod.ts';
+import { Reconciler2 } from '@lukekaalim/act-recon';
+import { RenderSpace2 } from '@lukekaalim/act-backstage';
+import { assertRefs } from '@lukekaalim/act-graphit';
 
-const loader = new FontLoader();
-const font = await new Promise<Font>(r => loader.load(fontURL, font => r(font)));
+const doc = createDocApp([TypeDocPlugin]);
 
-const TestContext = createContext("EMPTY NAME");
+doc.typedoc.addProjectJSON('@lukekaalim/act-recon', recon);
+doc.typedoc.addProjectJSON('@lukekaalim/act', core);
 
-const App = () => {
-  const [name, setName] = useState("World");
-  const ref = useRef<null | HTMLElement>(null);
-  const refB = useRef<null | HTMLElement>(null);
-  const refC = useRef<null | three.Mesh>(null);
-  const refD = useRef<null | SVGElement>(null);
-  const refE = useRef<null | HTMLCanvasElement>(null);
-  const refF = useRef<null | three.PerspectiveCamera>(null);
-  const refG = useRef<null | three.Scene>(null);
+//doc.article.add('readme', rootReadmeMd, '/')
+doc.article.addRawRoot('readme', rootReadmeMd, '/')
+
+doc.article.addRawRoot('core.readme', coreReadmeMd, '/Core')
+doc.article.addRawRoot('recon.readme', reconReadmeMd, '/Reconciler')
+
+doc.article.add('web.readme', '', '/Renderers/Web')
+doc.article.add('three.readme', '', '/Renderers/Three')
+doc.article.add('backstage.readme', '', '/Utils/Backstage')
+doc.article.add('debug.readme', '', '/Tooling/Debug')
+doc.article.add('insight.readme', '', '/Tooling/Insight')
+doc.article.add('ext.readme', '', '/Tooling/Dev-Ext')
+
+doc.demos.add('recon.experiment', () => {
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    console.log({ ref, refB, refC, refD })
-  }, []);
+    const { div } = assertRefs({ div: ref })
+    const StatefulButton = () => {
+      const [count, setCount] = useState(0);
 
-  useEffect(() => {
-    const canvas = refE.current;
-    const camera = refF.current;
-    const scene = refG.current;
-    if (!canvas || !camera || !scene)
-      return;
-
-    const renderer = new three.WebGLRenderer({ canvas })
-    const render = () => {
-      renderer.render(scene, camera)
-      id = requestAnimationFrame(render);
-
-      if (refC.current) {
-        refC.current.rotateY(Math.PI / 180);
+      function onClick() {
+        setCount(n => n + 1);
       }
+
+      return h('button', { onClick }, `Clicked ${count} times`);
     }
-    let id = requestAnimationFrame(render);
-    return () => {
-      cancelAnimationFrame(id);
-    }
-  }, [!!name])
 
-  const geometry = useMemo(() => {
-    return new TextGeometry(`Hello, ${name}!`, { depth: 1, font, size: 5 }).center()
-  }, [name])
 
-  const [boundaryValue, setBoundaryValue] = useState<null | Error>(null);
-  const [boundaryClearer, setBoundaryClearer] = useState(() => () => {});
+    const MyApp = () => {
+      const [name, setName] = useState("World");
 
-  const [order, setOrder] = useState<'forward' | 'backward'>('forward');
+      function onInput(event: InputEvent) {
+        const newName = (event.target as HTMLInputElement).value;
+        setName(oldName => {
+          console.log('Set Value', { newName, oldName })
+          return newName;
+        });
+      }
 
-  const [toggle, setToggle] = useState(false);
+      useEffect(() => {
+        console.log('SIDE EFFECT!', name)
+        return () => {
+          console.log('CLEAN UP EFFECT!', name)
+        }
+      }, [name])
 
-  return [
-    hs('div', {}, [
-      hs('input', {
-        type: 'text',
-        onInput: e => {
-          const newName = (e.currentTarget as HTMLInputElement).value;
-          setName(newName);
-        },
-        value: name
-      }),
-      h(Ticker),
-      toggle && hs('button', { onClick: () => setToggle(!toggle) }, 'Off!'),
-      !toggle && hs('button', { onClick: () => setToggle(!toggle) }, 'On!'),
-      hs('button', { onClick: () => {
-        boundaryClearer()
-        setBoundaryClearer(() => () => {});
-        setBoundaryValue(null);
-      }}, 'Clear Boundary'),
-      hs('pre', {}, boundaryValue && boundaryValue.toString()),
-      h('br'),
-      !!name && [
-        hs('h3', {}, `Hello, ${name}!`),
-        hs('p', {}, `Hello, ${name}!`),
-        hs('div', { ref: refB }),
-        h(ErrorBoundary, { onError: (value) => {
-          //setBoundaryClearer(() => clear);
-          setBoundaryValue(value as Error)
-         } }, [
-          h(Ticker),
-        ]),
-        h(primitiveNodeTypes.null, {}, [
-          h(HTML, {}, h('p', { ref }, 'A child')),
-        ]),
-        h(SVG, {}, h('svg', { ref: refD, width: 300, height: 300 }, [
-          h('text', { fill: 'blue', x: '0px', y: '20px' }, `Hello, ${name}!`),
-          h('rect', { x: '50px', y: '50px', stroke: 'orange', 'stroke-width': '8px', fill: 'red', width: '50px', height: '50px' })
-        ])),
-        h('canvas', { ref: refE, width: 300, height: 300 }),
-        h(primitiveNodeTypes.null, {}, [
-          h(ThreeJS, {}, [
-            h(node.scene, { ref: refG }, [
-              h(node.mesh, { ref: refC, geometry, material }),
-              h(node.perspectiveCamera, { ref: refF, position: new three.Vector3(0, 0, 100) }),
-            ])
-          ])
-        ]),
-        h(TestContext.Provider, { value: name }, h(ContextTester))
-      ],
-      h('br', { key: 10 }),
-      h('button', { onClick: () => setOrder(order === 'forward' ? 'backward' : 'forward')}, 'Swap'),
-      useMemo(() => order === 'forward' ? [
-        h(A, { key: 'a' }),
-        h(B, { key: 'b' }),
-        h(C, { key: 'c' }),
-      ] : [
-        h(C, { key: 'c' }),
-        h(B, { key: 'b' }),
-        h(A, { key: 'a' }),
-      ], [order])
-    ]),
-  ]
-};
+      return [
+        h('h1', {}, `Hello, ${name}`),
+        h('input', { type: 'text', onInput, value: name }),
 
-class TooHighError extends Error {}
+        h('ol', {}, [
+          name === 'reverse'
+            ? [
+              h('li', { key: 'c' }, h(StatefulButton, {  })),
+              h('li', { key: 'b' }, h(StatefulButton, {  })),
+              h('li', { key: 'a' }, h(StatefulButton, {  })),
+            ]
+            : [
+              h('li', { key: 'a' }, h(StatefulButton, {  })),
+              h('li', { key: 'b' }, h(StatefulButton, {  })),
+              h('li', { key: 'c' }, h(StatefulButton, {  })),
+            ]
+        ])
+      ]
+    };
 
-const WrapMemo = <T extends Props>(component: Component<T>): Component<T> => {
-  return function MemoWrappedComponent(props) {
-    return useMemo(() => h(component, props), []);
-  }
-}
+    const scheduler = createDOMScheduler();
+    const reconciler = new Reconciler2(scheduler);
+    
+    const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(div));
 
-const ContextTester = () => {
-  return useMemo(() => h(ChildValue), [])
-}
+    reconciler.bus = {
+      render(delta) {
+        space.create(delta);
+        space.update(delta);
+      },
+    };
 
-const ChildValue = () => {
-  const name = useContext(TestContext);
+    reconciler.mount(h(renderNodeType, { type: 'web:html' }, h('div', {}, h(MyApp))))
+  }, [])
 
-  return hs('pre', {}, `name=${name}`);
-}
-
-const Ticker = WrapMemo(function Ticker() {
-  const [counter, setCounter] = useState(0);
-
-  useEffect(() => {
-    console.log('mount')
-    return () => console.log('unmount')
-  }, [counter])
-
-  if (counter > 10) {
-    throw new TooHighError(`:( I can't count that high. ${counter} is too big!`)
-  }
-
-  return  hs('button', { onClick: () => (setCounter(c => c + 1), setCounter(c => c + 1)) }, counter);
+  return h('div', { ref })
 });
 
-const A = () => h(RenderCounter, { key: 'a' });
-const B = () => h(RenderCounter, { key: 'b' });
-const C = () => h(RenderCounter, { key: 'c' });
+doc.demos.add('core.rendering', () => {
+  const onClick = () => {
+    alert("Nothing");
+  }
 
-const RenderCounter: Component = ({ key }) => {
-  const [real_key] = useState(key)
-  const renderCounter = useRef(0);
+  return [
+    h('h1', {}, `This is my application!`),
+    h('button', { onClick } , 'this button shows you nothing')
+  ]
+})
 
-  renderCounter.current++;
+const location = new URL(document.location.href);
 
-  return hs('pre', {}, `key=${real_key} Rendered ${renderCounter.current} times`);
-};
+if (location.searchParams.has('beta')) {
+  console.log("LOADING BETA")
+  const scheduler = createDOMScheduler();
+  const reconciler = new Reconciler2(scheduler);
+  const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(document.body));
+  reconciler.bus = space.bus;
+  reconciler.mount(h(renderNodeType, { type: 'web:html' }, h('div', {}, h(BoneTheme, { doc }))))
+} else {
+  console.log("LOADING APP")
+  render(h(BoneTheme, { doc }), document.body)
+}
 
-const main = () => {
-  const root = document.getElementById('main_root');
-  if (root)
-    render(h(HTML, {}, h(App)), document.body);// tree => createThreeWebSpace(tree, root))
-};
+//
 
-main();

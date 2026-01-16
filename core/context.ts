@@ -10,7 +10,7 @@ export type Context<T> = {
   id: ContextID,
 }
 
-export const providerNodeType = Symbol("provider-node");
+export const providerNodeType = Symbol("provider");
 
 export const createContext = <T>(defaultValue: T): Context<T> => {
   const id = createId<'ContextID'>();

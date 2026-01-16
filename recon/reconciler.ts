@@ -1,10 +1,11 @@
-import { convertNodeToElements, Node, OpaqueID } from "@lukekaalim/act";
-import { CommitID, CommitRef } from "./commit";
-import { WorkThread } from "./thread"
-import { CommitTree } from "./tree";
+import { convertNodeToElements, h, Node, OpaqueID, primitiveNodeTypes } from "@lukekaalim/act";
+import { CommitID, CommitRef, CommitRef2 } from "./commit";
+import { WorkThread, WorkThread2 } from "./thread"
+import { CommitTree, CommitTree2 } from "./tree";
 import { ElementService } from "./element";
 import { Scheduler } from "./scheduler";
 import { createEventEmitter, EventEmitter } from "./event";
+import { Delta, DeltaSet2 } from "./delta";
 
 export type Reconciler = {
   mount(node: Node): void,
@@ -14,6 +15,77 @@ export type Reconciler = {
   tree: CommitTree,
   elements: ElementService,
   subscribe: EventEmitter<ReconcilerEvent>["subscribe"],
+}
+
+export type ReconcilerEventBus = {
+  render(delta: Delta): void,
+};
+
+/**
+ * The Reconciler is the main object that
+ * owns the CommitTree, and can coordinate threads
+ * to work on new changes.
+ * 
+ * Renderers can subscribe to it's events
+ */
+export class Reconciler2 {
+  tree: CommitTree2;
+  scheduler: Scheduler;
+  bus: ReconcilerEventBus = {
+    render: () => {}
+  };
+  // in the future - maybe more than one thread?
+  thread: WorkThread2;
+
+  constructor(scheduler: Scheduler) {
+    this.scheduler = scheduler;
+    this.tree = new CommitTree2(this);
+    this.thread = new WorkThread2(this.tree);
+
+    this.scheduler.setCallbackFunc(() => this.work());
+  }
+
+  work() {
+    if (!this.thread.done) {
+      // do some work
+      this.thread.work();
+      this.scheduler.requestCallback();
+    } else {
+      const currentThread = this.thread;
+      // Start a new thread
+      this.thread = new WorkThread2(this.tree);
+
+      console.log(currentThread);
+      console.log(currentThread.delta);
+      console.log('Thread.size', currentThread.visited.size)
+      console.log('Delta.size', currentThread.delta.size)
+
+      // send delta ready
+      this.bus.render(currentThread.delta);
+
+      // run effects
+      for (const cleanup of currentThread.delta.cleanups.values())
+        cleanup.func();
+      for (const effect of currentThread.delta.effects.values())
+        effect.func();
+
+    }
+  }
+
+  mount(node: Node): void {
+    const ref = CommitRef2.fresh();
+    const element = (!!node && typeof node === 'object' && "type" in node)
+      ? node
+      : h(primitiveNodeTypes.array, {}, node);
+
+    this.thread.queue({ type: 'mount', ref, element });
+    this.scheduler.requestCallback();
+  }
+  render(ref: CommitRef2): void {
+    console.log(`Queueing work for `, ref)
+    this.thread.queue({ type: 'target', ref });
+    this.scheduler.requestCallback();
+  }
 }
 
 export type ReconcilerState = {

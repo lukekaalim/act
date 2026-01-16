@@ -18,10 +18,10 @@ export type ElementID = OpaqueID<"ElementID">;
  * of Commits.
  */
 export type Element = {
-  type: ElementType;
-  id: ElementID;
-  props: Record<string, unknown>;
-  children: Node;
+  readonly type: ElementType;
+  readonly id: ElementID;
+  readonly props: Record<string, unknown>;
+  readonly children: Node;
 };
 
 export type ElementType<T extends Props = EmptyProps> = null | string | symbol | Component<T>;

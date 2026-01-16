@@ -5,7 +5,7 @@ export const createDOMScheduler = (): Scheduler => {
   let callbackFunc = () => console.error(`DOMScheduler got callback before callback function was configured`)
   let synccall_available = false;
   let synccall_requested = false;
-  const time_budget = 100;
+  const time_budget = 20;
 
   const onTimeout = () => {
     const start = performance.now();

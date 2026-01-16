@@ -70,7 +70,7 @@ export const InsightApp2: Component<InsightAppProps> = ({ server }) => {
 
 export const InsightApp: Component<InsightAppProps> = () => {
   throw new Error();
-
+/*
   const [mode, setMode] = useState<InsightMode>('tree');
 
   const [renderReportIndex, setRenderReportIndex] = useState(0);
@@ -80,7 +80,7 @@ export const InsightApp: Component<InsightAppProps> = () => {
   const [currentThread, setCurrentThread] = useState<WorkThread | null>(null);
 
   const currentReport = renderReports[renderReportIndex] || null;
-  const rootCommits = tree && CommitTree.getRootCommits(tree) || [];
+  //const rootCommits = tree && CommitTree.getRootCommits(tree) || [];
 
   const [pendingWork, setPendingWork] = useState(false)
   const [autoWork, setAutoWork] = useState(false);
@@ -88,7 +88,7 @@ export const InsightApp: Component<InsightAppProps> = () => {
   const updateThread = useMemo(() => {
     return debounce(() => {
       console.log('updating thread');
-      const currentThread = reconciler.state.thread;
+      //const currentThread = reconciler.state.thread;
       if (currentThread)
         setCurrentThread(WorkThread.clone(currentThread));
       else
@@ -206,4 +206,5 @@ const CommitTreeLeaf: Component<CommitTreeLeafProps> = ({ commit, tree }) => {
       .map(ref => tree.commits.get(ref.id) as Commit)
       .map(commit => h(CommitTreeLeaf, { commit, tree })))
   ];
+  */
 }

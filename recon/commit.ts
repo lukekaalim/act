@@ -77,3 +77,45 @@ export const Commit = {
     version: createId(),
   }),
 }
+
+export class CommitRef2 {
+  id: CommitID;
+  path: CommitPath;
+
+  private constructor(path: CommitPath) {
+    this.id = path[path.length - 1];
+    this.path = path;
+  }
+
+  static fresh(parentPath: CommitPath = []) {
+    return new CommitRef2([...parentPath, createId('CommitID')]);
+  }
+}
+
+export class Commit2 {
+  ref: CommitRef2;
+
+  element: Element;
+  children: CommitRef[];
+
+  version: CommitVersion = createId('CommitVersion');
+
+  private constructor(ref: CommitRef2, element: Element, children: CommitRef2[]) {
+    this.ref = ref;
+    this.element = element;
+    this.children = children;
+  }
+
+  static fresh(ref: CommitRef2, element: Element, children: CommitRef2[]) {
+    return new Commit2(ref, element, children)
+  }
+
+  update(element: null | Element = null, children: null | CommitRef2[] = null) {
+    this.version = createId('CommitVersion');
+    
+    if (element)
+      this.element = element;
+    if (children)
+      this.children = children;
+  }
+}

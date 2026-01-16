@@ -17,7 +17,7 @@ const initTabBridge = (port: browser.runtime.Port) => {
 }
 
 const main = () => {
-  const handleMessage = (event: unknown) => {
+  const handleMessage = (event: any) => {
     if (event.type === 'devpanel-init') {
       console.log('I, the background script, recieved an event!', event);
       console.log(`launching a connection to ${event.tab}`)

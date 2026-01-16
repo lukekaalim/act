@@ -5,10 +5,11 @@ import {
   createId,
   calculateDepsChange
 } from "@lukekaalim/act";
-import { ComponentState, EffectID } from "./state";
-import { CommitID, CommitRef } from "./commit";
-import { ElementOutput } from "./element";
+import { ComponentState, EffectID, EffectTask } from "./state";
+import { CommitID, CommitRef, CommitRef2 } from "./commit";
+import { ElementOutput, ElementOutput2 } from "./element";
 import { ContextState, findContext } from "./context";
+import { Reconciler, Reconciler2 } from "./reconciler";
 
 /**
  * A fresh set of hook functions is created per component run.
@@ -63,6 +64,76 @@ export const loadHooks = (
     const depsChanges = calculateDepsChange(prevDeps, deps)
     if (depsChanges) {
       output.effects.push({
+        id: effectId,
+        ref,
+        func() {
+          const prevCleanup = state.cleanups.get(effectId);
+          if (prevCleanup) {
+            state.cleanups.delete(effectId);
+            prevCleanup();
+          }
+          state.cleanups.set(effectId, effect());
+        }
+      });
+    }
+  };
+};
+
+
+/**
+ * A fresh set of hook functions is created per component run.
+ */
+export const loadHooks2 = (
+  reconciler: Reconciler2,
+
+  state: ComponentState,
+  ref: CommitRef2,
+
+  sideEffects: EffectTask[]
+) => {
+  let index = 0;
+
+  hookImplementation.useContext = <T>(context: Context<T>): T => {
+    const stateIndex = index++;
+    let value = state.contexts.get(stateIndex);
+    if (!value) {
+      value = { state: findContext(reconciler.tree.contexts, ref, context) };
+      state.contexts.set(stateIndex, value);
+      if (value.state)
+        value.state.consumers.set(ref.id, ref);
+    }
+    if (value.state)
+      return value.state.value as T;
+    return context.defaultValue;
+  };
+  hookImplementation.useState = <T>(initialValue: ValueOrCalculator<T>) => {
+    const stateIndex = index++;
+    if (!state.values.has(stateIndex))
+      state.values.set(stateIndex, calculateValue(initialValue));
+
+    const value = state.values.get(stateIndex) as T;
+    const setValue: StateSetter<T> = (updater) => {
+      if (state.unmounted)
+        return;
+      const prevValue = state.values.get(stateIndex) as T;
+      const nextValue = runUpdater(prevValue, updater);
+      state.values.set(stateIndex, nextValue);
+      reconciler.render(ref);
+    };
+    return [value, setValue];
+  }
+  hookImplementation.useEffect = (effect, deps = null) => {
+    const effectIndex = index++;
+    if (!state.effects.has(effectIndex))
+      state.effects.set(effectIndex, createId());
+    
+    const prevDeps = state.deps.get(effectIndex) || null;
+    const effectId = state.effects.get(effectIndex) as EffectID;
+    state.deps.set(effectIndex, deps);
+    const depsChanges = calculateDepsChange(prevDeps, deps)
+    
+    if (depsChanges) {
+      sideEffects.push({
         id: effectId,
         ref,
         func() {

@@ -1,6 +1,6 @@
 /**
  * Generically attempt to apply props to a target either by assigning them,
- * or letting a specialied function handle it.
+ * or letting a specialized function handle it.
  * 
  * Iterate across props from as to present, setting removed props to "undefined"
  */
