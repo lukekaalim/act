@@ -24,28 +24,30 @@ export const primitiveNodeTypes = {
 export const convertNodeToElements = (node: Node): Element[] => {
   const nodeArray = Array.isArray(node) ? node : [node];
 
-  return nodeArray.map(node => {
-    switch (typeof node) {
-      case 'boolean':
-        return h(primitiveNodeTypes.boolean, { value: node });
-      case 'number':
-        return h(primitiveNodeTypes.number, { value: node });
-      case 'string':
-        return h(primitiveNodeTypes.string, { value: node });
-  
-      case 'object': 
-        if (node === null)
-          return h(primitiveNodeTypes.null);
-        if (Array.isArray(node))
-          return h(primitiveNodeTypes.array, {}, node);
-        
-        return node;
-      case 'symbol':
-        return node;
-      case 'undefined':
-        throw new Error(`Undefined is not a valid act element!`);
-      default:
-        throw new UnknownElementType()
-    }
-  })
+  return nodeArray.map(convertNodeToElement);
+}
+
+export const convertNodeToElement = (node: Node): Element => {
+  switch (typeof node) {
+    case 'boolean':
+      return h(primitiveNodeTypes.boolean, { value: node });
+    case 'number':
+      return h(primitiveNodeTypes.number, { value: node });
+    case 'string':
+      return h(primitiveNodeTypes.string, { value: node });
+
+    case 'object': 
+      if (node === null)
+        return h(primitiveNodeTypes.null);
+      if (Array.isArray(node))
+        return h(primitiveNodeTypes.array, {}, node);
+      
+      return node;
+    case 'symbol':
+      return node;
+    case 'undefined':
+      throw new Error(`Undefined is not a valid act element!`);
+    default:
+      throw new UnknownElementType()
+  }
 }

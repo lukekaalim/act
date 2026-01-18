@@ -5,12 +5,14 @@
 
 Reconciler implementation for @lukekaalim/act.
 
+## Details
+
 > This is a kind of internal library that glues together all the logic
 > of the Act ecosystem, but is not used by everyday users (unless you
 > are [Writing your own Renderer](), or just want to understand the
 > guts - like i did!)
 
-## What is a Reconciler?
+### What is a Reconciler?
 
 A reconciler is more specifically a system than can take care of a tree:
  - Handling when new nodes are added to the tree
@@ -21,22 +23,19 @@ In our case specifically, we maintain a tree of [Commits](#@lukekaalim/act-recon
 each of which represent a raw element (like a HTML or SVG element), or something more abstract
 like a Component or a Context Provider.
 
-<TypeDoc project="@lukekaalim/act-recon" name="Reconciler2" />
-
-
-## Subsystems
+## Systems
 
 <TypeDoc project="@lukekaalim/act-recon" name="CommitTree2" />
+<TypeDoc project="@lukekaalim/act-recon" name="WorkThread2" />
+<TypeDoc project="@lukekaalim/act-recon" name="Reconciler2" />
+
+## Data Structures
+
 <TypeDoc project="@lukekaalim/act-recon" name="CommitRef2" extras="CommitID CommitPath" />
 <TypeDoc project="@lukekaalim/act-recon" name="Commit2" extras="CommitVersion" />
-<TypeDoc project="@lukekaalim/act-recon" name="WorkThread2" />
-
-
-
-## Algorithms
-
 <TypeDoc project="@lukekaalim/act-recon" name="WorkTask" />
-<TypeDoc project="@lukekaalim/act-recon" name="DeltaSet2" />
+<TypeDoc project="@lukekaalim/act-recon" name="Delta" />
+
 
 ## Externals
 

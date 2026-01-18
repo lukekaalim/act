@@ -1,4 +1,6 @@
 import { createId, Element, OpaqueID } from "@lukekaalim/act";
+import { createObjectPool, ObjectPool } from "./pool";
+import { Reconciler2 } from "./reconciler";
 
 /**
  * A single consistent id representing a commit in the act tree.
@@ -19,95 +21,95 @@ export type CommitPath = readonly CommitID[];
  */
 export type CommitVersion = OpaqueID<"CommitVersion">;
 
-/**
- * Structure for quick lookup and identification of a commit
- */
-export type CommitRef = {
-  id: CommitID;
-  path: CommitPath;
-};
-export const CommitRef = {
-  from(path: CommitPath) {
-    return {
-      path,
-      id: path[path.length - 1],
-    }
-  },
-  new(path: CommitPath = []) {
-    const id = createId<'CommitID'>();
-    return {
-      path: [...path, id],
-      id,
-    }
-  },
-}
-
-/**
- * Representing an entry in the act "Tree"
- */
-export type Commit = CommitRef & {
-  version: CommitVersion;
-  element: Element;
-  children: CommitRef[];
-};
-
-export const updateCommit = (
-  ref: CommitRef,
-  element: Element,
-  children: CommitRef[]
-): Commit => ({
-  ...ref,
-  element,
-  children,
-  version: createId(),
-});
-
-export const Commit = {
-  new(element: Element, path: CommitPath = [], children: CommitRef[] = []): Commit {
-    return {
-      ...CommitRef.new(path),
-      version: createId(),
-      children,
-      element,
-    }
-  },
-  update: updateCommit,
-  version: (commit: Commit): Commit => ({
-    ...commit,
-    version: createId(),
-  }),
-}
-
 export class CommitRef2 {
   id: CommitID;
-  path: CommitPath;
+  parent: null | CommitRef2;
+  length: number;
 
-  private constructor(path: CommitPath) {
-    this.id = path[path.length - 1];
-    this.path = path;
+  private constructor(id: CommitID, parent: CommitRef2 | null) {
+    this.id = id;
+    this.parent = parent;
+    if (parent)
+      this.length = parent.length + 1;
+    else
+      this.length = 1;
   }
 
-  static fresh(parentPath: CommitPath = []) {
-    return new CommitRef2([...parentPath, createId('CommitID')]);
+  /*
+  [Symbol.iterator]() {
+    return this.ancestors();
+  }
+    */
+  
+  /**
+   * Iterate though all "parent" commit refs,
+   * including itself as the first entry.
+   * 
+   * @returns Iterator<CommitRef2>
+   */
+  *ancestors() {
+    let ref: CommitRef2 | null = this;
+
+    while (ref) {
+      yield ref;
+      ref = ref.parent;
+    }
+  }
+
+  /**
+   * 
+   * @param climber A function that receives every ancestor commit ref,
+   * including this one. Return "true" to stop climbing early.
+   */
+  climb(climber: (ref: CommitRef2) => boolean | void) {
+    let ref: CommitRef2 | null = this;
+    while (ref) {
+      if (climber(ref))
+        return;
+
+      ref = ref.parent;
+    }
+  }
+
+  find<T>(test: (id: CommitRef2) => T | null | undefined | false): T | null {
+    let result: T | null = null;
+    this.climb(ref => {
+      const currentResult = test(ref);
+      if (currentResult) {
+        result = currentResult
+        return true;
+      }
+    })
+    return result;
+  }
+
+  static fresh(parent: CommitRef2 | null) {
+    return new CommitRef2(createId('CommitID'), parent);
   }
 }
 
 export class Commit2 {
+  static pool = () => createObjectPool<Commit2, ConstructorParameters<typeof Commit2>>(
+    function alloc (ref, el, ch) { return new Commit2(ref, el, ch) },
+    function reassign(c, ref, el, ch) {
+      c.ref = ref;
+      c.element = el;
+      c.children = ch;
+      c.version = createId('CommitVersion');
+    }
+  )
+
   ref: CommitRef2;
 
   element: Element;
-  children: CommitRef[];
+  children: CommitRef2[];
 
   version: CommitVersion = createId('CommitVersion');
 
-  private constructor(ref: CommitRef2, element: Element, children: CommitRef2[]) {
+  constructor(ref: CommitRef2, element: Element, children: CommitRef2[]) {
     this.ref = ref;
     this.element = element;
     this.children = children;
-  }
-
-  static fresh(ref: CommitRef2, element: Element, children: CommitRef2[]) {
-    return new Commit2(ref, element, children)
   }
 
   update(element: null | Element = null, children: null | CommitRef2[] = null) {
@@ -119,3 +121,5 @@ export class Commit2 {
       this.children = children;
   }
 }
+
+(window as any).Commit2 = Commit2;

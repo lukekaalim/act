@@ -1,47 +1,18 @@
 import {
-  ContextID, Element, Node,
-  providerNodeType,
+  Element, Node,
   convertNodeToElements,
   Component,
-  Props,
-  ElementID,
-  ElementType,
-  boundaryNodeType
+  hookImplementation,
+  Fallback,
+  h,
 } from "@lukekaalim/act";
-import { Commit, Commit2, CommitID, CommitRef, CommitRef2 } from "./commit";
-import { loadHooks, loadHooks2 } from "./hooks";
-import { ContextState } from "./context";
-import { ComponentState, EffectID, EffectTask } from "./state";
-import { CommitTree } from "./tree";
-import { WorkThread } from "./thread";
-import { keyedElementEqualityTest2, Update, WorkTask } from "./update";
+import { Commit2, CommitRef2 } from "./commit";
+import { loadHooks2 } from "./hooks";
+import { BoundaryState, ComponentState, ContextState, EffectTask } from "./state";
+import { keyedElementEqualityTest2, WorkTask } from "./update";
 import { ChangeReport2 } from "./algorithms";
 import { Reconciler2 } from "./reconciler";
-
-/**
- * When processing an element, it may produce additional
- * pieces of information: new targets, side effects, and boundary
- * values
- */
-export type ElementOutput = {
-  child: Node,
-  reject: null | unknown,
-  effects: EffectTask[],
-};
-export const ElementOutput = {
-  new: (child: Node): ElementOutput => ({
-    child,
-    reject: null,
-    effects: [],
-  })
-}
-
-export type TypedElement<TElementType extends ElementType> = {
-  id: ElementID,
-  props: Props,
-  children: Node,
-  type: TElementType
-}
+import { CommitTree2 } from "./tree";
 
 /**
  * A data structure that represents the immediate output
@@ -61,24 +32,33 @@ export class ElementOutput2 {
   prevChildren: Commit2[] | null = null;
 
   childRefs: CommitRef2[] = [];
+  /**
+   * Processing an element of some kind often
+   * implies changes to it's children: the Output
+   * will produce additional tasks that a thread should enqueue.
+   */
   updates: WorkTask[] = []
-
-  reject: null | unknown = null;
-
+  
   effects: null | EffectTask[] = null;
   cleanups: null | EffectTask[] = null;
 
-  extraTargets: null | CommitRef[] = null;
+  extraTargets: null | CommitRef2[] = null;
 
   constructor(ref: CommitRef2) {
     this.ref = ref;
   }
 
-  processComponent(component: Component<{}>, element: Element, reconciler: Reconciler2, state: ComponentState) {
+  processComponent(component: Component<{}>, element: Element, tree: CommitTree2, state: ComponentState) {
     this.element = element;
-    this.effects = [];
+    state.effectTasks = null;
+    
+    state.hookIndex = 0;
+    if (!state.hooks)
+      state.hooks = loadHooks2(tree.reconciler, state, this.ref);
 
-    loadHooks2(reconciler, state, this.ref, this.effects);
+    hookImplementation.useContext = state.hooks.useContext;
+    hookImplementation.useEffect = state.hooks.useEffect;
+    hookImplementation.useState = state.hooks.useState;
 
     const props = {
       ...this.element.props,
@@ -87,14 +67,36 @@ export class ElementOutput2 {
     
     try {
       this.setNode(component(props));
+      if (state.rejection) {
+        state.rejection = null;
+
+        if (state.boundary)
+          state.boundary.clearThrow(this.ref);
+      }
+      this.effects = state.effectTasks;
+      this.calculateDiff();
     } catch (thrownValue) {
-      this.reject = thrownValue;
+    
+      if (!state.boundary) {
+        const boundary = tree.findClosestBoundary(this.ref);
+        if (!boundary)
+          throw thrownValue;
+
+        state.boundary = boundary;
+      }
+      // update component state to know we rejected
+      state.rejection = { value: thrownValue };
+      state.boundary.addThrow(this.ref, thrownValue);
+
+      if (this.prevChildren)
+        this.childRefs = this.prevChildren.map(c => c.ref);
     }
   }
 
   processPrimitive(element: Element) {
     this.element = element;
     this.setNode(this.element.children);
+    this.calculateDiff();
   }
 
   processProvider(element: Element, state: ContextState<unknown>) {
@@ -104,6 +106,30 @@ export class ElementOutput2 {
     if (state.value !== element.props.value) {
       state.value = element.props.value;
       this.extraTargets = [...state.consumers.values()];
+    }
+    this.calculateDiff();
+  }
+  processBoundary(element: Element, state: BoundaryState) {
+    this.element = element;
+    const fallbackElement = !!element.props.fallback && h(Fallback, {}, element.props.fallback as Node)
+
+    if (state.mode === 'normal') {
+
+      this.setNode([this.element.children]);
+      this.calculateDiff();
+
+    } else if (fallbackElement) {
+      // Handle a boundary
+      this.setNode([this.element.children, fallbackElement]);
+      this.calculateDiff();
+
+      for (let i = 0; i < this.children.length; i++) {
+        const childElement = this.children[i];
+        if (childElement.id === fallbackElement.id) {
+          const childCommit = this.childRefs[i];
+          state.fallbackRef = childCommit;
+        }
+      }
     }
   }
 
@@ -115,7 +141,7 @@ export class ElementOutput2 {
         const transform = changes.transform[childIndex];
       
         if (transform === -1) {
-          const newRef = CommitRef2.fresh(this.ref.path);
+          const newRef = CommitRef2.fresh(this.ref);
           this.updates.push(WorkTask.fresh(newRef, this.children[childIndex]));
           this.childRefs.push(newRef);
         }
@@ -130,14 +156,13 @@ export class ElementOutput2 {
         }
       }
       for (let removedIndex = 0; removedIndex < changes.removed.length; removedIndex++) {
-        const prevCommit = this.prevChildren[removedIndex]
+        const prevCommit = this.prevChildren[changes.removed[removedIndex]]
         this.updates.push(WorkTask.remove(prevCommit))
       }
     } else if (!this.prevChildren) {
       // If there were no previous children, always generate "Create" tasks
-      this.updates = this.children.map(child => WorkTask.fresh(CommitRef2.fresh(this.ref.path), child));
+      this.updates = this.children.map(child => WorkTask.fresh(CommitRef2.fresh(this.ref), child));
       this.childRefs = this.updates.map(c => c.ref);
-
     } else {
       // If there will be no children in the future, generate "Remove" tasks
       this.updates = this.prevChildren.map(child => WorkTask.remove(child));
@@ -148,140 +173,4 @@ export class ElementOutput2 {
   setNode(node: Node) {
     this.children = convertNodeToElements(node);
   }
-}
-
-export type ElementService = {
-  render(element: Element, ref: CommitRef, thread: WorkThread): ElementOutput,
-  clear(ref: Commit): ElementOutput,
-
-  boundary: Map<CommitID, unknown>,
-}
-
-export const createElementService = (
-  tree: CommitTree,
-  requestRender: (ref: CommitRef) => void
-): ElementService => {
-  const contextStates = new Map<CommitID, ContextState<unknown>>();
-  const boundaryValues = new Map<CommitID, unknown>();
-
-  const render = (
-    element: Element,
-    ref: CommitRef,
-    thread: WorkThread,
-  ): ElementOutput => {
-    const output = ElementOutput.new(element.children);
-  
-    switch (typeof element.type) {
-      case 'string':
-        break;
-      case 'symbol':
-        switch (element.type) {
-          case providerNodeType: {
-            let state = contextStates.get(ref.id);
-            if (!state) {
-              state = {
-                id: ref.id,
-                contextId: element.props.id as ContextID,
-                value: element.props.value,
-                consumers: new Map(),
-              }
-              contextStates.set(ref.id, state);
-            }
-            if (state.value !== element.props.value) {
-              state.value = element.props.value;
-              
-              for (const [, consumer] of state.consumers) {
-                // there should be no way for the children of the
-                // provider to already have been renderer,
-                // so we don't check the return value.
-                WorkThread.queueTarget(thread, consumer, tree);
-              }
-            }
-            break;
-          }
-          case boundaryNodeType: {
-            //const error = tree.getOrCreateBoundaryState(ref.id);
-            //if (error.state === 'error')
-            //  output.child = null;
-            break;
-          }
-          default:
-            break;
-        }
-        break;
-      case 'function': {
-        let state = tree.components.get(ref.id);
-        if (!state) {
-          state = {
-            unmounted: false,
-            ref,
-            cleanups: new Map(),
-            contexts: new Map(),
-            values: new Map(),
-            deps: new Map(),
-            effects: new Map(),
-          }
-          tree.components.set(ref.id, state);
-        }
-        loadHooks(contextStates, requestRender, state, ref, output);
-        const props = {
-          ...element.props,
-          children: element.children,
-        } as Parameters<typeof element.type>[0];
-        try {
-          output.child = element.type(props);
-        } catch (thrownValue) {
-          output.child = null;
-          output.reject = thrownValue;
-        }
-        break;
-      }
-      default:
-        break;
-    }
-    return output;
-  }
-  const clear = (prev: Commit) => {
-    const output = ElementOutput.new(null);
-  
-    switch (typeof prev.element.type) {
-      case 'symbol': {
-        switch (prev.element.type) {
-          case providerNodeType:
-            contextStates.delete(prev.id);
-        }
-        break;
-      }
-      case 'function': {
-        const componentState = tree.components.get(prev.id) as ComponentState;
-        componentState.unmounted = true;
-        for (const [,context] of componentState.contexts) {
-          if (context.state)
-            context.state.consumers.delete(prev.id);
-        }
-        for (const [index, cleanup] of componentState.cleanups) {
-          if (!cleanup)
-            continue;
-          const id = componentState.effects.get(index) as EffectID;
-          output.effects.push({
-            id,
-            ref: prev,
-            func: () => {
-              cleanup();
-            }
-          });
-        }
-        tree.components.delete(prev.id);
-        break;
-      }
-    }
-
-    return output;
-  }
-
-  return { render, clear, boundary: boundaryValues };
-}
-
-export const ElementService = {
-  create: createElementService
 }

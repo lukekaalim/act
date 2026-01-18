@@ -30,16 +30,13 @@ const plugin: Plugin = {
   name: 'typedoc',
   transform(src, id, options) {
     if (id.endsWith(MARKDOWN_SUFFIX)) {
-      console.log('TRANSFORM', { id })
       const root = parser.parse(src)
       return `export default ${JSON.stringify(root, null, 2)}`;
     }
   },
 
   resolveId(id, importer) {
-    console.log({ id })
     if (id.endsWith(MARKDOWN_SUFFIX)) {
-      console.log(`Found a candidate!`, id);
       return RESOLVED_MARKDOWN_PREFIX + id;
     }
 

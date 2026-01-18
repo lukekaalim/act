@@ -19,9 +19,9 @@ export const ThreadViewer: Component<ThreadViewerProps> = ({ thread, tree }) => 
     return tempTree;
   }, [tree, thread]);
 
-  const fiberCommits = new Set([...thread.pendingUpdates].map(u => u.ref.id));
+  const fiberCommits = new Set([...thread.pendingTasks].map(u => u.ref.id));
 
-  const nextUpdate = thread.pendingUpdates[thread.pendingUpdates.length - 1];
+  const nextUpdate = thread.pendingTasks[thread.pendingTasks.length - 1];
 
   const getCommitColor = (commit: Commit) => {
     const isUpdating = fiberCommits.has(commit.id);
@@ -68,7 +68,7 @@ export const ThreadViewer: Component<ThreadViewerProps> = ({ thread, tree }) => 
       return h(TreeViewer, { tree: appliedTree, roots: [commit], selectedCommits: new Set<CommitID>(), renderCommit: renderCommit(0) });
     }),
     hs('h3', {}, 'Fibers'),
-    hs('ul', {}, [...thread.pendingUpdates].map((update) => hs('li', {}, h(UpdateViewer, { update, tree })))),
+    hs('ul', {}, [...thread.pendingTasks].map((update) => hs('li', {}, h(UpdateViewer, { update, tree })))),
     hs('h3', {}, 'Visited'),
     hs('ul', {}, [...thread.visited].map(([id, ref]) => hs('li', {}, id))),
     hs('h3', {}, 'Must Visit'),

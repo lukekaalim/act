@@ -5,7 +5,8 @@
   "main": "mod.ts",
   "dependencies": {
     "@lukekaalim/act": "^3.1.0",
+    "@lukekaalim/act-backstage": "^3.0.0-alpha.0",
     "@lukekaalim/act-recon": "^3.0.0-alpha.3",
-    "@lukekaalim/act-backstage": "^3.0.0-alpha.0"
+    "rehype": "^13.0.2"
   }
 }

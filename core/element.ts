@@ -25,8 +25,9 @@ export type Element = {
 };
 
 export type ElementType<T extends Props = EmptyProps> = null | string | symbol | Component<T>;
-
 export type ElementKey = string | number | symbol;
+
+const EMPTY_PROPS = Object.freeze({});
 
 /**
  * Generate a unique element. Each element has an internal
@@ -53,9 +54,9 @@ export function createElement(
   children: Node = []
 ): Element {
   return {
-    id: createId(),
+    id: createId("ElementID"),
     type,
-    props: props || {},
+    props: props || EMPTY_PROPS,
     children,
   } as Element;
 }

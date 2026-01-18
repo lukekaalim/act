@@ -5,15 +5,19 @@ export const createDOMScheduler = (): Scheduler => {
   let callbackFunc = () => console.error(`DOMScheduler got callback before callback function was configured`)
   let synccall_available = false;
   let synccall_requested = false;
-  const time_budget = 20;
+  const time_budget = 60;
 
   const onTimeout = () => {
     const start = performance.now();
     id = null;
+    const startMark = performance.mark('scheduler:work:start');
+
+    let workCount = 0;
 
     synccall_available = true;
     // at least 1 call
     callbackFunc();
+    workCount++;
 
     // if callback func re-requested a call,
     // do the rest in sync
@@ -26,7 +30,11 @@ export const createDOMScheduler = (): Scheduler => {
       }
       
       callbackFunc();
+      workCount++;
     }
+    const endMark = performance.mark('scheduler:work:end');
+    performance.measure(`scheduler:work(${workCount})`, startMark.name, endMark.name);
+    console.info(`[Scheduler] Worked for ${performance.now() - start}ms on ${workCount} work items`)
     synccall_available = false;
   }
 

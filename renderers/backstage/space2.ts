@@ -1,5 +1,5 @@
-import { primitiveNodeTypes, renderNodeType, specialNodeTypes } from "@lukekaalim/act";
-import { Commit2, CommitID, CommitRef2, CommitTree2, Delta, DeltaSet2, ReconcilerEventBus } from "@lukekaalim/act-recon"
+import { primitiveNodeTypes, specialNodeTypes } from "@lukekaalim/act";
+import { Commit2, CommitID, CommitRef2, CommitTree2, Delta, ReconcilerEventBus } from "@lukekaalim/act-recon"
 import { NodeBuilder } from "./builder";
 
 /**
@@ -59,31 +59,38 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
    * @returns 
    */
   findParent(ref: CommitRef2) {
-    for (let i = 1; i < ref.path.length; i++) {
-      const id = ref.path[ref.path.length - i - 1];
+    let ancestor: CommitRef2 | null = ref;
 
-      const commit = this.tree.commits.get(id) as Commit2;
+    while (ancestor) {
+      if (ancestor.id !== ref.id) {
+        const commit = this.tree.commits.get(ancestor.id) as Commit2;
 
-      // Early exit out of parent lookup if someone on the path is null;
-      if (commit.element.type === primitiveNodeTypes.null)
-        return { id, node: null };
+        // Early exit out of parent lookup if someone on the path is null;
+        if (commit.element.type === primitiveNodeTypes.null)
+          return { id: ancestor.id, node: null };
 
-      const node = this.nodeByCommit.get(id);
-      // If you find an element with a node
-      if (node)
-        return { id, node }
+        const node = this.nodeByCommit.get(ancestor.id);
+        // If you find an element with a node
+        if (node)
+          return { id: ancestor.id, node }
+      }
+      ancestor = ancestor.parent;
     }
+
     // this element has no "node" parents - it is probably a "root" commit
     return null;
   }
 
   findRoot(ref: CommitRef2) {
-    for (let i = ref.path.length - 1; i >= 0; i--) {
-      const id = ref.path[i];
-      const root = this.roots.get(id);
+    let ancestor: CommitRef2 | null = ref;
+
+    while (ancestor) {
+      const root = this.roots.get(ancestor.id);
       if (root)
         return root;
+      ancestor = ancestor.parent;
     }
+
     return null;
   }
 
@@ -164,7 +171,7 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       const prevResult = this.nodeByCommit.get(prev.ref.id);
       if (prevResult) {
         this.nodeByCommit.delete(prev.ref.id);
-        const parentId = prev.ref.path.find(id => this.nodeByCommit.get(id));
+        const parentId = prev.ref.find(ref => this.nodeByCommit.has(ref.id) && ref.id);
         if (parentId)
           this.needsReorder.add(parentId)
 

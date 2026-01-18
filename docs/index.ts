@@ -1,17 +1,21 @@
 import { createDocApp, BoneTheme } from '@lukekaalim/grimoire';
 import { TypeDocPlugin } from '@lukekaalim/grimoire-ts';
 import { createDOMScheduler, createWebNodeBuilder, hs, render } from '@lukekaalim/act-web';
-import { h, primitiveNodeTypes, renderNodeType, useEffect, useRef, useState } from '@lukekaalim/act';
+import { Boundary, h, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
 import rootReadmeMd from '../README.md?parse';
 import coreReadmeMd from '../core/README.md?parse';
 import reconReadmeMd from '../recon/readme.md?parse';
+import reconLifecycleMd from '../recon/docs/lifecycle_of_an_update.md?parse';
 
 import recon from 'typedoc:../recon/mod.ts';
 import core from 'typedoc:../core/mod.ts';
+
 import { Reconciler2 } from '@lukekaalim/act-recon';
 import { RenderSpace2 } from '@lukekaalim/act-backstage';
 import { assertRefs } from '@lukekaalim/act-graphit';
+
+import { JSON, render as renderJSON } from '../renderers/json';
 
 const doc = createDocApp([TypeDocPlugin]);
 
@@ -23,6 +27,7 @@ doc.article.addRawRoot('readme', rootReadmeMd, '/')
 
 doc.article.addRawRoot('core.readme', coreReadmeMd, '/Core')
 doc.article.addRawRoot('recon.readme', reconReadmeMd, '/Reconciler')
+doc.article.addRawRoot('recon.lifecycle', reconLifecycleMd, '/Reconciler/Lifecycle_of_an_Update')
 
 doc.article.add('web.readme', '', '/Renderers/Web')
 doc.article.add('three.readme', '', '/Renderers/Three')
@@ -36,14 +41,24 @@ doc.demos.add('recon.experiment', () => {
 
   useEffect(() => {
     const { div } = assertRefs({ div: ref })
+
     const StatefulButton = () => {
       const [count, setCount] = useState(0);
+      const [error, setError] = useState<null | Error>(null);
+
+      if (error)
+        throw error;
 
       function onClick() {
         setCount(n => n + 1);
       }
 
-      return h('button', { onClick }, `Clicked ${count} times`);
+      return [
+        h('button', { onClick }, `Clicked ${count} times`),
+        h('button', { onClick: () => setError(new Error(`Kaboom!`)) }, `Throw!`),
+        h('button', { onClick: () => setError(null) }, `Clear!`),
+        h('span', { style: { }}, crypto.randomUUID())
+      ];
     }
 
 
@@ -53,35 +68,29 @@ doc.demos.add('recon.experiment', () => {
       function onInput(event: InputEvent) {
         const newName = (event.target as HTMLInputElement).value;
         setName(oldName => {
-          console.log('Set Value', { newName, oldName })
           return newName;
         });
       }
-
-      useEffect(() => {
-        console.log('SIDE EFFECT!', name)
-        return () => {
-          console.log('CLEAN UP EFFECT!', name)
-        }
-      }, [name])
 
       return [
         h('h1', {}, `Hello, ${name}`),
         h('input', { type: 'text', onInput, value: name }),
 
-        h('ol', {}, [
-          name === 'reverse'
-            ? [
-              h('li', { key: 'c' }, h(StatefulButton, {  })),
-              h('li', { key: 'b' }, h(StatefulButton, {  })),
-              h('li', { key: 'a' }, h(StatefulButton, {  })),
-            ]
-            : [
-              h('li', { key: 'a' }, h(StatefulButton, {  })),
-              h('li', { key: 'b' }, h(StatefulButton, {  })),
-              h('li', { key: 'c' }, h(StatefulButton, {  })),
-            ]
-        ])
+        useMemo(() => h(Boundary, { fallback: ['Oopsie!', h(StatefulButton)] },
+          h('ol', {}, [
+            name === 'reverse'
+              ? [
+                h('li', { key: 'c' }, h(StatefulButton, {  })),
+                h('li', { key: 'b' }, h(StatefulButton, {  })),
+                h('li', { key: 'a' }, h(StatefulButton, {  })),
+              ]
+              : [
+                h('li', { key: 'a' }, h(StatefulButton, {  })),
+                h('li', { key: 'b' }, h(StatefulButton, {  })),
+                h('li', { key: 'c' }, h(StatefulButton, {  })),
+              ]
+          ])
+        ), [name === 'reverse'])
       ]
     };
 
@@ -96,6 +105,8 @@ doc.demos.add('recon.experiment', () => {
         space.update(delta);
       },
     };
+
+    (window as any).__LUKE_TEST_RECONCILER = reconciler;
 
     reconciler.mount(h(renderNodeType, { type: 'web:html' }, h('div', {}, h(MyApp))))
   }, [])
@@ -114,19 +125,6 @@ doc.demos.add('core.rendering', () => {
   ]
 })
 
-const location = new URL(document.location.href);
+const r = render(h('div', {}, h(BoneTheme, { doc })), document.body);
 
-if (location.searchParams.has('beta')) {
-  console.log("LOADING BETA")
-  const scheduler = createDOMScheduler();
-  const reconciler = new Reconciler2(scheduler);
-  const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(document.body));
-  reconciler.bus = space.bus;
-  reconciler.mount(h(renderNodeType, { type: 'web:html' }, h('div', {}, h(BoneTheme, { doc }))))
-} else {
-  console.log("LOADING APP")
-  render(h(BoneTheme, { doc }), document.body)
-}
-
-//
-
+(window as any).Reconciler2 = r;

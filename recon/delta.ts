@@ -1,106 +1,23 @@
-import { EffectConstructor, Element } from "@lukekaalim/act";
-import { Commit, Commit2, CommitID, CommitRef, CommitRef2 } from "./commit.ts";
-import { CommitTree } from "./tree.ts";
+import { Element } from "@lukekaalim/act";
+import { Commit2, CommitID } from "./commit.ts";
 import { EffectID, EffectTask } from "./state.ts";
-
-export type CreateDelta = { ref: CommitRef, next: Commit };
-export type UpdateDelta = { ref: CommitRef, next: Commit, prev: Commit, moved: boolean };
-export type RemoveDelta = { ref: CommitRef, prev: Commit };
-export type SkipDelta =   { next: Commit };
-
-export type DeltaSet = {
-  created: CreateDelta[],
-  updated: UpdateDelta[],
-  skipped: SkipDelta[],
-  removed: RemoveDelta[],
-};
-
-/**
- * Apply a deltaset to a tree, modifying it's commit list
- * to match the changes produced by the thread.
- * 
- * @param thread 
- * @param tree 
- */
-const applyDeltaSet = (deltas: DeltaSet, tree: CommitTree) => {
-  for (const delta of deltas.created)
-    tree.commits.set(delta.ref.id, delta.next);
-  
-  for (const delta of deltas.skipped)
-    tree.commits.set(delta.next.id, delta.next);
-  
-  for (const delta of deltas.updated)
-    tree.commits.set(delta.ref.id, delta.next);
-  
-  for (const delta of deltas.removed)
-    tree.commits.delete(delta.ref.id);
-};
-
-export const DeltaSet = {
-  create: (): DeltaSet => ({ created: [], updated: [], skipped: [], removed: [] }),
-  clone: (deltas: DeltaSet): DeltaSet => ({
-    created: [...deltas.created],
-    updated: [...deltas.updated],
-    skipped: [...deltas.skipped],
-    removed: [...deltas.removed],
-  }),
-  apply: applyDeltaSet,
-}
-
-export class CreateDelta2 {
-  next: Commit2;
-
-  constructor(next: Commit2) {
-    this.next = next;
-  }
-}
-export class UpdateDelta2 {
-  prev: Element;
-  next: Commit2;
-
-  constructor(prev: Element, next: Commit2) {
-    this.next = next;
-    this.prev = prev;
-  }
-}
-export class RemoveDelta2 {
-  prev: Commit2;
-
-  constructor(prev: Commit2) {
-    this.prev = prev;
-  }
-}
-export class SkipDelta2 {
-  ref: CommitRef2;
-
-  constructor(ref: CommitRef2) {
-    this.ref = ref;
-  }
-}
-
-export class DeltaSet2 {
-  created: CreateDelta2[] = []
-  updated: UpdateDelta2[] = []
-  removed: RemoveDelta2[] = []
-  skipped: SkipDelta2[] = []
-
-  create(next: Commit2) {
-    this.created.push(new CreateDelta2(next))
-  }
-  update(prev: Element, next: Commit2) {
-    this.updated.push(new UpdateDelta2(prev, next))
-  }
-  remove(prev: Commit2) {
-    this.removed.push(new RemoveDelta2(prev))
-  }
-  skip(ref: CommitRef2) {
-    this.skipped.push(new SkipDelta2(ref))
-  }
-}
 
 /**
  * The Delta class represents an accumulation
  * of changes over time.
+ * 
+ * A WorkThread may do several "passes" over the CommitTree,
+ * but all of those changes are written to the same Delta.
+ * 
+ * The Delta keeps track of only the immediately prior state (the
+ * last one that was sent to the Renderer), and the final state.
+ * 
+ * If a pass causes a component to be rendered/updated several times,
+ * it will only be recorded in the delta once for it's final state. Similarly,
+ * if an element is create in one pass, but removed in a another, then it will
+ * be entirely excluded from the delta - and the renderer will never know it existed.
+ * 
+ * The Delta records Commits as well as Effects this way.
  */
 export class Delta {
   fresh: Map<CommitID, Commit2> = new Map();
