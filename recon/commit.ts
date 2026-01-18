@@ -1,4 +1,4 @@
-import { createId, Element, OpaqueID } from "@lukekaalim/act";
+import { createId, Element, OpaqueID, specialNodeTypes, SuspendProps } from "@lukekaalim/act";
 import { createObjectPool, ObjectPool } from "./pool";
 import { Reconciler2 } from "./reconciler";
 
@@ -119,6 +119,13 @@ export class Commit2 {
       this.element = element;
     if (children)
       this.children = children;
+  }
+
+  isSuspended() {
+    return (
+      this.element.type === specialNodeTypes.suspend
+      && (this.element.props as SuspendProps).suspended
+    );
   }
 }
 

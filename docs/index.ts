@@ -1,7 +1,7 @@
 import { createDocApp, BoneTheme } from '@lukekaalim/grimoire';
 import { TypeDocPlugin } from '@lukekaalim/grimoire-ts';
 import { createDOMScheduler, createWebNodeBuilder, hs, render } from '@lukekaalim/act-web';
-import { Boundary, h, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
+import { Boundary, Component, h, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
 import rootReadmeMd from '../README.md?parse';
 import coreReadmeMd from '../core/README.md?parse';
@@ -61,9 +61,18 @@ doc.demos.add('recon.experiment', () => {
       ];
     }
 
+    const ErrorDisplay: Component<{ errors: Error[], onClear: () => void }> = ({ errors, onClear }) => {
+      return [h('button', { onClick: onClear }, 'Clear'), h('ol', {}, errors.map(error => {
+        return h('li', {}, h('pre', {}, [
+          error.message,
+        ]))
+      }))]
+    }
+
 
     const MyApp = () => {
       const [name, setName] = useState("World");
+      const [errors, setErrors] = useState<Error[]>([])
 
       function onInput(event: InputEvent) {
         const newName = (event.target as HTMLInputElement).value;
@@ -72,12 +81,24 @@ doc.demos.add('recon.experiment', () => {
         });
       }
 
+      function onClear() {
+        console.log('Clear')
+      }
+      function onThrow(_: unknown, allValues: unknown[]) {
+        setErrors(allValues.filter(x => x instanceof Error))
+        console.log('Throw', allValues)
+      }
+
+      console.log(errors.length === 0)
+
       return [
         h('h1', {}, `Hello, ${name}`),
         h('input', { type: 'text', onInput, value: name }),
-
-        useMemo(() => h(Boundary, { fallback: ['Oopsie!', h(StatefulButton)] },
-          h('ol', {}, [
+        errors.length > 0 && [
+          h(ErrorDisplay, { errors, onClear: () => setErrors([]) })
+        ],
+        useMemo(() => h(Boundary, { fallback: h('div', {}, ['Oopsie!', h(StatefulButton)]), onClear, onThrow },
+          errors.length === 0 && [h('ol', {}, [
             name === 'reverse'
               ? [
                 h('li', { key: 'c' }, h(StatefulButton, {  })),
@@ -89,8 +110,8 @@ doc.demos.add('recon.experiment', () => {
                 h('li', { key: 'b' }, h(StatefulButton, {  })),
                 h('li', { key: 'c' }, h(StatefulButton, {  })),
               ]
-          ])
-        ), [name === 'reverse'])
+          ])]
+        ), [name === 'reverse', errors])
       ]
     };
 
@@ -101,6 +122,7 @@ doc.demos.add('recon.experiment', () => {
 
     reconciler.bus = {
       render(delta) {
+        console.log({ delta });
         space.create(delta);
         space.update(delta);
       },

@@ -17,4 +17,7 @@ export type NodeBuilder<TNode, TRoot = string | symbol> = {
 
   sort?: (el: TNode, children: readonly TNode[]) => unknown,
   update?: (el: TNode, next: Element, prev: null | Element) => unknown,
+
+  suspend?: (el: TNode, parent: TNode) => void,
+  unsuspend?: (el: TNode, parent: TNode) => void,
 };

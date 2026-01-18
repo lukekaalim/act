@@ -51,6 +51,14 @@ export const createWebNodeBuilder = (
   unlink(el, parent) {
     parent.removeChild(el);
   },
+  suspend(el, parent) {
+    if (el instanceof HTMLElement)
+      el.style.opacity = 0.5.toString();
+  },
+  unsuspend(el, parent) {
+    if (el instanceof HTMLElement)
+      el.style.opacity = (1).toString();
+  },
   sort(el, newChildren) {
     if (el instanceof Text)
       return;

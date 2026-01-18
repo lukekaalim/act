@@ -5,6 +5,7 @@ import {
   hookImplementation,
   Fallback,
   h,
+  Suspend,
 } from "@lukekaalim/act";
 import { Commit2, CommitRef2 } from "./commit";
 import { loadHooks2 } from "./hooks";
@@ -114,14 +115,14 @@ export class ElementOutput2 {
     const fallbackElement = !!element.props.fallback && h(Fallback, {}, element.props.fallback as Node)
 
     if (state.mode === 'normal') {
-
-      this.setNode([this.element.children]);
+      this.setNode([h(Suspend, { suspended: false }, this.element.children)]);
       this.calculateDiff();
-
+      console.log(`Processing boundary as normal`)
     } else if (fallbackElement) {
       // Handle a boundary
-      this.setNode([this.element.children, fallbackElement]);
+      this.setNode([h(Suspend, { suspended: true }, this.element.children), fallbackElement]);
       this.calculateDiff();
+      console.log(`Processing boundary as fallback`)
 
       for (let i = 0; i < this.children.length; i++) {
         const childElement = this.children[i];

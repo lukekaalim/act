@@ -136,6 +136,9 @@ export class CommitTree2 {
           if (provider)
             provider.consumers.delete(prev.ref.id);
         }
+        if (componentState.boundary && componentState.rejection) {
+          componentState.boundary.clearThrow(prev.ref);
+        }
         output.cleanups = [];
         for (const [index, cleanup] of componentState.cleanups) {
           if (!cleanup)

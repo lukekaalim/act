@@ -1,6 +1,21 @@
-import { primitiveNodeTypes, specialNodeTypes } from "@lukekaalim/act";
+import { primitiveNodeTypes, specialNodeTypes, SuspendProps } from "@lukekaalim/act";
 import { Commit2, CommitID, CommitRef2, CommitTree2, Delta, ReconcilerEventBus } from "@lukekaalim/act-recon"
 import { NodeBuilder } from "./builder";
+
+type ParentSearchResult<TNode> = {
+  /**
+   * You might not have a parent - no
+   * commit means there are no Nodes above you - just Root.
+   */
+  commit: Commit2 | null,
+  /**
+   * Your parent might be a valid node,
+   * or it might be "null"
+   */
+  node: TNode | null,
+
+  attachable: boolean,
+}
 
 /**
  * The RenderSpace class
@@ -37,7 +52,7 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
     this.builder = builder;
   }
 
-  findChildren(id: CommitID, ignoreFirst = false): TNode[] {
+  findChildren(id: CommitID, ignoreFirst = false, ignoreSuspended = true): TNode[] {
     const node = this.nodeByCommit.get(id);
     if (node && !ignoreFirst)
       return [node];
@@ -47,6 +62,10 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       return [];
     if (commit.element.type === primitiveNodeTypes.null)
       return [];
+    // suspended nodes don't count as children
+    if (ignoreSuspended && commit.isSuspended())
+      return [];
+
     return commit.children.map(c => this.findChildren(c.id)).flat(1);
   }
 
@@ -58,8 +77,9 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
    * @param ref 
    * @returns 
    */
-  findParent(ref: CommitRef2) {
+  findParent(ref: CommitRef2): ParentSearchResult<TNode> {
     let ancestor: CommitRef2 | null = ref;
+    let attachable = true;
 
     while (ancestor) {
       if (ancestor.id !== ref.id) {
@@ -67,18 +87,22 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
 
         // Early exit out of parent lookup if someone on the path is null;
         if (commit.element.type === primitiveNodeTypes.null)
-          return { id: ancestor.id, node: null };
+          return { commit, node: null, attachable: false };
+
+        // maybe a bad idea... we'll see
+        if (commit.isSuspended())
+          attachable = false;
 
         const node = this.nodeByCommit.get(ancestor.id);
         // If you find an element with a node
         if (node)
-          return { id: ancestor.id, node }
+          return { commit, node, attachable }
       }
       ancestor = ancestor.parent;
     }
 
     // this element has no "node" parents - it is probably a "root" commit
-    return null;
+    return { commit: null, node: null, attachable };
   }
 
   findRoot(ref: CommitRef2) {
@@ -129,42 +153,83 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
   }
 
   update(deltas: Delta) {
-    if (this.builder.link || this.builder.sort) {
+    const {
+      link,
+      unlink,
+      linkRoot,
+      sort,
+      update,
+      destroy,
+      suspend = unlink,
+      unsuspend = link
+    } = this.builder;
+
+    if (link || sort) {
       // Loop through newly created nodes
       for (const [next, node] of this.newNodes) {
-        const parent = this.findParent(next.ref);
-        const parentNode = parent && parent.node;
+        const result = this.findParent(next.ref);
 
-        if (parentNode) {
-          this.needsReorder.add(parent.id)
+        if (next.element.type === specialNodeTypes.suspend)
+          console.log(`Creating suspense node`, result)
 
-          if (this.builder.link)
-            this.builder.link(node, parentNode);
+        if (result.commit && result.node && result.attachable) {
+          this.needsReorder.add(result.commit.ref.id)
+
+          if (link)
+            link(node, result.node);
         }
 
-        if (this.builder.linkRoot && !parent)
-          this.builder.linkRoot(node,);
+        if (linkRoot && !result.commit && result.attachable)
+          linkRoot(node);
       }
     }
 
-    if (this.builder.update) {
+    if (update) {
       for (const { prev, next, moved } of deltas.changed.values()) {
+
+        // suspense code
+        if (next.element.type === specialNodeTypes.suspend) {
+          const result = this.findParent(next.ref);
+
+          const wasSuspended = !!prev.props.suspended;
+          const isSuspended = !!next.element.props.suspended;
+
+          const suspenseChanged = wasSuspended !== isSuspended;
+          if (suspenseChanged && result.commit && result.node) {
+            this.needsReorder.add(result.commit.ref.id);
+
+            const children = this.findChildren(next.ref.id, true, false);
+            for (const child of children) {
+              if (isSuspended && suspend) {
+                suspend(child, result.node);
+              }
+              
+              if (!isSuspended && unsuspend) {
+                unsuspend(child, result.node);
+              }
+            }
+          }
+          continue;
+        }
+
         const node = this.nodeByCommit.get(next.ref.id);
         if (!node)
           continue;
-        this.builder.update(node, next.element, prev);
+
+        update(node, next.element, prev);
+
         if (moved) {
-          const parent = this.findParent(next.ref);
-          const parentNode = parent && parent.node;
-          if (parentNode) {
-            this.needsReorder.add(parent.id)
+          const result = this.findParent(next.ref);
+          
+          if (result.commit) {
+            this.needsReorder.add(result.commit.ref.id);
           }
         }
       }
       for (const next of deltas.fresh.values()) {
         const node = this.nodeByCommit.get(next.ref.id);
         if (node)
-          this.builder.update(node, next.element, null);
+          update(node, next.element, null);
       }
     }
     for (const prev of deltas.removed.values()) {
@@ -176,16 +241,16 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
           this.needsReorder.add(parentId)
 
         this.commitByNode.delete(prevResult);
-        this.builder.destroy(prevResult);
+        destroy(prevResult);
       }
     }
 
-    if (this.builder.sort) {
+    if (sort) {
       for (const id of this.needsReorder) {
         const node = this.nodeByCommit.get(id);
         if (node) {
-          const children = this.findChildren(id, true);
-          this.builder.sort(node, children);
+          const children = this.findChildren(id, true, true);
+          sort(node, children);
         }
       }
     }

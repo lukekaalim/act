@@ -78,11 +78,7 @@ export class Reconciler2 {
         `reconciler:thread(${currentThread.id}):end`,
       )
 
-
-      console.log({
-        Commit2: this.pools.commit.size,
-        WorkTask: WorkTask.pool.size,
-      })
+      console.info(`[Reconciler] Thread ${currentThread.id} visited ${currentThread.visited.size} nodes, in ${currentThread.passes} passes`);
     }
   }
   running = false;

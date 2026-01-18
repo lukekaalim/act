@@ -70,14 +70,14 @@ export class BoundaryState {
     if (this.mode === 'normal')
       this.tree.reconciler.render(this.ref);
     
+    this.values.set(ref.id, thrownValue);
+
     const commit = this.tree.commits.get(this.ref.id);
     if (commit) {
-      const onError = (commit.element.props as BoundaryProps).onError;
-      if (onError)
-        onError(thrownValue);
+      const onThrow = (commit.element.props as BoundaryProps).onThrow;
+      if (onThrow)
+        onThrow(thrownValue, [...this.values.values()]);
     }
-
-    this.values.set(ref.id, thrownValue);
   }
   
   clearThrow(ref: CommitRef2) {
@@ -85,5 +85,12 @@ export class BoundaryState {
 
     if (this.mode === 'normal')
       this.tree.reconciler.render(this.ref);
+
+    const commit = this.tree.commits.get(this.ref.id);
+    if (commit) {
+      const onClear = (commit.element.props as BoundaryProps).onClear;
+      if (onClear)
+        onClear();
+    }
   }
 }

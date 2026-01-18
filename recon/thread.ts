@@ -67,6 +67,7 @@ export class WorkThread2 {
   delta: Delta = new Delta();
 
   id = createId("ThreadID")
+  passes = 1;
 
   constructor(tree: CommitTree2) {
     this.tree = tree;
@@ -118,6 +119,7 @@ export class WorkThread2 {
     // we already intend to render it, so do nothing
     if (this.mustRender.has(reason.ref.id))
       return;
+    this.mustRender.add(reason.ref.id);
 
     // Search through all the parents, looking to see if
     // there are any pendingTasks that might
@@ -131,8 +133,9 @@ export class WorkThread2 {
       // If we find there is an Update already
       // existing to handle our commit, exit early
       for (const update of this.pendingTasks) {
-        if (update.ref.id === ancestor.id)
+        if (update.ref.id === ancestor.id) {
           return true;
+        }
       }
       ancestor = ancestor.parent;
     }
@@ -148,8 +151,6 @@ export class WorkThread2 {
       ancestor = ancestor.parent;
     }
 
-
-    this.mustRender.add(reason.ref.id);
     const prev = this.tree.commits.get(reason.ref.id) as Commit2;
     this.pendingTasks.push(WorkTask.visit(prev))
   }
@@ -250,9 +251,10 @@ export class WorkThread2 {
     if (task) {
       this.processTask(task);
       task.free();
-    } else {
+    } else if (!this.done) {
       this.reset();
       this.queueMissed();
+      this.passes++;
     }
   }
 
