@@ -113,6 +113,10 @@ const MyInteractiveComponent = () => {
 }
 ```
 
+<TypeDoc project="@lukekaalim/act" name="useState" extras="ValueOrCalculator StateSetter Updater" />
+<TypeDoc project="@lukekaalim/act" name="useContext" />
+<TypeDoc project="@lukekaalim/act" name="useEffect" extras="EffectConstructor Deps EffectCleanup" />
+
 ### Context
 
 Create values in parents that can be read by children
@@ -136,6 +140,7 @@ const Child = () => {
     `I got the value ${providedValue} from one of my parents!`);
 }
 ```
+<TypeDoc project="@lukekaalim/act" name="createContext" extras="Context ContextID" />
 
 ### Errors
 

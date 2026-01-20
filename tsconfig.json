@@ -9,6 +9,5 @@
 
     "strict": true,
     "types": ["vite/client"],
-  },
-  "exclude": ["tooling/*"]
+  }
 }

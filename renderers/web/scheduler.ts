@@ -10,14 +10,10 @@ export const createDOMScheduler = (): Scheduler => {
   const onTimeout = () => {
     const start = performance.now();
     id = null;
-    const startMark = performance.mark('scheduler:work:start');
-
-    let workCount = 0;
 
     synccall_available = true;
     // at least 1 call
     callbackFunc();
-    workCount++;
 
     // if callback func re-requested a call,
     // do the rest in sync
@@ -30,11 +26,7 @@ export const createDOMScheduler = (): Scheduler => {
       }
       
       callbackFunc();
-      workCount++;
     }
-    const endMark = performance.mark('scheduler:work:end');
-    performance.measure(`scheduler:work(${workCount})`, startMark.name, endMark.name);
-    console.info(`[Scheduler] Worked for ${performance.now() - start}ms on ${workCount} work items`)
     synccall_available = false;
   }
 

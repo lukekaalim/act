@@ -1,3 +1,4 @@
+/*
 import { CommitID, CommitRef, EventEmitter, WorkThread } from "@lukekaalim/act-recon";
 import { ChannelClient } from "./channel";
 import { CommitStateReport, ThreadReport } from "./report";
@@ -100,3 +101,4 @@ export const createDebuggerServer = (
     subscribe: channelClient.subscribe,
   }
 };
+*/

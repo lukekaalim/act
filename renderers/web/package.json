@@ -7,6 +7,10 @@
     "@lukekaalim/act": "^3.1.0",
     "@lukekaalim/act-backstage": "^3.0.0-alpha.0",
     "@lukekaalim/act-recon": "^3.0.0-alpha.3",
-    "rehype": "^13.0.2"
+    "@types/hast": "^3.0.4",
+    "hast-util-to-html": "^9.0.5",
+    "hastscript": "^9.0.1",
+    "rehype": "^13.0.2",
+    "rehype-stringify": "^10.0.1"
   }
 }

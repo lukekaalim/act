@@ -1,40 +1,60 @@
 import { createDocApp, BoneTheme } from '@lukekaalim/grimoire';
 import { TypeDocPlugin } from '@lukekaalim/grimoire-ts';
-import { createDOMScheduler, createWebNodeBuilder, hs, render } from '@lukekaalim/act-web';
+import { Root } from 'hast';
+import { toHtml } from 'hast-util-to-html';
+
+import { createDOMScheduler, createHASTBuilder, createWebNodeBuilder, hs, HTML, render } from '@lukekaalim/act-web';
 import { Boundary, Component, h, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
 import rootReadmeMd from '../README.md?parse';
 import coreReadmeMd from '../core/README.md?parse';
+
 import reconReadmeMd from '../recon/readme.md?parse';
 import reconLifecycleMd from '../recon/docs/lifecycle_of_an_update.md?parse';
 
+import blogFunOptimization from './blogs/fun_optimization.md?parse';
+
+
 import recon from 'typedoc:../recon/mod.ts';
 import core from 'typedoc:../core/mod.ts';
+
+import rendererWebMd from '../renderers/web/README.md?parse';
+import rendererWeb from 'typedoc:../renderers/web/mod.ts';
+
+import rendererBackstageMd from '../renderers/backstage/README.md?parse';
+import rendererBackstage from 'typedoc:../renderers/backstage/mod.ts';
 
 import { Reconciler2 } from '@lukekaalim/act-recon';
 import { RenderSpace2 } from '@lukekaalim/act-backstage';
 import { assertRefs } from '@lukekaalim/act-graphit';
 
-import { JSON, render as renderJSON } from '../renderers/json';
+import { CommitPreview, renderDEV, TreeViewer } from '@lukekaalim/act-insight';
 
 const doc = createDocApp([TypeDocPlugin]);
 
 doc.typedoc.addProjectJSON('@lukekaalim/act-recon', recon);
 doc.typedoc.addProjectJSON('@lukekaalim/act', core);
 
+doc.typedoc.addProjectJSON('@lukekaalim/act-web', rendererWeb);
+doc.typedoc.addProjectJSON('@lukekaalim/act-backstage', rendererBackstage);
+
 //doc.article.add('readme', rootReadmeMd, '/')
 doc.article.addRawRoot('readme', rootReadmeMd, '/')
 
 doc.article.addRawRoot('core.readme', coreReadmeMd, '/Core')
 doc.article.addRawRoot('recon.readme', reconReadmeMd, '/Reconciler')
-doc.article.addRawRoot('recon.lifecycle', reconLifecycleMd, '/Reconciler/Lifecycle_of_an_Update')
+doc.article.addRawRoot('web.readme', rendererWebMd, '/Renderers/Web')
+doc.article.addRawRoot('backstage.readme', rendererBackstageMd, '/Utils/Backstage')
 
-doc.article.add('web.readme', '', '/Renderers/Web')
+
+
 doc.article.add('three.readme', '', '/Renderers/Three')
-doc.article.add('backstage.readme', '', '/Utils/Backstage')
 doc.article.add('debug.readme', '', '/Tooling/Debug')
 doc.article.add('insight.readme', '', '/Tooling/Insight')
 doc.article.add('ext.readme', '', '/Tooling/Dev-Ext')
+
+doc.article.addRawRoot('guides.lifecycle', reconLifecycleMd, '/Guides/Lifecycle_of_an_Update')
+doc.article.addRawRoot('blog.funOptimization', blogFunOptimization, '/Devblog/Searching_The_Depths')
 
 doc.demos.add('recon.experiment', () => {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -85,7 +105,7 @@ doc.demos.add('recon.experiment', () => {
         console.log('Clear')
       }
       function onThrow(_: unknown, allValues: unknown[]) {
-        setErrors(allValues.filter(x => x instanceof Error))
+        //setErrors(allValues.filter(x => x instanceof Error))
         console.log('Throw', allValues)
       }
 
@@ -98,7 +118,7 @@ doc.demos.add('recon.experiment', () => {
           h(ErrorDisplay, { errors, onClear: () => setErrors([]) })
         ],
         useMemo(() => h(Boundary, { fallback: h('div', {}, ['Oopsie!', h(StatefulButton)]), onClear, onThrow },
-          errors.length === 0 && [h('ol', {}, [
+          [h('ol', {}, [
             name === 'reverse'
               ? [
                 h('li', { key: 'c' }, h(StatefulButton, {  })),
@@ -115,22 +135,9 @@ doc.demos.add('recon.experiment', () => {
       ]
     };
 
-    const scheduler = createDOMScheduler();
-    const reconciler = new Reconciler2(scheduler);
     
-    const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(div));
-
-    reconciler.bus = {
-      render(delta) {
-        console.log({ delta });
-        space.create(delta);
-        space.update(delta);
-      },
-    };
-
-    (window as any).__LUKE_TEST_RECONCILER = reconciler;
-
-    reconciler.mount(h(renderNodeType, { type: 'web:html' }, h('div', {}, h(MyApp))))
+    render(h('div', {}, h(MyApp)), div);
+    //renderDEV(h(HTML, {}, h('div', {}, h(MyApp))), [createWebNodeBuilder(div)])
   }, [])
 
   return h('div', { ref })
@@ -147,6 +154,9 @@ doc.demos.add('core.rendering', () => {
   ]
 })
 
-const r = render(h('div', {}, h(BoneTheme, { doc })), document.body);
+const app =  h('div', {}, h(BoneTheme, { doc }))
 
-(window as any).Reconciler2 = r;
+if (true)
+  renderDEV(h(HTML, {}, app), [createWebNodeBuilder(document.body)])
+else
+  render(app, document.body);

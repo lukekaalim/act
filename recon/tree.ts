@@ -33,6 +33,7 @@ export class CommitTree2 {
   boundaries: Map<CommitID, BoundaryState> = new Map();
 
   commits: Map<CommitID, Commit2> = new Map();
+  roots: Set<CommitID> = new Set();
 
   constructor(reconciler: Reconciler2) {
     this.reconciler = reconciler;

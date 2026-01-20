@@ -1,9 +1,7 @@
 import {
   Element,
-  errorBoundaryType,
+  specialNodeTypes,
   primitiveNodeTypes,
-  providerNodeType,
-  renderNodeType
 } from "@lukekaalim/act";
 
 export const getElementName = (element: Element) => {
@@ -21,11 +19,15 @@ export const getElementName = (element: Element) => {
         return `<array>`
       case primitiveNodeTypes.null:
         return `<null>`
-      case renderNodeType:
+      case specialNodeTypes.fallback:
+        return `<fallback>`;
+      case specialNodeTypes.suspend:
+        return `<suspend>`;
+      case specialNodeTypes.render:
         return `<render type="${element.props.type}">`;
-      case providerNodeType:
+      case specialNodeTypes.provider:
         return `<context id="${element.props.id}">`;
-      case errorBoundaryType:
+      case specialNodeTypes.boundary:
         return `<boundary>`;
       default:
         return `<symbol>`

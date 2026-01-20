@@ -49,7 +49,8 @@ export const createWebNodeBuilder = (
     root.appendChild(child);
   },
   unlink(el, parent) {
-    parent.removeChild(el);
+    if (el.parentNode === parent)
+      parent.removeChild(el);
   },
   suspend(el, parent) {
     if (el instanceof HTMLElement)
@@ -68,9 +69,5 @@ export const createWebNodeBuilder = (
     for (let i = 0; i < newChildren.length; i++)
       if (el.children[i] !== newChildren[i])
         el.insertBefore(newChildren[i], el.children[i])
-  },
-  destroy(prev) {
-    if (prev.parentNode)
-      prev.parentNode.removeChild(prev);
   },
 })

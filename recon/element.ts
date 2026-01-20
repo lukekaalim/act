@@ -117,13 +117,10 @@ export class ElementOutput2 {
     if (state.mode === 'normal') {
       this.setNode([h(Suspend, { suspended: false }, this.element.children)]);
       this.calculateDiff();
-      console.log(`Processing boundary as normal`)
     } else if (fallbackElement) {
       // Handle a boundary
       this.setNode([h(Suspend, { suspended: true }, this.element.children), fallbackElement]);
       this.calculateDiff();
-      console.log(`Processing boundary as fallback`)
-
       for (let i = 0; i < this.children.length; i++) {
         const childElement = this.children[i];
         if (childElement.id === fallbackElement.id) {

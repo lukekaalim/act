@@ -10,3 +10,4 @@ export * from './state';
 export * from './thread';
 export * from './tree';
 export * from './update';
+export * from './pool';

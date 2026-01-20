@@ -1,35 +1,35 @@
 import { Component, h, Node } from "@lukekaalim/act";
-import { Commit, CommitID, CommitTree } from "@lukekaalim/act-recon";
 import { hs } from "@lukekaalim/act-web";
-import { getElementName } from "./utils";
 import stringHash from '@sindresorhus/string-hash';
 
 import classes from './TreeViewer.module.css';
-import { CommitAttributeTag } from "./AttributeTag";
+//import { CommitAttributeTag } from "./AttributeTag";
 import { CommitReport, TreeReport } from "@lukekaalim/act-debug";
+import { CommitID } from "@lukekaalim/act-recon";
+import { CommitAttributeTag } from './AttributeTag';
 
 export type TreeViewerProps = {
-  tree: TreeReport,
+  //commits: Map<CommitID, CommitReport>,
+  roots: CommitID[],
 
-  renderCommit: (commit: CommitReport) => Node,
+  renderCommit: (commitId: CommitID) => Node,
 }
 
 export const TreeViewer: Component<TreeViewerProps> = ({
-  tree, renderCommit
+  //commits,
+  roots,
+  renderCommit
 }) => {
-  const rootCommits = tree.roots
-    .map(root => tree.commits.get(root.id))
-    .filter(Boolean) as CommitReport[];
+  //const rootCommits = roots.map(root => commits.get(root)).filter(x => !!x)
 
   const className = [classes.commitList, classes.top].join(' ')
 
-  return h('ol', { className }, rootCommits.map(root =>
-    h('li', {}, renderCommit(root))));
+  return h('ol', { className }, roots.map(root =>
+    h('li', { key: root }, renderCommit(root))));
 };
 
 export type CommitPreviewProps = {
   commit: CommitReport,
-  tree: TreeReport,
 
   attributes?: [string, string][],
 
@@ -37,33 +37,46 @@ export type CommitPreviewProps = {
 
   depth?: number,
 
-  renderCommit: (commit: CommitReport) => Node,
+  renderCommit: (commit: CommitID) => Node,
   onClick?: () => void,
 }
 
 export const CommitPreview: Component<CommitPreviewProps> = ({
-  commit, tree, depth = 0,
+  commit, depth = 0,
   attributes = [],
   renderCommit,
   color,
   onClick,
 }) => {
-  const children = commit.children
-    .map(childRef => tree.commits.get(childRef.id)).filter(c => !!c);
-
   const background = `hsl(${(depth * 22.3) % 360}deg, 50%, 80%)`;
   const elementBackground = color || `hsl(${stringHash(commit.element.type) % 360}deg, 60%, 80%)`;
+  const lineColor = `hsl(${stringHash(commit.id.toString()) % 360}, 100%, 20%)`
 
 
-  return hs('div', { className: classes.commit, style: { background } }, [
-    hs('div', { className: [classes.elementBar].join(' ') }, [
+  return hs('div', { className: classes.commit, style: { position: 'relative' }, id: `commit:${commit.id}` }, [
+    commit.children.length > 0 &&
+      h('div', { style: {
+        position: 'absolute',
+        top: '5px',
+        height: 'calc(100% - 18px)', width: '1px', background: lineColor, transform: `translate(20px, 0px)`
+      } }),
+
+    hs('div', { className: [classes.elementBar].join(' '), style: { 'position': 'relative' } }, [
       hs('button', { onClick, className: classes.elementName, style: { background: elementBackground } },
         commit.element.type),
-      //h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
-      attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
+      h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
+      //attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
       //h(CommitAttributeTag, { name: 'Version', value: commit.version.toString() }),
     ]),
-    hs('ol', { className: classes.commitList }, children.map(child => h('li', {}, renderCommit(child)))),
+
+    hs('ol', { className: classes.commitList }, commit.children.map(childId => h('li', { key: childId, style: { position: 'relative' } }, [
+      renderCommit(childId),
+      h('div', { style: {
+        top: 0,
+        width: '25px', height: '1px', 'border-top': '2px dotted black', position: 'absolute',
+        transform: `translate(-22px, 15px)`
+      }})
+    ]))),
   ])
 };
 

@@ -10,10 +10,17 @@
   font-family: monospace;
   display: inline;
 
-  padding: 2px;
+  padding: 4px;
   border-radius: 8px;
 
   margin: 2px;
+
+  border: 2px solid rgba(255, 255, 255, 0);
+}
+.elementName:hover {
+  font-weight: bold;
+  cursor: pointer;
+  border: 2px solid white;
 }
 
 .commit {
@@ -31,6 +38,7 @@
 }
 
 .commitList {
+  flex: 1;
   display: flex;
   flex-direction: column;
   list-style: none;

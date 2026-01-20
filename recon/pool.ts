@@ -1,34 +1,26 @@
-export abstract class ObjectPool<T, TArgs extends unknown[]> {
-  maxSize = 256;
 
-  #available: T[] = [];
+/**
+ * A short utility for re-using old objects
+ * to avoid doing too much GC thrashing, at the
+ * cost of increased memory.
+ * 
+ * Don't know yet if the trade off it worth it.
+ */
+export type ObjectPool<T, TArgs extends unknown[]> = {
+  maxSize: number,
+  size: number,
 
-  abstract assign(value: T, ...args: TArgs): void;
-  abstract build(...args: TArgs): T;
+  all: T[],
+  available: T[],
 
-  get size() {
-    return this.#available.length;
-  }
-
-  acquire(...args: TArgs) {
-    const object = this.#available.pop();
-    if (!object)
-      return this.build(...args);
-
-    this.assign(object, ...args);
-    return object;
-  }
-
-  release(value: T) {
-    if (this.size < this.maxSize)
-      this.#available.push(value);
-  }
+  acquire(...args: TArgs): T,
+  release(value: T): void,
 }
 
 export const createObjectPool = <T, TArgs extends unknown[]>(
   build: (...args: TArgs) => T,
   assign: (value: T, ...args: TArgs) => void,
-) => {
+): ObjectPool<T, TArgs> => {
   const pool = {
     maxSize: 256,
     available: [] as T[],

@@ -43,7 +43,7 @@ export const runUpdater = <T>(
 };
 
 /**
- * #### Use State
+ * Use State
  *
  * Store a value inside the component state, and aquire
  * and function that can be used to update that value,
@@ -58,7 +58,7 @@ export type StateSetter<T> = (updater: Updater<T>) => void;
 export type Updater<T> = T | ((prev: T) => T);
 
 /**
- * #### Use Effect
+ * Use Effect
  *
  * Passing a function into this hook causes it to be run after
  * a render as a **side effect**. You define _which_ renders this
@@ -71,7 +71,7 @@ export type EffectConstructor = () => EffectCleanup;
 export type EffectCleanup = void | (() => void)
 
 /**
- * #### Use Context
+ * Use Context
  *
  * Retrieves the value that a *ContextProvider* may have set
  * earlier in the tree, or if there are none present,

@@ -1,5 +1,5 @@
-import { Element, ElementID } from "@lukekaalim/act";
-import { Commit, CommitID, CommitRef, CommitVersion, ComponentState, DeltaSet, WorkReason, WorkThread } from "@lukekaalim/act-recon";
+import { Element, ElementID, OpaqueID } from "@lukekaalim/act";
+import { Commit2, CommitID, CommitTree2, CommitVersion, ComponentState, Delta, WorkReason, WorkTask, WorkThread2 } from "@lukekaalim/act-recon";
 import { getElementName } from "./utils";
 
 /**
@@ -28,7 +28,7 @@ export const createValueReport = (value: unknown): ValueReport => {
         return { type: 'complex', name: value.constructor.name }
       return { type: 'complex', name: '???' }
     case 'function':
-      return { type: 'complex', name: value.name };
+      return { type: 'complex', name: `function(${value.name})` };
     case 'symbol':
       return { type: 'complex', name: value.description || 'symbol' }
     case 'undefined':
@@ -36,115 +36,189 @@ export const createValueReport = (value: unknown): ValueReport => {
   }
 };
 
+export type ComponentStateReport = {
+  stateValues: { hookIndex: number, value: ValueReport }[]
+}
+
+export type CommitDetailsReport = {
+  props: Record<string, ValueReport>,
+
+  component: null | ComponentStateReport,
+}
+
+export const createCommitDetailsReport = (commit: Commit2, tree: CommitTree2): CommitDetailsReport => {
+  const props: Record<string, ValueReport> = {};
+
+  for (const key in commit.element.props) {
+    props[key] = createValueReport(commit.element.props[key]);
+  }
+  const componentState = tree.components.get(commit.ref.id);
+
+  const component = componentState && {
+    stateValues: [...componentState.values.entries()].map(([hookIndex, value]) => ({
+      hookIndex,
+      value: createValueReport(value),
+    }))
+  } || null;
+
+  return {
+    props,
+    component,
+  }
+}
+
+
+
 export type ElementReport = {
-  type: string
+  type: string,
+  //props: Record<string, ValueReport>,
   id: ElementID;
 }
 
 export const createElementReport = (element: Element): ElementReport => {
   return {
     id: element.id,
+    //props: Object.entries(element.props).map(([name, value]) => [name, createValueReport(value)])
     type: getElementName(element),
   }
 }
 
-export type CommitReport = CommitRef & {
+export type CommitReport = {
+  id: CommitID,
+  parent: CommitID | null,
+  distance: number,
+
   version: CommitVersion;
   element: ElementReport;
-  children: CommitRef[];
+  children: CommitID[];
 }
 
-export const createCommitReport = (commit: Commit): CommitReport => {
+export const createCommitReport = (commit: Commit2): CommitReport => {
   return {
-    id: commit.id,
-    path: commit.path,
+    id: commit.ref.id,
+    parent: commit.ref.parent ? commit.ref.parent.id : null,
+    distance: commit.ref.length,
+
     element: createElementReport(commit.element),
     version: commit.version,
-    children: commit.children.map(child => ({ id: child.id, path: child.path }))
+    children: commit.children.map(child => child.id)
   }
 }
 
-export type DeltaReport = {
-  type: 'create' | 'update' | 'remove' | 'skip' | 'move'
-  prev: CommitReport | null,
-  next: CommitReport | null 
-}
-export const createDeltaReports = (deltaSet: DeltaSet): DeltaReport[] => {
-  const reports: DeltaReport[] = [];
-  for (const create of deltaSet.created)
-    reports.push({
-      type: 'create',
-      prev: null,
-      next: createCommitReport(create.next)
-    });
-  for (const update of deltaSet.updated)
-    reports.push({
-      type: update.moved ? 'move' : 'update',
-      prev: createCommitReport(update.prev),
-      next: createCommitReport(update.next)
-    });
-  for (const remove of deltaSet.removed)
-    reports.push({
-      type: 'remove',
-      prev: createCommitReport(remove.prev),
-      next: null,
-    });
 
-  return reports;
+export type DeltaReport = {
+  created: CommitReport[],
+  removed: CommitReport[],
+  updated: CommitReport[]
+}
+export const createDeltaReport = (delta: Delta): DeltaReport => {
+  const report: DeltaReport = {
+    created: [],
+    removed: [],
+    updated: [],
+  }
+  for (const commit of delta.fresh.values())
+    report.created.push(createCommitReport(commit));
+  for (const { next } of delta.changed.values())
+    report.updated.push(createCommitReport(next));
+  for (const commit of delta.removed.values())
+    report.removed.push(createCommitReport(commit));
+
+  return report;
+}
+
+export type WorkTaskReport = {
+  element: null | ElementReport,
+  prev: null | CommitReport,
+  moved: boolean,
+
+  parent: null | CommitID,
+  id: CommitID,
+}
+export const createWorkTaskReport = (task: WorkTask): WorkTaskReport => {
+  return {
+    element: task.next && createElementReport(task.next),
+    prev: task.prev && createCommitReport(task.prev),
+    moved: task.moved,
+
+    parent: task.ref.parent && task.ref.parent.id,
+    id: task.ref.id,
+  }
 }
 
 export type ThreadReport = {
-  //reasons: WorkReason[],
-  deltas: DeltaReport[],
-  visited: CommitRef[],
+  missed: CommitID[],
+  visited: CommitID[],
+  mustVisit: CommitID[],
+  mustRender: CommitID[],
+
+  pendingTasks: WorkTaskReport[],
+  reasons: WorkReasonReport[],
+
+  id: OpaqueID<"ThreadID">,
+  passes: number,
+  done: boolean,
 };
 
+export type WorkReasonReport = { target: CommitID, element: ElementReport | null };
+export const createWorkReasonReport = (reason: WorkReason): WorkReasonReport => {
+  if (reason.type === 'mount')
+    return { target: reason.ref.id, element: createElementReport(reason.element) }
+  return { target: reason.ref.id, element: null }
+}
 
-export const createThreadReport = (thread: WorkThread): ThreadReport => {
+export const createThreadReport = (thread: WorkThread2): ThreadReport => {
   return {
-    //reasons: [...thread.reasons.values()],
-    deltas: createDeltaReports(thread.deltas),
-    visited: [...thread.visited.values()].map(v => ({ id: v.id, path: v.path })),
+    visited: [...thread.visited],
+    mustVisit: [...thread.mustVisit],
+    mustRender: [...thread.mustRender],
+    missed: [...thread.missed],
+
+    pendingTasks: thread.pendingTasks.map(createWorkTaskReport),
+    reasons: thread.reasons.map(createWorkReasonReport),
+    id: thread.id,
+    passes: thread.passes,
+    done: thread.done,
   }
 }
 
 export type TreeReport = {
-  commits: Map<CommitID, CommitReport>,
-  roots: CommitRef[],
+  commits: CommitReport[],
+  roots: CommitID[]
 }
 
-export const updateTreeReport = (tree: TreeReport, thread: ThreadReport): TreeReport => {
+export const createTreeReport = (tree: CommitTree2) => {
+  const report: TreeReport = { commits: [], roots: [] };
 
-  for (const delta of thread.deltas) {
-    const next = delta.next as CommitReport;
-    const prev = delta.prev as CommitReport;
-    switch (delta.type) {
-      case 'create':
-      case 'move':
-      case 'update':
-        tree.commits.set(next.id, next);
-        break;
-      case 'remove':
-        tree.commits.delete(prev.id);
-        break;
-      case 'skip':
-        break;
-    }
+  for (const commit of tree.commits.values()) {
+    report.commits.push(createCommitReport(commit));
   }
-  return { ...tree };
-}
-
-export type CommitStateReport = {
-  props: { name: string, value: ValueReport }[],
-  values: { id: number, value: ValueReport }[],
-}
-
-export const createCommitStateReport = (commit: Commit, state?: ComponentState): CommitStateReport => {
-  return {
-    props: Object
-      .entries(commit.element.props)
-      .map(([key, value]) => ({ name: key, value: createValueReport(value) })),
-    values: !state ? [] : [...state.values.entries()]
-      .map(([key, value]) => ({ id: key, value: createValueReport(value) })),
+  for (const root of tree.roots) {
+    report.roots.push(root);
   }
-};
+
+  return report;
+}
+
+export const updateTreeReport = (tree: TreeReport, delta: DeltaReport) => {
+  const commits = new Map(tree.commits.map(c => [c.id, c]));
+  const roots = new Set(tree.roots);
+
+  for (const commit of delta.created.values()) {
+    commits.set(commit.id, commit);
+    if (commit.parent === null)
+      roots.add(commit.id);
+  }
+  for (const commit of delta.updated.values()) {
+    commits.set(commit.id, commit);
+  }
+  for (const commit of delta.removed.values()) {
+    commits.delete(commit.id);
+    if (commit.parent === null)
+      roots.delete(commit.id);
+  }
+
+  tree.roots = [...roots];
+  tree.commits = [...commits.values()]
+}
+

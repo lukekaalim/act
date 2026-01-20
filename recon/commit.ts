@@ -1,19 +1,11 @@
 import { createId, Element, OpaqueID, specialNodeTypes, SuspendProps } from "@lukekaalim/act";
-import { createObjectPool, ObjectPool } from "./pool";
-import { Reconciler2 } from "./reconciler";
+import { createObjectPool } from "./pool";
 
 /**
  * A single consistent id representing a commit in the act tree.
  * Does not change.
  */
 export type CommitID = OpaqueID<"CommitID">;
-/**
- * A array of **CommitID**'s, starting at the "root" id and "descending"
- * until reaching (including) the subject's ID. Useful for efficiently
- * descending the tree to find a specific change.
- * Does not change.
- */
-export type CommitPath = readonly CommitID[];
 /**
  * A ID for a particular _state_ a **Commit** is in - every time it or its
  * children change, a commit with the same Id but a new CommitVersion
@@ -128,5 +120,3 @@ export class Commit2 {
     );
   }
 }
-
-(window as any).Commit2 = Commit2;

@@ -34,14 +34,19 @@ like a Component or a Context Provider.
 <TypeDoc project="@lukekaalim/act-recon" name="CommitRef2" extras="CommitID CommitPath" />
 <TypeDoc project="@lukekaalim/act-recon" name="Commit2" extras="CommitVersion" />
 <TypeDoc project="@lukekaalim/act-recon" name="WorkTask" />
+<TypeDoc project="@lukekaalim/act-recon" name="EffectTask" extras="EffectID" />
 <TypeDoc project="@lukekaalim/act-recon" name="Delta" />
+<TypeDoc project="@lukekaalim/act-recon" name="ElementOutput2" />
 
+<TypeDoc project="@lukekaalim/act-recon" name="ComponentState" />
+<TypeDoc project="@lukekaalim/act-recon" name="ContextState" />
+<TypeDoc project="@lukekaalim/act-recon" name="BoundaryState" />
+
+<TypeDoc project="@lukekaalim/act-recon" name="ObjectPool" />
 
 ## Externals
 
-### Scheduler
-
-### Render Space
+<TypeDoc project="@lukekaalim/act-recon" name="Scheduler" />
 
 ## Experiments
 

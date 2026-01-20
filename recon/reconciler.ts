@@ -1,4 +1,4 @@
-import { convertNodeToElements, h, Node, primitiveNodeTypes } from "@lukekaalim/act";
+import { convertNodeToElement, h, Node, primitiveNodeTypes } from "@lukekaalim/act";
 import { Commit2, CommitRef2 } from "./commit";
 import { WorkThread2 } from "./thread"
 import { CommitTree2 } from "./tree";
@@ -48,59 +48,45 @@ export class Reconciler2 {
     this.pools.commit.maxSize = 2048
   }
 
+  submitThread() {
+    const currentThread = this.thread;
+    // Start a new thread
+    this.thread = new WorkThread2(this.tree);
+
+    this.running = false;
+
+    // send delta ready
+    this.bus.render(currentThread.delta);
+
+    // run effects
+    for (const cleanup of currentThread.delta.cleanups.values())
+      cleanup.func();
+    for (const effect of currentThread.delta.effects.values())
+      effect.func();
+
+    for (const remove of currentThread.delta.removed.values())
+      this.pools.commit.release(remove);
+  }
+
   work() {
     if (!this.thread.done) {
       // do some work
       this.thread.work();
       this.scheduler.requestCallback();
     } else {
-      const currentThread = this.thread;
-      // Start a new thread
-      this.thread = new WorkThread2(this.tree);
-
-      this.running = false;
-
-      // send delta ready
-      this.bus.render(currentThread.delta);
-
-      // run effects
-      for (const cleanup of currentThread.delta.cleanups.values())
-        cleanup.func();
-      for (const effect of currentThread.delta.effects.values())
-        effect.func();
-
-      for (const remove of currentThread.delta.removed.values())
-        this.pools.commit.release(remove);
-
-      performance.mark(`reconciler:thread(${currentThread.id}):end`);
-      performance.measure(`reconciler:thread(${currentThread.id}, visited=${currentThread.visited.size})`,
-        `reconciler:thread(${currentThread.id}):start`,
-        `reconciler:thread(${currentThread.id}):end`,
-      )
-
-      console.info(`[Reconciler] Thread ${currentThread.id} visited ${currentThread.visited.size} nodes, in ${currentThread.passes} passes`);
+      this.submitThread()
     }
   }
   running = false;
 
   mount(node: Node): void {
-    if (!this.running) {
-      this.running = true;
-      performance.mark(`reconciler:thread(${this.thread.id}):start`);
-    }
-    for (const element of convertNodeToElements(node)) {
-      const ref = CommitRef2.fresh(null);
-      this.thread.queue({ type: 'mount', ref, element });
-    }
+    const element = convertNodeToElement(node);
+    const ref = CommitRef2.fresh(null);
+    this.thread.queue({ type: 'mount', ref, element });
 
     this.scheduler.requestCallback();
   }
   render(ref: CommitRef2): void {
-    if (!this.running) {
-      this.running = true;
-      performance.mark(`reconciler:thread(${this.thread.id}):start`);
-    }
-
     this.thread.queue({ type: 'target', ref });
 
     this.scheduler.requestCallback();

@@ -9,6 +9,12 @@ export type WorkReason =
   | { type: 'mount', element: Element, ref: CommitRef2 }
   | { type: 'target', ref: CommitRef2 }
 
+export type QueueResult =
+  | 'new-task'
+  | 'missed'
+  | 'existing-target'
+  | 'existing-task'
+
 /**
  * A temporary data structure that carries the state of a
  * work-in-progress update to the tree.
@@ -73,19 +79,6 @@ export class WorkThread2 {
     this.tree = tree;
   }
 
-  /**
-   * Clear out the internal state of the thread
-   * to be ready to start a fresh pass
-   * 
-   * Keeps the results of the previous visits!
-   */
-  reset() {
-    this.pendingTasks = [];
-    this.mustRender.clear();
-    this.mustVisit.clear();
-    this.visited.clear();
-  }
-
   get done() {
     return this.pendingTasks.length === 0 && this.missed.size === 0;
   }
@@ -98,7 +91,7 @@ export class WorkThread2 {
    * if the Thread has already rendered this element (you
    * have to queue it in the next thread)
    */
-  queue(reason: WorkReason) {
+  queue(reason: WorkReason): QueueResult {
     // We are very lazy in this function -  we only
     // want to create a new update at the worst possible
     // case
@@ -108,17 +101,17 @@ export class WorkThread2 {
     // we don't need to check for conflicts.
     if (reason.type === 'mount') {
       this.pendingTasks.push(WorkTask.fresh(reason.ref, reason.element));
-      return;
+      return 'new-task';
     }
     if (this.visited.has(reason.ref.id)) {
       this.missed.add(reason.ref.id);
-      return;
+      return 'missed';
     }
 
     // If the reason is already in the "mustRender",
     // we already intend to render it, so do nothing
     if (this.mustRender.has(reason.ref.id))
-      return;
+      return 'existing-target';
     this.mustRender.add(reason.ref.id);
 
     // Search through all the parents, looking to see if
@@ -134,7 +127,7 @@ export class WorkThread2 {
       // existing to handle our commit, exit early
       for (const update of this.pendingTasks) {
         if (update.ref.id === ancestor.id) {
-          return true;
+          return 'existing-task';
         }
       }
       ancestor = ancestor.parent;
@@ -153,6 +146,7 @@ export class WorkThread2 {
 
     const prev = this.tree.commits.get(reason.ref.id) as Commit2;
     this.pendingTasks.push(WorkTask.visit(prev))
+    return 'new-task';
   }
 
   /**
@@ -169,16 +163,13 @@ export class WorkThread2 {
 
     this.tree.commits.set(commit.ref.id, commit);
     this.delta.add(commit);
+    if (commit.ref.length === 1)
+      this.tree.roots.add(commit.ref.id);
 
     if (output.effects)
       this.delta.addEffects(output.effects);
 
-    for (const update of output.updates) {
-      // if someone has already marked the update as needing rendering, assume
-      // that there is already an update in the stack to handle it.
-      if (!this.mustRender.has(update.ref.id))
-        this.pendingTasks.push(update);
-    }
+    this.pendingTasks.push(...output.updates);
   }
   updateCommit(commit: Commit2, element: Element, moved: boolean) {
     const output = this.tree.processElement(element, commit.ref, commit);
@@ -196,6 +187,8 @@ export class WorkThread2 {
 
     this.tree.commits.delete(commit.ref.id);
     this.delta.delete(commit);
+    if (commit.ref.length === 1)
+      this.tree.roots.delete(commit.ref.id);
 
     this.pendingTasks.push(...output.updates);
     if (output.cleanups)
@@ -252,13 +245,18 @@ export class WorkThread2 {
       this.processTask(task);
       task.free();
     } else if (!this.done) {
-      this.reset();
-      this.queueMissed();
-      this.passes++;
+      this.startNextPass();
     }
   }
 
-  queueMissed() {
+  startNextPass() {
+    this.pendingTasks = [];
+    this.mustRender.clear();
+    this.mustVisit.clear();
+    this.visited.clear();
+
+    this.passes++;
+
     const missedCommit = [...this.missed]
       .map(id => this.tree.commits.get(id))
       .filter(x => !!x)

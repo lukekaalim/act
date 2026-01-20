@@ -83,14 +83,14 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
 
     while (ancestor) {
       if (ancestor.id !== ref.id) {
-        const commit = this.tree.commits.get(ancestor.id) as Commit2;
+        const commit = this.tree.commits.get(ancestor.id) || null;
 
         // Early exit out of parent lookup if someone on the path is null;
-        if (commit.element.type === primitiveNodeTypes.null)
+        if (commit && commit.element.type === primitiveNodeTypes.null)
           return { commit, node: null, attachable: false };
 
         // maybe a bad idea... we'll see
-        if (commit.isSuspended())
+        if (commit && commit.isSuspended())
           attachable = false;
 
         const node = this.nodeByCommit.get(ancestor.id);
@@ -233,15 +233,18 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       }
     }
     for (const prev of deltas.removed.values()) {
-      const prevResult = this.nodeByCommit.get(prev.ref.id);
-      if (prevResult) {
+      const node = this.nodeByCommit.get(prev.ref.id);
+      if (node) {
         this.nodeByCommit.delete(prev.ref.id);
-        const parentId = prev.ref.find(ref => this.nodeByCommit.has(ref.id) && ref.id);
-        if (parentId)
-          this.needsReorder.add(parentId)
+        const parent = this.findParent(prev.ref);
+        if (parent.commit && parent.node)
+          this.needsReorder.add(parent.commit.ref.id)
 
-        this.commitByNode.delete(prevResult);
-        destroy(prevResult);
+        this.commitByNode.delete(node);
+        if (unlink && parent.node)
+          unlink(node, parent.node);
+        if (destroy)
+          destroy(node);
       }
     }
 
