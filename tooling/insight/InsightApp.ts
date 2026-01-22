@@ -4,6 +4,7 @@ import { CommitID } from '@lukekaalim/act-recon';
 import { CommitPreview, TreeViewer } from './TreeViewer';
 import { ScheduleControls } from './ScheduleControls';
 import { CommitLookupCache, ThreadLookupCache } from './lookup';
+import { Virtual1D } from './Virtual';
 
 export type InsightAppProps = {
   controller: ReconcilerDebugController,
@@ -12,17 +13,34 @@ export type InsightAppProps = {
   document: Document,
 };
 
+export type InsightAppState = {
+  breakOnAfterUpdate: boolean,
+  breakOnBeforeUpdate: boolean,
+
+  commitBreakpoints: Set<CommitID>,
+
+  paused: boolean,
+}
+
 export const InsightApp: Component<InsightAppProps> = ({ controller, bus, document = window.document }) => {
   const [c, setRenderCounter] = useState(0);
+
+  const [insightState, setInsightState] = useState<InsightAppState>({
+    commitBreakpoints: new Set(),
+    breakOnAfterUpdate: false,
+    breakOnBeforeUpdate: false,
+    paused: false,
+  });
 
   const commitCache = useRef(() => new CommitLookupCache()).current;
   const deltaCache = useRef(() => new ThreadLookupCache(commitCache)).current;
 
-  useEffect(() => {
-    commitCache.setTree(controller.getTree());
+  useMemo(() => {
+    commitCache.setTree(controller.getTree())
     deltaCache.reset();
+  }, [])
 
-    setRenderCounter(c => c + 1);
+  useEffect(() => {
     console.log('[Insight] Populate Cache')
 
     bus.onThreadDone = (thread, delta) => {
@@ -30,6 +48,7 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
 
       deltaCache.ingestDelta(delta);
       deltaCache.ingestThread(thread);
+      deltaCache.prevTask = null;
       setRenderCounter(c => c + 1);
 
       for (const subscriber of cacheSubscribers) {
@@ -41,8 +60,12 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
       const thread = controller.getThread();
       
       if (thread.reasons.length === 1) {
+        if (insightState.breakOnBeforeUpdate)
+          controller.scheduler.intercept = true;
+
         if (deltaCache.report)
           commitCache.ingest(deltaCache.report);
+        
         deltaCache.reset();
         deltaCache.ingestThread(thread);
         setRenderCounter(c => c + 1);
@@ -52,10 +75,18 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
         }
       }
     }
-    bus.thread.onWork = (task) => {
+    bus.thread.onWork = (prevTask, nextTask, isDone) => {
+
+      if (insightState.breakOnAfterUpdate && isDone) {
+        controller.scheduler.intercept = true;
+      }
+      if (nextTask && insightState.commitBreakpoints.has(nextTask.id)) {
+        controller.scheduler.intercept = true;
+      }
+
       if (controller.scheduler.intercept) {
-        const delta = controller.getDelta();
         const thread = controller.getThread();
+        const delta = controller.getDelta();
         
         deltaCache.ingestDelta(delta);
         deltaCache.ingestThread(thread);
@@ -65,37 +96,39 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
           subscriber();
         }
 
-        if (task)
-          deltaCache.prevTask = task;
+        if (prevTask)
+          deltaCache.prevTask = prevTask;
       }
     }
-  }, [controller, bus]);
+  }, [controller, bus, insightState]);
 
   const cacheSubscribers = useRef<Set<() => void>>(new Set()).current;
 
-  useEffect(() => {
-    if (!treeViewerRef.current)
-      return;
-    const treeRect = treeViewerRef.current.children[0].getBoundingClientRect();
-    const viewPortRect = treeViewerRef.current.getBoundingClientRect();
+  const scrollToCommitIndex = useMemo(() => {
+    return (index: number) => {
+      if (!viewportRef.current)
+        return;
+      const viewPortRect = viewportRef.current.getBoundingClientRect();
+      if (index) {
+        viewportRef.current.scrollTo({
+          top: (index * 33) - (viewPortRect.height / 2),
+          behavior: 'smooth'
+        })
+        return;
+      }
+    }
+  }, []);
 
+  useEffect(() => {
     const { nextTask, prevTask } = deltaCache;
 
-    const commitPreviewElement =
-      nextTask && document.getElementById(`commit:${nextTask.id}`)
-      || prevTask && document.getElementById(`commit:${prevTask.id}`)
+    const task = nextTask || prevTask;
+    const index = task && commits.findIndex(c => (nextTask && c.id === nextTask.id) || (prevTask && prevTask.id === c.id));
     
-    if (commitPreviewElement) {
-      const childRect = commitPreviewElement.getBoundingClientRect();
-
-      const top = childRect.top - treeRect.top;
-      treeViewerRef.current.scrollTo({
-        top: top - (viewPortRect.height / 2),
-        behavior: 'smooth'
-      })
-      return;
+    if (index && index !== -1) {
+      scrollToCommitIndex(index);
     }
-  }, [c])
+  }, [deltaCache.prevTask, deltaCache.nextTask, scrollToCommitIndex])
 
   const renderCommit = useMemo(() => (commitId: CommitID) => {
     return h(CommitComponent, { commitId })
@@ -146,7 +179,7 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
     ])
   }, [])
 
-  const treeViewerRef = useRef<HTMLElement | null>(null);
+  const viewportRef = useRef<HTMLElement | null>(null);
 
   const [selectedCommitId, setSelectedCommitId] = useState<CommitID | null>(null)
   const [selectedCommitDetails, setSelectedCommitDetails] = useState<CommitDetailsReport | null>(null)
@@ -160,17 +193,113 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
   }, [selectedCommitId])
 
   const roots = [...deltaCache.roots.keys()];
+  const commits = deltaCache.getFlat();
+
+  const CHUNK_SIZE = 8;
 
   return h('div', { style: { display: 'flex', 'flex-direction': 'column', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } }, [
     h('div', { style: { flex: 0, display: 'flex' } }, [
-      h(ScheduleControls, { controller: controller.scheduler, bus: bus.scheduler, reconciler: controller }),
+      h(ScheduleControls, {
+        controller: controller.scheduler,
+        bus: bus.scheduler,
+        reconciler: controller,
+
+        state: insightState,
+        onStateChange: setInsightState,
+      }),
     ]),
     h('div', { style: { flex: 1, overflow: 'hidden', background: '#c0d7ddff', display: 'flex' } }, [
-      h('div', { style: { flex: 1, overflow: 'auto' }, ref: treeViewerRef },
-        h(TreeViewer, { roots, renderCommit }),
+      h('div', { style: { flex: 1 } },
+        //h(TreeViewer, { roots, renderCommit }),
+        h(Virtual1D, { viewportRef, windowRange: 5, chunkCount: commits.length / CHUNK_SIZE, chunkSize: (33 * CHUNK_SIZE), renderChunk(index) {
+          if (index < 0)
+            return null;
+
+          return Array.from({ length: CHUNK_SIZE }).map((_, chunkIndex) => {
+            const report = commits[(index  * CHUNK_SIZE) + (chunkIndex)];
+            if (!report)
+              return null;
+
+            const color = getCommitColor(deltaCache, report.id);
+
+            const onClick = () => {
+              setSelectedCommitId(report.id);
+            };
+            const attributes: [string, string][] = [
+              insightState.commitBreakpoints.has(report.id) ? ['Breakpoint', 'Enabled'] as [string, string] : null
+            ].filter(x => !!x)
+
+            return h('div', { style: { 'margin-left': ((report.distance - 1) * 32) + 'px', height: '33px' } }, [
+              h(CommitPreview, { color, commit: report, onClick, attributes })
+            ])
+          });
+        }, })
       ),
       h('div', { style: { 'min-width': '300px', flex: 0, background: '#ffdeabff' } }, [
+        deltaCache.thread && h('div', { }, [
+          h('dl', {}, [
+            h('dt', {}, 'Thread ID'),
+            h('dd', {}, deltaCache.thread.id),
+            h('dt', {}, 'Thread Done'),
+            h('dd', {}, deltaCache.thread.done.toString()),
+            h('dt', {}, 'Thread Passes'),
+            h('dd', {}, deltaCache.thread.passes),
+            h('dt', {}, 'Tasks (count)'),
+            h('dd', {}, deltaCache.thread.pendingTasks.length),
+            h('dt', {}, 'Visited (count)'),
+            h('dd', {}, deltaCache.thread.visited.length),
+            h('dt', {}, 'Created (count)'),
+            h('dd', {}, deltaCache.created.size),
+            h('dt', {}, 'Updated (count)'),
+            h('dd', {}, deltaCache.updated.size),
+            h('dt', {}, 'Removed (count)'),
+            h('dd', {}, deltaCache.removed.size),
+            h('dt', {}, 'MustRender '),
+            h('dd', {}, deltaCache.thread.mustRender.map(commitId => {
+              const commit = deltaCache.all.get(commitId);
+              if (!commit)
+                return null;
+              const color = getCommitColor(deltaCache, commitId);
+
+              return h(CommitPreview, {
+                commit,
+                color,
+                onClick: () => (scrollToCommitIndex(commits.indexOf(commit)), setSelectedCommitId(commitId))
+              })
+            })),
+            h('dt', {}, 'Missed'),
+            h('dd', {}, deltaCache.thread.missed.map(commitId => {
+              const commit = deltaCache.all.get(commitId);
+              if (!commit)
+                return null;
+              const color = getCommitColor(deltaCache, commitId);
+
+              return h(CommitPreview, {
+                commit,
+                color,
+                onClick: () => (scrollToCommitIndex(commits.indexOf(commit)), setSelectedCommitId(commitId))
+              })
+            })),
+          ])
+        ]),
+        h('hr'),
         selectedCommitDetails && [
+          h(CommitPreview, {
+            commit: selectedCommitDetails.commit,
+            color: getCommitColor(deltaCache, selectedCommitDetails.commit.id),
+            onClick: () => (scrollToCommitIndex(commits.indexOf(selectedCommitDetails.commit)), setSelectedCommitId(selectedCommitDetails.commit.id))
+          }),
+          h('button', { onClick: () => {
+            setInsightState(state => {
+              const prev = state.commitBreakpoints;
+              if (prev.has(selectedCommitDetails.commit.id)) {
+                prev.delete(selectedCommitDetails.commit.id)
+                return { ...state, commitBreakpoints: new Set(prev) };
+              }
+              prev.add(selectedCommitDetails.commit.id)
+              return { ...state, commitBreakpoints: new Set(prev) }
+            })
+          }}, 'Toggle Breakpoint'),
           h('h3', {}, 'Props'),
           h('ul', {},
             Object.entries(selectedCommitDetails.props).map(([prop, value]) => {
@@ -202,4 +331,19 @@ export const getTextForValue = (value: ValueReport): string => {
     default:
       return  value;
   }
+}
+
+const getCommitColor = (deltaCache: ThreadLookupCache, commitId: CommitID) => {
+
+  const color = 
+    (deltaCache.nextTask && deltaCache.nextTask.id === commitId) ? '#e1d600ff'
+    : deltaCache.targets.has(commitId) ? '#db55e7ff'
+    : deltaCache.allTasks.has(commitId) ? '#ea931aff'
+    : deltaCache.created.has(commitId) ? (deltaCache.prevTask && deltaCache.prevTask.id === commitId ? '#4bc847ff' : '#21a51cff')
+    : deltaCache.removed.has(commitId) ? '#f25252ff'
+    : deltaCache.updated.has(commitId) ? '#1ab9eaff'
+    : deltaCache.visited.has(commitId) ? '#6f6f97ff'
+    : '#cacaca';
+
+  return color;
 }

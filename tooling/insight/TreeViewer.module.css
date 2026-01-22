@@ -16,6 +16,7 @@
   margin: 2px;
 
   border: 2px solid rgba(255, 255, 255, 0);
+  white-space: nowrap;
 }
 .elementName:hover {
   font-weight: bold;

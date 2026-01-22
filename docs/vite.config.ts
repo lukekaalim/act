@@ -28,6 +28,7 @@ export const parser = unified()
 
 const plugin: Plugin = {
   name: 'typedoc',
+  enforce: 'pre',
   transform(src, id, options) {
     if (id.endsWith(MARKDOWN_SUFFIX)) {
       const root = parser.parse(src)
@@ -36,10 +37,6 @@ const plugin: Plugin = {
   },
 
   resolveId(id, importer) {
-    if (id.endsWith(MARKDOWN_SUFFIX)) {
-      return RESOLVED_MARKDOWN_PREFIX + id;
-    }
-
     if (id.startsWith(TYPEDOC_PREFIX)) {
         const pathWithoutPrefix = id.slice(TYPEDOC_PREFIX.length);
 
@@ -54,13 +51,6 @@ const plugin: Plugin = {
     return null;
   },
   async load(id, options) {
-    if (id.startsWith(RESOLVED_MARKDOWN_PREFIX)) {
-      const pathWithoutPrefix = id.slice(RESOLVED_MARKDOWN_PREFIX.length);
-      const url = new URL(pathWithoutPrefix, 'https://example.com')
-
-      return 'Sample Value'
-    }
-
     if (id.startsWith(RESOLVED_TYPEDOC_ID_PREFIX)) {
       const pathWithoutPrefix = id.slice(RESOLVED_TYPEDOC_ID_PREFIX.length);
 

@@ -24,6 +24,8 @@ import rendererWeb from 'typedoc:../renderers/web/mod.ts';
 import rendererBackstageMd from '../renderers/backstage/README.md?parse';
 import rendererBackstage from 'typedoc:../renderers/backstage/mod.ts';
 
+import debug from 'typedoc:../tooling/debug/index.ts';
+
 import { Reconciler2 } from '@lukekaalim/act-recon';
 import { RenderSpace2 } from '@lukekaalim/act-backstage';
 import { assertRefs } from '@lukekaalim/act-graphit';
@@ -37,6 +39,8 @@ doc.typedoc.addProjectJSON('@lukekaalim/act', core);
 
 doc.typedoc.addProjectJSON('@lukekaalim/act-web', rendererWeb);
 doc.typedoc.addProjectJSON('@lukekaalim/act-backstage', rendererBackstage);
+
+doc.typedoc.addProjectJSON('@lukekaalim/act-debug', debug);
 
 //doc.article.add('readme', rootReadmeMd, '/')
 doc.article.addRawRoot('readme', rootReadmeMd, '/')

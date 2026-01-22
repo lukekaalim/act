@@ -41,6 +41,7 @@ export type ComponentStateReport = {
 }
 
 export type CommitDetailsReport = {
+  commit: CommitReport,
   props: Record<string, ValueReport>,
 
   component: null | ComponentStateReport,
@@ -62,6 +63,7 @@ export const createCommitDetailsReport = (commit: Commit2, tree: CommitTree2): C
   } || null;
 
   return {
+    commit: createCommitReport(commit),
     props,
     component,
   }

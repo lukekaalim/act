@@ -36,6 +36,7 @@ export class DebugReconciler extends Reconciler2 {
         onQueue() {},
         onStartPass() {},
         onWork() {},
+        onRender() {},
       },
       onThreadDone() {},
     };
@@ -118,7 +119,8 @@ export class DebugReconciler extends Reconciler2 {
 }
 
 export type DebugWorkThreadEventBus = {
-  onWork(nextTask: null | WorkTaskReport): void,
+  onWork(prevTask: null | WorkTaskReport, nextTask: null | WorkTaskReport, done: boolean): void,
+  onRender(): void,
 
   onStartPass(): void,
   onQueue(reason: WorkReasonReport, result: QueueResult): void,
@@ -133,9 +135,14 @@ export class DebugWorkThread extends WorkThread2 {
   }
 
   work(): void {
-    const task = this.pendingTasks[this.pendingTasks.length - 1]
+    const prevTask = this.pendingTasks[this.pendingTasks.length - 1];
     super.work();
-    this.debugBus.onWork(task && createWorkTaskReport(task) || null)
+    const nextTask = this.pendingTasks[this.pendingTasks.length - 1];
+    this.debugBus.onWork(
+      prevTask && createWorkTaskReport(prevTask) || null,
+      nextTask && createWorkTaskReport(nextTask) || null,
+      this.done
+    )
   }
 
   queue(reason: WorkReason): QueueResult {

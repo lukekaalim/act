@@ -1,5 +1,6 @@
 import { Component, h, useEffect, useState } from '@lukekaalim/act';
 import { ReconcilerDebugController, ReconcilerDebugEventBus, ScheduleController, ScheduleEventBus } from '@lukekaalim/act-debug';
+import { InsightAppState } from './InsightApp';
 
 export type ScheduleControlsProps = {
   controller: ScheduleController,
@@ -7,37 +8,25 @@ export type ScheduleControlsProps = {
 
   reconciler: ReconcilerDebugController,
 
-  onPauseChange?: (paused: boolean) => void,
+  state: InsightAppState,
+  onStateChange?: (newState: InsightAppState) => void,
 };
 
-export const ScheduleControls: Component<ScheduleControlsProps> = ({ controller, bus, onPauseChange, reconciler }) => {
-  const [intercept, setIntercept] = useState(false);
-  const [paused, setPaused] = useState(false);
-
-  const [breakOnUpdate, setBreakOnUpdate] = useState(false);
-
+export const ScheduleControls: Component<ScheduleControlsProps> = ({ controller, bus, reconciler, state, onStateChange = () => {} }) => {
   useEffect(() => {
     bus.onInterceptStart = () => {
-      setPaused(true);
+      onStateChange({ ...state, paused: true });
       //onPauseChange(false)
     }
     bus.onInterceptEnd = () => {
-      setPaused(false);
+      onStateChange({ ...state, paused: false });
       //onPauseChange(false)
     }
     bus.onAfterCallbackExecute = () => {
-      reconciler.getThread();
+      //reconciler.getThread();
     }
-  }, [bus, reconciler])
+  }, [bus, reconciler, state])
 
-  useEffect(() => {
-    controller.intercept = breakOnUpdate;
-    if (!breakOnUpdate) {
-      setPaused(false);
-      //onPauseChange(false)
-    }
-
-  }, [controller, breakOnUpdate])
 
   const onStepClick = () => {
     controller.step();
@@ -45,19 +34,28 @@ export const ScheduleControls: Component<ScheduleControlsProps> = ({ controller,
   const onResumeClick = () => {
     controller.cancelIntercept();
   }
-  const onChangeBreakOnUpdate = (event: Event) => {
-    setBreakOnUpdate((event.target as HTMLInputElement).checked)
+  const onChangeBreakBeforeUpdate = (event: Event) => {
+    onStateChange({ ...state, breakOnBeforeUpdate: (event.target as HTMLInputElement).checked });
+  }
+  const onChangeBreakAfterUpdate = (event: Event) => {
+    onStateChange({ ...state, breakOnAfterUpdate: (event.target as HTMLInputElement).checked });
   }
 
-  return h('div', { style: { background: paused ? 'red' : 'white', padding: '8px', display: 'flex', gap: '12px' }}, [
-    h('label', { style: { 'margin': 'auto 0' } }, [
-      h('span', {}, `Break on Update`),
-      h('input', { type: 'checkbox', checked: breakOnUpdate, onChange: onChangeBreakOnUpdate }),
+  return h('div', { style: { background: state.paused ? 'red' : 'white', padding: '8px', display: 'flex', gap: '12px' }}, [
+    h('div', { style: { display: 'flex', 'flex-direction': 'column' } }, [
+      h('label', { style: { 'margin': 'auto 0' } }, [
+        h('span', {}, `Break Before Update`),
+        h('input', { type: 'checkbox', checked: state.breakOnBeforeUpdate, onChange: onChangeBreakBeforeUpdate }),
+      ]),
+      h('label', { style: { 'margin': 'auto 0' } }, [
+        h('span', {}, `Break After Update`),
+        h('input', { type: 'checkbox', checked: state.breakOnAfterUpdate, onChange: onChangeBreakAfterUpdate }),
+      ]),
     ]),
-    h('button', { onClick: onStepClick, disabled: !paused, style: { padding: '8px' } }, 'Step'),
-    h('button', { onClick: onResumeClick, disabled: !paused, style: { padding: '8px' } }, 'Resume'),
+    h('button', { onClick: onStepClick, disabled: !state.paused, style: { padding: '8px' } }, 'Step'),
+    h('button', { onClick: onResumeClick, disabled: !state.paused, style: { padding: '8px' } }, 'Resume'),
     h('span', {
-      style: { border: `2px solid ${paused ? 'orange' : 'black'}`, 'border-radius': '8px', padding: '8px' }
-    }, paused ? `Paused` : `Ready`),
+      style: { border: `2px solid ${state.paused ? 'orange' : 'black'}`, 'border-radius': '8px', padding: '8px' }
+    }, state.paused ? `Paused` : `Ready`),
   ])
 };

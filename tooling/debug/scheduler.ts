@@ -27,6 +27,9 @@ export const createDebugScheduler = (events: ScheduleEventBus, schedulerName: st
       callbackFunc();
       events.onAfterCallbackExecute();
       workCount++;
+
+      if (controller.intercept === true)
+        return events.onInterceptStart();
     }
     const endMark = performance.mark(`${schedulerName}:work:end`);
     const measurement = performance.measure(`${schedulerName}:work(${workCount})`, startMark.name, endMark.name);
@@ -41,6 +44,7 @@ export const createDebugScheduler = (events: ScheduleEventBus, schedulerName: st
     intercept: false,
     cancelIntercept() {
       controller.intercept = false;
+      events.onInterceptEnd();
       run();
     },
     step(stride = 1) {

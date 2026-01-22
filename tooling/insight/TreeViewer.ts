@@ -37,7 +37,7 @@ export type CommitPreviewProps = {
 
   depth?: number,
 
-  renderCommit: (commit: CommitID) => Node,
+  renderCommit?: (commit: CommitID) => Node,
   onClick?: () => void,
 }
 
@@ -65,11 +65,11 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
       hs('button', { onClick, className: classes.elementName, style: { background: elementBackground } },
         commit.element.type),
       h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
-      //attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
+      attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
       //h(CommitAttributeTag, { name: 'Version', value: commit.version.toString() }),
     ]),
 
-    hs('ol', { className: classes.commitList }, commit.children.map(childId => h('li', { key: childId, style: { position: 'relative' } }, [
+    !!renderCommit && hs('ol', { className: classes.commitList }, commit.children.map(childId => h('li', { key: childId, style: { position: 'relative' } }, [
       renderCommit(childId),
       h('div', { style: {
         top: 0,

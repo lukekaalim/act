@@ -134,13 +134,12 @@ export class ThreadLookupCache {
 
   ingestDelta(delta: DeltaReport) {
     this.report = delta;
+    const createdIds = new Set(delta.created.map(c => c.id));
 
     for (const commit of delta.created) {
       this.created.add(commit.id)
 
-      const children = [...new Set([
-        ...commit.children.filter(c => this.all.has(c) || delta.created.find(cs => cs.id === c)),
-      ])]
+      const children = [...new Set(commit.children.filter(c => this.all.has(c) || createdIds.has(c)))]
       this.all.set(commit.id, { ...commit, children });
 
       if (!commit.parent)
@@ -165,6 +164,22 @@ export class ThreadLookupCache {
   }
 
   getFlat() {
+    const pending: CommitReport[] = [...this.roots.values()]
+      .map(root => this.all.get(root))
+      .filter(x => !!x);
 
+    const flat: CommitReport[] = [];
+    
+    while (pending.length > 0) {
+      const commit = pending.pop() as CommitReport;
+      flat.push(commit);
+      for (const childId of [...commit.children].reverse()) {
+        const child = this.all.get(childId);
+        if (child)
+          pending.push(child);
+      }
+    }
+
+    return flat;
   }
 }
