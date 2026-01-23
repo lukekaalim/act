@@ -1,5 +1,31 @@
 # @lukekaalim/act-three
 
+## 7.0.0
+
+### Major Changes
+
+- afd247e: Another major refactor! So everything is broken. Good luck!
+
+### Minor Changes
+
+- b3f6c49: Added debug capabilities and protocol
+
+### Patch Changes
+
+- Updated dependencies [6658c01]
+- Updated dependencies [bd0a076]
+- Updated dependencies [fdf1557]
+- Updated dependencies [7597a8f]
+- Updated dependencies [ccb3900]
+- Updated dependencies [afd247e]
+- Updated dependencies [2984273]
+- Updated dependencies [b3f6c49]
+- Updated dependencies [c5e8775]
+  - @lukekaalim/act-backstage@3.0.0
+  - @lukekaalim/act-web@4.0.0
+  - @lukekaalim/act-recon@3.0.0
+  - @lukekaalim/act@4.0.0
+
 ## 6.3.0-alpha.0
 
 ### Minor Changes

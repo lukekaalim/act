@@ -1,5 +1,34 @@
 # @lukekaalim/act-web
 
+## 4.0.0
+
+### Major Changes
+
+- 6658c01: Internal Refactor!
+- afd247e: Another major refactor! So everything is broken. Good luck!
+
+### Minor Changes
+
+- bd0a076: Add support for data-\* attributes on HTML elements
+- b3f6c49: Added debug capabilities and protocol
+
+### Patch Changes
+
+- 7597a8f: Added "Style" prop support to SVG
+- ccb3900: Reconciler should apply all changes in the correct order, and not skip any.
+  - Reconciler does send out a Render command once it completes all pending renders (called a "ThreadStack")
+    Scheduler has been updated to perform some updates in Sync.
+- Updated dependencies [6658c01]
+- Updated dependencies [fdf1557]
+- Updated dependencies [ccb3900]
+- Updated dependencies [afd247e]
+- Updated dependencies [2984273]
+- Updated dependencies [b3f6c49]
+- Updated dependencies [c5e8775]
+  - @lukekaalim/act-backstage@3.0.0
+  - @lukekaalim/act-recon@3.0.0
+  - @lukekaalim/act@4.0.0
+
 ## 3.4.0-alpha.3
 
 ### Patch Changes

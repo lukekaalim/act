@@ -1,5 +1,12 @@
 # @lukekaalim/act
 
+## 4.0.0
+
+### Major Changes
+
+- 6658c01: Internal Refactor!
+- afd247e: Another major refactor! So everything is broken. Good luck!
+
 ## 3.2.1
 
 ### Patch Changes

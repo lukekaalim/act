@@ -1,5 +1,25 @@
 # @lukekaalim/act-recon
 
+## 3.0.0
+
+### Major Changes
+
+- 6658c01: Internal Refactor!
+- afd247e: Another major refactor! So everything is broken. Good luck!
+- b3f6c49: Added debug capabilities and protocol
+
+### Patch Changes
+
+- fdf1557: Fixed issue with multiple changes (where changes after first were children of first) being ignored due to "MustVisit" being misinput each time
+- ccb3900: Reconciler should apply all changes in the correct order, and not skip any.
+  - Reconciler does send out a Render command once it completes all pending renders (called a "ThreadStack")
+    Scheduler has been updated to perform some updates in Sync.
+- 2984273: Check if immediate child update is already handlded by some other system (avoiding double-rendering)
+- c5e8775: Fix context updates not actually being pushed to the MustRender list
+- Updated dependencies [6658c01]
+- Updated dependencies [afd247e]
+  - @lukekaalim/act@4.0.0
+
 ## 3.0.0-alpha.4
 
 ### Patch Changes

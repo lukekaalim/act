@@ -1,12 +1,12 @@
 {
   "name": "@lukekaalim/act-web",
-  "version": "3.4.0-alpha.3",
+  "version": "4.0.0",
   "type": "module",
   "main": "mod.ts",
   "dependencies": {
-    "@lukekaalim/act": "^3.1.0",
-    "@lukekaalim/act-backstage": "^3.0.0-alpha.0",
-    "@lukekaalim/act-recon": "^3.0.0-alpha.3",
+    "@lukekaalim/act": "^4.0.0",
+    "@lukekaalim/act-backstage": "^3.0.0",
+    "@lukekaalim/act-recon": "^3.0.0",
     "@types/hast": "^3.0.4",
     "hast-util-to-html": "^9.0.5",
     "hastscript": "^9.0.1",
