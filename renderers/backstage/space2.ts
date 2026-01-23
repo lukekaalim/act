@@ -160,6 +160,7 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       sort,
       update,
       destroy,
+      unlinkRoot,
       suspend = unlink,
       unsuspend = link
     } = this.builder;
@@ -243,6 +244,8 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
         this.commitByNode.delete(node);
         if (unlink && parent.node)
           unlink(node, parent.node);
+        if (unlinkRoot && !parent.commit)
+          unlinkRoot(node)
         if (destroy)
           destroy(node);
       }

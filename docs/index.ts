@@ -30,7 +30,7 @@ import { Reconciler2 } from '@lukekaalim/act-recon';
 import { RenderSpace2 } from '@lukekaalim/act-backstage';
 import { assertRefs } from '@lukekaalim/act-graphit';
 
-import { CommitPreview, renderDEV, TreeViewer } from '@lukekaalim/act-insight';
+import { CommitPreview, createDebugPopup, renderDEV, TreeViewer } from '@lukekaalim/act-insight';
 
 const doc = createDocApp([TypeDocPlugin]);
 
@@ -158,9 +158,13 @@ doc.demos.add('core.rendering', () => {
   ]
 })
 
-const app =  h('div', {}, h(BoneTheme, { doc }))
+const app =  h('div', {}, [
+  h(BoneTheme, { doc }),
+  h('button', { style: { position: 'fixed', right: '24px', bottom: '24px'}, onClick() {
+    createDebugPopup(reconciler);
+  } }, 'Open Debugger')
+  ])
 
-if (true)
-  renderDEV(h(HTML, {}, app), [createWebNodeBuilder(document.body)])
-else
-  render(app, document.body);
+const { ref, reconciler } = renderDEV(h(HTML, {}, app), [createWebNodeBuilder(document.body)])
+
+//render(app, document.body);

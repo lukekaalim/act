@@ -26,7 +26,7 @@ export const render = (node: Node, root: HTMLElement, options: Options = {}) => 
   const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(root, options.window));
 
   reconciler.bus = space.bus;
-  reconciler.mount(h(HTML, {}, node));
+  const ref = reconciler.mount(h(HTML, {}, node));
 
-  return {reconciler, space};
+  return {reconciler, space,ref};
 }

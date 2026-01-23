@@ -18,8 +18,6 @@ export type VirtualTreeProps = {
 }
 
 export const Virtual1D: Component<VirtualTreeProps> = ({ chunkSize, chunkCount, renderChunk, viewportRef: propViewportRef, windowRange }) => {
-  const [index, setIndex] = useState(0);
-
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(0);
 
@@ -55,7 +53,7 @@ export const Virtual1D: Component<VirtualTreeProps> = ({ chunkSize, chunkCount, 
     
 
   return [
-    h('pre', {}, renderedIndices.join(', ')),
+    //h('pre', {}, renderedIndices.join(', ')),
     h('div', { ref: viewportRef, style: { overflow: 'auto', height: '100%' } },
       h('div', { ref: listRef, style: { height: (chunkSize * chunkCount) + 'px', position: 'relative' } },
         renderedIndices.map(index =>

@@ -5,6 +5,7 @@ import { CommitPreview, TreeViewer } from './TreeViewer';
 import { ScheduleControls } from './ScheduleControls';
 import { CommitLookupCache, ThreadLookupCache } from './lookup';
 import { Virtual1D } from './Virtual';
+import { CommitAttributeTag } from './AttributeTag';
 
 export type InsightAppProps = {
   controller: ReconcilerDebugController,
@@ -300,6 +301,21 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
               return { ...state, commitBreakpoints: new Set(prev) }
             })
           }}, 'Toggle Breakpoint'),
+          h('h3', {}, 'Parent'),
+          (() => {
+            const parentId = selectedCommitDetails.commit.parent;
+            if (!parentId)
+              return 'NO PARENT';
+            const parent = deltaCache.all.get(parentId);
+            if (!parent)
+              return h(CommitAttributeTag, { name: 'ParentID', value: parentId.toString() });
+
+            return h(CommitPreview, {
+              commit: parent,
+              color: getCommitColor(deltaCache, parent.id),
+              onClick: () => (scrollToCommitIndex(commits.indexOf(parent)), setSelectedCommitId(parent.id))
+            });
+          })(),
           h('h3', {}, 'Props'),
           h('ul', {},
             Object.entries(selectedCommitDetails.props).map(([prop, value]) => {

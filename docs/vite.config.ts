@@ -32,7 +32,10 @@ const plugin: Plugin = {
   transform(src, id, options) {
     if (id.endsWith(MARKDOWN_SUFFIX)) {
       const root = parser.parse(src)
-      return `export default ${JSON.stringify(root, null, 2)}`;
+      return {
+        code: `export default ${JSON.stringify(root, null, 2)}`,
+        map: null
+      }
     }
   },
 
@@ -81,6 +84,9 @@ const plugin: Plugin = {
 }
 
 export default defineConfig({
+  build: {
+    sourcemap: true
+  },
   optimizeDeps: {
     // Act relies on some global state
     exclude: ['@lukekaalim/act']

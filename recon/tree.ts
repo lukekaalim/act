@@ -123,10 +123,10 @@ export class CommitTree2 {
             // special logic about notifying subscribers
             // that the context died, but the subscribers are
             // also about to die so its ok!
-            return output;
+            break;
           case specialNodeTypes.boundary:
             this.boundaries.delete(prev.ref.id);
-            return output;
+            break;
         }
         break;
       }

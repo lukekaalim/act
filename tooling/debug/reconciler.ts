@@ -102,12 +102,19 @@ export class DebugReconciler extends Reconciler2 {
     console.info(`[Reconciler] Thread ${id} visited ${visited.size} nodes, in ${passes} passes`);
   }
 
-  mount(node: Node): void {
+  mount(node: Node) {
     if (!this.started) {
       this.started = true;
       performance.mark(`reconciler:thread(${this.thread.id}):start`);
     }
-    super.mount(node);
+    return super.mount(node);
+  }
+  unmount(ref: CommitRef2): void {
+    if (!this.started) {
+      this.started = true;
+      performance.mark(`reconciler:thread(${this.thread.id}):start`);
+    }
+    return super.unmount(ref);
   }
   render(ref: CommitRef2): void {
     if (!this.started) {

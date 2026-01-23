@@ -7,10 +7,10 @@ import { InsightApp } from "./InsightApp";
 import { Reconciler2 } from "@lukekaalim/act-recon";
 
 export type DevOptions = {
-  mode?: 'extension' | 'popup'
+  mode?: 'extension' | 'popup' | 'none'
 };
 
-export const renderDEV = (node: Node, builders: NodeBuilder<any, any>[], { mode = 'popup' }: DevOptions = {}) => {
+export const renderDEV = (node: Node, builders: NodeBuilder<any, any>[], { mode = 'none' }: DevOptions = {}) => {
   const reconciler = new DebugReconciler();
   const spaces = builders.map(builder => new RenderSpace2(reconciler.tree, builder));
   
@@ -29,12 +29,13 @@ export const renderDEV = (node: Node, builders: NodeBuilder<any, any>[], { mode 
     default:
   }
 
-  reconciler.mount(node);
+  const ref = reconciler.mount(node);
+  return {ref, reconciler}
 }
 
 
-const createDebugPopup = (reconciler: DebugReconciler) => {
-  const newWindow = window.open("", "DevTools", "popup");
+export const createDebugPopup = (reconciler: DebugReconciler) => {
+  const newWindow = window.open('', "DevTools", "popup");
   if (!newWindow)
     throw new Error(`Unable to make/find new window!`);
 
@@ -45,17 +46,16 @@ const createDebugPopup = (reconciler: DebugReconciler) => {
   for (const headElement of [...window.document.head.childNodes])
     if (headElement instanceof HTMLStyleElement)
         newWindow.document.head.appendChild(headElement.cloneNode(true))
+    else if (headElement instanceof HTMLLinkElement) {
+      const element = headElement.cloneNode(true) as HTMLLinkElement;
+      const src = new URL(element.href, document.location.href);
+      element.href = src.href;
+      newWindow.document.head.appendChild(element)
+    }
 
-  const internal_scheduler = createDebugScheduler({
-    onAfterCallbackExecute() {},
-    onInterceptEnd() {},
-    onInterceptStart() {},
-  }, 'DebugScheduler')
-  const internal_reconciler = new Reconciler2(internal_scheduler);
-  const internal_space = new RenderSpace2(internal_reconciler.tree, createWebNodeBuilder(body, newWindow));
-  internal_reconciler.bus = internal_space.bus;
-  internal_reconciler.mount(h(HTML, {},
-    h(InsightApp, { controller: reconciler.controller, bus: reconciler.debugBus, document: newWindow.document })
-  ));
-
+  render(
+    h(InsightApp, { controller: reconciler.controller, bus: reconciler.debugBus, document: newWindow.document }),
+    body,
+    { window: newWindow }
+  );
 }

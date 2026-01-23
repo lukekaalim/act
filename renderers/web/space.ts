@@ -52,6 +52,10 @@ export const createWebNodeBuilder = (
     if (el.parentNode === parent)
       parent.removeChild(el);
   },
+  destroy(el) {
+    if (el.parentNode)
+      el.parentNode.removeChild(el)
+  },
   suspend(el, parent) {
     if (el instanceof HTMLElement)
       el.style.opacity = 0.5.toString();

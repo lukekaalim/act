@@ -12,6 +12,7 @@ export type NodeBuilder<TNode, TRoot = string | symbol> = {
   destroy?: (el: TNode) => unknown, 
 
   linkRoot?: (child: TNode) => unknown,
+  unlinkRoot?: (child: TNode) => unknown,
   link?: (child: TNode, parent: TNode) => unknown,
   unlink?: (child: TNode, parent: TNode) => unknown,
 

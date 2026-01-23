@@ -1,4 +1,4 @@
-# lukekaalim's act project
+# ![@lukekaalim/act](icons/act_card.png)
 
 > This project is for education and demonstration purposes only!
 >

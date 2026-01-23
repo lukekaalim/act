@@ -79,10 +79,16 @@ export class Reconciler2 {
   }
   running = false;
 
-  mount(node: Node): void {
+  mount(node: Node): CommitRef2 {
     const element = convertNodeToElement(node);
     const ref = CommitRef2.fresh(null);
     this.thread.queue({ type: 'mount', ref, element });
+
+    this.scheduler.requestCallback();
+    return ref;
+  }
+  unmount(ref: CommitRef2) {
+    this.thread.queue({ type: 'unmount', ref });
 
     this.scheduler.requestCallback();
   }

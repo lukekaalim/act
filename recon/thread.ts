@@ -7,6 +7,7 @@ import { EffectTask } from "./state.ts";
 
 export type WorkReason =
   | { type: 'mount', element: Element, ref: CommitRef2 }
+  | { type: 'unmount', ref: CommitRef2 }
   | { type: 'target', ref: CommitRef2 }
 
 export type QueueResult =
@@ -62,6 +63,8 @@ export class WorkThread2 {
   */
   missed: Set<CommitID> = new Set();
 
+  unmountMissed: Set<CommitID> = new Set();
+
 
   errorNotifications: Map<CommitID, CommitRef2> = new Map();
 
@@ -104,8 +107,14 @@ export class WorkThread2 {
       return 'new-task';
     }
     if (this.visited.has(reason.ref.id)) {
-      this.missed.add(reason.ref.id);
-      return 'missed';
+      if (reason.type === 'unmount') {
+        this.unmountMissed.add(reason.ref.id);
+        return 'missed'
+      }
+      else {
+        this.missed.add(reason.ref.id);
+        return 'missed';
+      }
     }
 
     // If the reason is already in the "mustRender",
@@ -140,12 +149,21 @@ export class WorkThread2 {
     // specific commit we want to render
     ancestor = reason.ref;
     while (ancestor) {
-      this.visited.add(ancestor.id);
+      if (ancestor.id !== reason.ref.id)
+        this.visited.add(ancestor.id);
+      
       ancestor = ancestor.parent;
     }
 
     const prev = this.tree.commits.get(reason.ref.id) as Commit2;
-    this.pendingTasks.push(WorkTask.visit(prev))
+    switch (reason.type) {
+      case 'target':
+        this.pendingTasks.push(WorkTask.visit(prev))
+        break;
+      case 'unmount':
+        this.pendingTasks.push(WorkTask.remove(prev))
+        break;
+    }
     return 'new-task';
   }
 
@@ -262,7 +280,20 @@ export class WorkThread2 {
       .filter(x => !!x)
       .sort((a, b) => a.ref.length - b.ref.length);
 
+    const unmountingRefs = new Map([...this.unmountMissed]
+      .map(id => this.tree.commits.get(id))
+      .filter(x => !!x)
+      .map(c => [c.ref.id, c.ref])
+    ) 
+
+    for (const commitRef of unmountingRefs.values()) {
+      this.queue({ type: 'unmount', ref: commitRef });
+    }
+
     for (const commit of missedCommit) {
+      if (commit.ref.find(ref => unmountingRefs.has(ref.id)))
+        continue;
+
       this.queue({ type: 'target', ref: commit.ref });
     }
     this.missed.clear();
