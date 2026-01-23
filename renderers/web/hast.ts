@@ -1,8 +1,11 @@
 import { h, s } from 'hastscript';
 import { Element, Nodes as HNode, Root } from 'hast';
-import { NodeBuilder, RenderSpace2 } from "@lukekaalim/act-backstage";
-import { primitiveNodeTypes } from '@lukekaalim/act';
-import { CommitTree2 } from '@lukekaalim/act-recon';
+import { NodeBuilder, RenderSpace2, setPropObject } from "@lukekaalim/act-backstage";
+import { Node, primitiveNodeTypes, createElement } from '@lukekaalim/act';
+import { CommitID, CommitTree2, Reconciler2, Scheduler } from '@lukekaalim/act-recon';
+import { createDOMScheduler } from './scheduler';
+import { recon } from '../three/deps';
+import { HTML } from './space';
 
 export const createHASTBuilder = (root: Root): NodeBuilder<HNode, 'web:html' | 'web:svg'> => ({
   roots: new Set(['web:html', 'web:svg']),
@@ -57,13 +60,38 @@ export const createHASTBuilder = (root: Root): NodeBuilder<HNode, 'web:html' | '
         root.children.push(child);
     }
   },
-  update(el, next, prev) {
+  update(el, next, prev, ref) {
     switch (el.type) {
       case 'text':
         el.value = (next.props.value as number | string | boolean).toString()
         return;
       case 'element':
+        el.properties['data-commit-id'] = ref.id;
+        setPropObject(el.properties, next.props, prev?.props || {}, (prop, next, prev) => {
+          console.log(prop)
+          // event handlers not supported
+          if (prop.startsWith('on'))
+            return true;
 
+          switch (prop) {
+            case 'style':
+              const style = Object.entries(next as {}).map(([key, value]) => `${key}: ${value};`).join(' ');
+              el.properties['style'] = style;
+              return true;
+            default:
+              // complex objects not supported
+              switch (typeof next) {
+                case 'object':
+                case 'function':
+                case 'undefined':
+                case 'symbol':
+                  return true;
+              }
+              el.properties[prop as string] = next as string;
+              return true;
+          }
+        })
+        return;
     }
   },
   unlink(child, parent) {
@@ -76,16 +104,4 @@ export const createHASTBuilder = (root: Root): NodeBuilder<HNode, 'web:html' | '
       el.children = children as Element[];
     }
   },
-}) 
-
-type DehydratedRender = {
-  
-}
-
-export const dehydrate = (tree: CommitTree2, renderer: RenderSpace2<HNode, string | symbol>) => {
-
-}
-
-export const rehydrate = () => {
-
-}
+})

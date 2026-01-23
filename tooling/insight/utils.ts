@@ -53,6 +53,7 @@ export const createDebugPopup = (reconciler: DebugReconciler) => {
       newWindow.document.head.appendChild(element)
     }
 
+  console.log('=============POPUP RENDER=============')
   render(
     h(InsightApp, { controller: reconciler.controller, bus: reconciler.debugBus, document: newWindow.document }),
     body,

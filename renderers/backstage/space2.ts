@@ -141,7 +141,7 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       // belongs to this 
       if (this.builder.roots.has(rootType) ) {
         // Try to create a <T> for every new commit
-        const node = this.builder.create(next.element, rootType);
+        const node = this.builder.create(next.element, rootType, next.ref);
         // Not all commits have a corresponding node
         if (node) {
           this.newNodes.add([next, node]);
@@ -217,7 +217,7 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
         if (!node)
           continue;
 
-        update(node, next.element, prev);
+        update(node, next.element, prev, next.ref);
 
         if (moved) {
           const result = this.findParent(next.ref);
@@ -230,7 +230,7 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       for (const next of deltas.fresh.values()) {
         const node = this.nodeByCommit.get(next.ref.id);
         if (node)
-          update(node, next.element, null);
+          update(node, next.element, null, next.ref);
       }
     }
     for (const prev of deltas.removed.values()) {

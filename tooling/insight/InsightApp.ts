@@ -29,7 +29,7 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
   const [insightState, setInsightState] = useState<InsightAppState>({
     commitBreakpoints: new Set(),
     breakOnAfterUpdate: false,
-    breakOnBeforeUpdate: false,
+    breakOnBeforeUpdate: true,
     paused: false,
   });
 

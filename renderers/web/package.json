@@ -3,6 +3,13 @@
   "version": "4.0.0",
   "type": "module",
   "main": "mod.ts",
+  "exports": {
+    ".": {
+      "default": "./mod.ts",
+      "node": "./nodejs/index.ts"
+    },
+    "./node": "./nodejs/index.ts"
+  },
   "dependencies": {
     "@lukekaalim/act": "^4.0.0",
     "@lukekaalim/act-backstage": "^3.0.0",

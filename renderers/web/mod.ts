@@ -3,4 +3,6 @@ export * from './element.ts';
 export * from './props.ts';
 export * from './render.ts';
 export * from './scheduler.ts';
-export * from './server.ts';
+
+export * from './rehydrate.ts';
+export * from './hast.ts';

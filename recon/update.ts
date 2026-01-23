@@ -1,4 +1,4 @@
-import { convertNodeToElements, createId, Element, Node } from "@lukekaalim/act";
+import { convertNodeToElements, createId, Element, Node, specialNodeTypes } from "@lukekaalim/act";
 import { ChangeEqualityTest, ChangeReport2 } from "./algorithms.ts";
 import { Commit2, CommitID, CommitRef2 } from "./commit.ts";
 import { createObjectPool, ObjectPool } from "./pool.ts";
@@ -70,7 +70,7 @@ export class WorkTask {
 }
 
 export const keyedElementEqualityTest2:  ChangeEqualityTest<Commit2, Element> = (prev, next, prev_index, next_index) => {
-  const compatible = prev.element.type === next.type;
+  const compatible = prev.element.type === next.type || prev.element.type === specialNodeTypes.placeholder;
   if (!compatible)
     return false;
   const prevKey = prev.element.props.key;
@@ -80,5 +80,3 @@ export const keyedElementEqualityTest2:  ChangeEqualityTest<Commit2, Element> = 
 
   return prev_index === next_index;
 }
-
-(window as any).WorkTask = WorkTask;

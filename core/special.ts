@@ -6,6 +6,7 @@ export const boundaryNodeType = Symbol('boundary');
 export const fallbackNodeType = Symbol('fallback');
 export const suspendNodeType = Symbol('suspend');
 export const renderNodeType = Symbol('render');
+export const placeholderNodeType = Symbol('placeholder');
 
 export type BoundaryProps = {
   fallback?: Node,
@@ -33,6 +34,7 @@ export type SpecialNodeType =
   | typeof providerNodeType
   | typeof fallbackNodeType
   | typeof suspendNodeType
+  | typeof placeholderNodeType
 
 export const specialNodeTypes = {
   boundary: boundaryNodeType,
@@ -40,4 +42,5 @@ export const specialNodeTypes = {
   provider: providerNodeType,
   fallback: fallbackNodeType,
   suspend: suspendNodeType,
+  placeholder: placeholderNodeType,
 }

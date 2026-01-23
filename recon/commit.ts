@@ -78,6 +78,11 @@ export class CommitRef2 {
   static fresh(parent: CommitRef2 | null) {
     return new CommitRef2(createId('CommitID'), parent);
   }
+  static rehydrate(id: CommitID, length: number) {
+    const ref = new CommitRef2(id, null);
+    ref.length = length;
+    return ref;
+  }
 }
 
 export class Commit2 {

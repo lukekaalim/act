@@ -1,6 +1,7 @@
 {
   "name": "@lukekaalim/act-backstage",
   "version": "3.0.0",
+  "type": "module",
   "main": "mod.ts",
   "dependencies": {
     "@lukekaalim/act": "^4.0.0",

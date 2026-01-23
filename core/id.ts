@@ -24,8 +24,9 @@ export const createId = <T extends string>(namespace?: T): OpaqueID<T> => {
   return latestId++ as OpaqueID<T>;
 };
 
-const namespaces: Record<string, number> = {}
-window.__LUKEKAALIM_ACT_GLOBAL_NAMESPACE_ID = namespaces;
+const namespaces: Record<string, number> = {};
+
+(globalThis).__LUKEKAALIM_ACT_GLOBAL_NAMESPACE_ID = namespaces;
 
 declare global {
   var __LUKEKAALIM_ACT_GLOBAL_NAMESPACE_ID: Record<string, number>;
