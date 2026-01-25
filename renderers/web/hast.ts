@@ -68,7 +68,6 @@ export const createHASTBuilder = (root: Root): NodeBuilder<HNode, 'web:html' | '
       case 'element':
         el.properties['data-commit-id'] = ref.id;
         setPropObject(el.properties, next.props, prev?.props || {}, (prop, next, prev) => {
-          console.log(prop)
           // event handlers not supported
           if (prop.startsWith('on'))
             return true;

@@ -3,35 +3,23 @@ import { dehydrate } from '@lukekaalim/act-web/node';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
 import { toHtml } from 'hast-util-to-html';
+import { createReadStream } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
 import { App } from './app';
 
 const main = (port: number = 0) => {
   const onRequest = async (req: IncomingMessage, res: ServerResponse) => {
-    let resolve = () => {};
-    const state = {};
-
-    const useSSRState = (key, initial) => {
-      const [value, setValue] = useState(initial);
-      useMemo(() => {
-        state[key] = value;
-      }, [value])
-
-      return [value, setValue];
+    if (req.url === '/client.js') {
+      res.setHeader('content-type', 'text/javascript')
+      createReadStream('./client.js').pipe(res);
+      return;
     }
-    const useSSREffect = useEffect;
-    const node = h(App, { useSSRState, useSSREffect, done() {
-      resolve()
-      console.log('ready')
-    } });
-    const donePromise = new Promise<void>(r => {
-      resolve = r
-    });
-    const { bundle, root } = await dehydrate(node, donePromise);
 
-    const script = await readFile('./client.js', 'utf-8');
-    const css = '';//await readFile('./client.css', 'utf-8');
+    const node = h(App);
+    const { payload, root } = await dehydrate(node, { App });
+
+    const css = ``;//await readFile('./client.css', 'utf-8');
 
     const chunk = `
 <!DOCTYPE html>
@@ -42,19 +30,12 @@ const main = (port: number = 0) => {
       </style>
     </head>
     <body>
-      <h1>This is part of the template!</h1>
-      <script type="application/json" id="COMMITS">
-      ${JSON.stringify(bundle, null, 2)}
-      </script>
-      <script type="application/json" id="STATE">
-      ${JSON.stringify(state, null, 2)}
-      </script>
-      <div id="ATTACH">
+      <script type="application/json" id="SSR-DATA">${JSON.stringify(payload, null, 2)}</script>
+
+      <div id="SSR-ROOT">
         ${toHtml(root)}
       </div>
-      <script type="module">
-      ${script}
-      </script>
+      <script type="module" src="/client.js"></script>
     </body>
 </html>
     `

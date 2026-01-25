@@ -2,7 +2,7 @@ import { CommitID, CommitRef2 } from "./commit.ts";
 import { OpaqueID, Deps, EffectCleanup, ContextID, HookImplementation, createId, BoundaryProps } from '@lukekaalim/act';
 import { CommitTree2 } from "./tree.ts";
 
-
+export type HookID = number;
 export type EffectID = OpaqueID<"EffectID">;
 export type EffectTask = {
   ref: CommitRef2,
@@ -15,19 +15,19 @@ export type ComponentState = {
 
   unmounted: boolean,
 
-  hookIndex: number,
+  hookIndex: HookID,
   hooks: null | HookImplementation,
   effectTasks: null | EffectTask[],
 
-  values:   Map<number, unknown>;
-  deps:     Map<number, Deps>;
-  effects:  Map<number, EffectID>;
-  cleanups:  Map<number, EffectCleanup>;
+  values:   Map<HookID, unknown>;
+  deps:     Map<HookID, Deps>;
+  effects:  Map<HookID, EffectID>;
+  cleanups:  Map<HookID, EffectCleanup>;
 
   rejection: null | { value: unknown };
   boundary: null | BoundaryState;
 
-  providers:  Map<number, null | ContextState<unknown>>;
+  providers:  Map<HookID, null | ContextState<unknown>>;
 };
 
 export type ContextState<T> = {

@@ -12,6 +12,8 @@ export type InsightAppProps = {
   bus: ReconcilerDebugEventBus,
 
   document: Document,
+
+  onReady(): void,
 };
 
 export type InsightAppState = {
@@ -23,7 +25,7 @@ export type InsightAppState = {
   paused: boolean,
 }
 
-export const InsightApp: Component<InsightAppProps> = ({ controller, bus, document = window.document }) => {
+export const InsightApp: Component<InsightAppProps> = ({ onReady, controller, bus, document = window.document }) => {
   const [c, setRenderCounter] = useState(0);
 
   const [insightState, setInsightState] = useState<InsightAppState>({
@@ -46,7 +48,7 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
 
     bus.onThreadDone = (thread, delta) => {
       console.log('[Insight] ThreadDone')
-
+      commitCache.ingest(delta);
       deltaCache.ingestDelta(delta);
       deltaCache.ingestThread(thread);
       deltaCache.prevTask = null;
@@ -101,6 +103,8 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
           deltaCache.prevTask = prevTask;
       }
     }
+
+    onReady();
   }, [controller, bus, insightState]);
 
   const cacheSubscribers = useRef<Set<() => void>>(new Set()).current;
@@ -180,6 +184,15 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
     ])
   }, [])
 
+  const reload = () => {
+    commitCache.setTree(controller.getTree())
+    deltaCache.reset();
+    deltaCache.ingestDelta(controller.getDelta());
+    deltaCache.ingestThread(controller.getThread());
+
+    setRenderCounter(c => c + 1)
+  }
+
   const viewportRef = useRef<HTMLElement | null>(null);
 
   const [selectedCommitId, setSelectedCommitId] = useState<CommitID | null>(null)
@@ -208,6 +221,7 @@ export const InsightApp: Component<InsightAppProps> = ({ controller, bus, docume
         state: insightState,
         onStateChange: setInsightState,
       }),
+      h('button', { onClick: reload}, 'Reload'),
     ]),
     h('div', { style: { flex: 1, overflow: 'hidden', background: '#c0d7ddff', display: 'flex' } }, [
       h('div', { style: { flex: 1 } },

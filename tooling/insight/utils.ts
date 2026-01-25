@@ -34,7 +34,7 @@ export const renderDEV = (node: Node, builders: NodeBuilder<any, any>[], { mode 
 }
 
 
-export const createDebugPopup = (reconciler: DebugReconciler) => {
+export const createDebugPopup = async (reconciler: DebugReconciler) => {
   const newWindow = window.open('', "DevTools", "popup");
   if (!newWindow)
     throw new Error(`Unable to make/find new window!`);
@@ -52,11 +52,13 @@ export const createDebugPopup = (reconciler: DebugReconciler) => {
       element.href = src.href;
       newWindow.document.head.appendChild(element)
     }
+    
+  return new Promise<void>(onReady => {
+    render(
+      h(InsightApp, { controller: reconciler.controller, bus: reconciler.debugBus, document: newWindow.document, onReady }),
+      body,
+      { window: newWindow }
+    );
+  })
 
-  console.log('=============POPUP RENDER=============')
-  render(
-    h(InsightApp, { controller: reconciler.controller, bus: reconciler.debugBus, document: newWindow.document }),
-    body,
-    { window: newWindow }
-  );
 }

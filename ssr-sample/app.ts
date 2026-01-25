@@ -1,4 +1,5 @@
 import { h, useEffect, useState } from "@lukekaalim/act";
+import { ssr } from '@lukekaalim/act-web';
 
 const ChildComponent = () => {
   const [clicked, setClicked] = useState(0);
@@ -19,31 +20,39 @@ export type JSONValue =
   | ReadonlyArray<JSONValue>
   | { [key: string]: JSONValue }
 
-export const App = ({ done, useSSREffect, useSSRState }: { done: () => void, useSSRState: <T extends JSONValue>(key: string, initial: T) => [T, (v: T) => void] }) => {
-  const [name, setName] = useState("World");
-  const [beers, setBeers] = useSSRState<string[]>('beers', []);
+export const App = () => {
+  const [name, setName] = ssr.useState<string>("World");
+  const [beerType, setBeerType] = ssr.useState<'ale' | 'stouts'>('ale');
+  const [beers, setBeers] = ssr.useState<string[]>([]);
+
+  const ready = ssr.useSSRReady();
 
   function onInput (event: Event) {
     setName((event.target as HTMLInputElement).value)
   }
+  function onBeerTypeInput (event: Event) {
+    setBeerType((event.target as HTMLInputElement).value as 'ale' | 'stouts')
+  }
 
-  useSSREffect(() => {
-    fetch('https://api.sampleapis.com/beers/ale')
+  ssr.useEffect(() => {
+    fetch(`https://api.sampleapis.com/beers/${beerType}`)
       .then(r => r.json())
-      .then(payload => setBeers(payload.map(d => d.name)))
-  }, [])
+      .then((payload: { name: string }[]) => setBeers(payload.map(d => d.name)))
+  }, [beerType])
 
   useEffect(() => {
-
     if (beers.length > 0)
-      done();
-
+      ready();
   }, [beers])
 
   return h('article', {}, [
     h('h1', {}, `Hello, ${name}`),
     h(ChildComponent),
     h('input', { type: 'text', value: name, onInput }),
+    h('select', { onInput: onBeerTypeInput }, [
+      h('option', { value: 'ale', selected: 'ale' === beerType }, ['ale']),
+      h('option', { value: 'stouts', selected: 'stouts' === beerType }, 'stouts'),
+    ]),
     h('ol', {}, beers.map(beer => h('li', {}, beer)))
   ])
 };

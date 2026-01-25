@@ -40,12 +40,9 @@ export const createWebNodeBuilder = (
     }
   },
   update(el, next, prev) {
-    if (el instanceof Text)
-      console.log('UPDATE', el, next, prev)
     setProps(window, el, next, prev);
   },
   link(el, parent) {
-    console.log('LINK', el, parent);
     parent.appendChild(el);
   },
   linkRoot(child) {
@@ -73,7 +70,6 @@ export const createWebNodeBuilder = (
 
     for (const child of el.childNodes)
       if (!newChildren.includes(child as HTMLElement))
-        child.remove();
 
     if (newChildren.length < 2)
       return;

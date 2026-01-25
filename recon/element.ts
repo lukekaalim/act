@@ -12,8 +12,8 @@ import { loadHooks2 } from "./hooks";
 import { BoundaryState, ComponentState, ContextState, EffectTask } from "./state";
 import { keyedElementEqualityTest2, WorkTask } from "./update";
 import { ChangeReport2 } from "./algorithms";
-import { Reconciler2 } from "./reconciler";
 import { CommitTree2 } from "./tree";
+import { internalHookImplementations } from "./internal";
 
 /**
  * A data structure that represents the immediate output
@@ -57,9 +57,11 @@ export class ElementOutput2 {
     if (!state.hooks)
       state.hooks = loadHooks2(tree.reconciler, state, this.ref);
 
+
     hookImplementation.useContext = state.hooks.useContext;
     hookImplementation.useEffect = state.hooks.useEffect;
     hookImplementation.useState = state.hooks.useState;
+    internalHookImplementations.useInternalComponentState = () => state;
 
     const props = {
       ...this.element.props,

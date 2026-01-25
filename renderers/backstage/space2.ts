@@ -170,9 +170,6 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       for (const [next, node] of this.newNodes) {
         const result = this.findParent(next.ref);
 
-        if (next.element.type === specialNodeTypes.suspend)
-          console.log(`Creating suspense node`, result)
-
         if (result.commit && result.node && result.attachable) {
           this.needsReorder.add(result.commit.ref.id)
 

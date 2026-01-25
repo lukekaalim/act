@@ -2,107 +2,67 @@ import { CommitID, Reconciler2, Scheduler } from '@lukekaalim/act-recon';
 import { Root } from 'hast';
 import { createHASTBuilder } from '../hast';
 import { RenderSpace2 } from '@lukekaalim/act-backstage';
-import { convertNodeToElement, createElement, Node, primitiveNodeTypes, specialNodeTypes } from '@lukekaalim/act';
+import { Component, ContextID, convertNodeToElement, createElement, Element, h, Node, primitiveNodeTypes, specialNodeTypes } from '@lukekaalim/act';
 import { HTML } from '../space';
+import { createTickScheduler } from './TickScheduler';
+import {
+  DehydratedCommit, RehydratableComponent, RehydratableProps, 
+  serializeSSRContext, SSRContext, ssrSymbolToStringMap
+} from '../ssr';
 
+export const dehydrate = async (
+  node: Node,
+  targets: { [key: string]: RehydratableComponent }
+) => {
+  const reverseTargetMap = new Map<RehydratableComponent, string>(
+    Object.entries(targets).map(([key, component]) => [component, key])
+  )
 
-const createImmediateScheduler = async (): Promise<Scheduler> => {
-  const { nextTick } = await import('node:process');
-
-  let needs_callback = false;
-  let callback_pending = false;
-  let callback = () => {};
-
-  const run = () => {
-    while (needs_callback) {
-      needs_callback = false;
-      callback();
-    }
-    callback_pending = false
-  }
-
-  return {
-    setCallbackFunc(nextCallback) {
-      callback = nextCallback;
-    },
-    requestCallback() {
-      needs_callback = true;
-      if (!callback_pending) {
-        callback_pending = true;
-        nextTick(run)
-      }
-    },
-    cancelCallback() {
-      needs_callback = false;
-    },
-    isCallbackPending() {
-      return needs_callback;
-    },
-  }
-}
-
-export type DehydratedCommit = {
-  id: CommitID,
-  elementType: string,
-  parent: CommitID | null,
-  distance: number,
-  key: string | null,
-  children: CommitID[],
-  props: [string, string][],
-}
-
-export type DehydratedBundle = {
-  commits: DehydratedCommit[],
-  mountId: CommitID,
-}
-
-export const dehydrate = async (node: Node, done: null | Promise<void> = null) => {
   const root: Root = { type: 'root', children: [] }
-  const element = convertNodeToElement(node);
 
-  const scheduler = await createImmediateScheduler();
+  const scheduler = createTickScheduler();
   const reconciler = new Reconciler2(scheduler);
   const space = new RenderSpace2(reconciler.tree, createHASTBuilder(root));
+  reconciler.bus = space.bus;
 
-  await new Promise<void>(r => {
-    reconciler.bus = {
-      render(delta) {
-        space.bus.render(delta);
-        r();
-      },
-    }
-    
-    reconciler.mount(createElement(HTML, {}, element));
+  const ssrContext: SSRContext = {
+    components: new Map(),
+    contexts: new Map(),
+    commits: new Map(),
+    mounts: [],
+
+    mode: 'server',
+    contextCommitID: null,
+    readyForServer() {}
+  };
+  const readyPromise = new Promise<void>(resolve => {
+    ssrContext.readyForServer = resolve
   });
-  if (done)
-    await done;
+  reconciler.mount(createElement(HTML, {}, h(SSRContext.Provider, { value: ssrContext }, node)));
 
-
-  const commits: DehydratedCommit[] = [];
-  let mountId: CommitID | null = null;
-
-  const primitiveMap = {
-    [primitiveNodeTypes.string]: 'primitive:string',
-    [primitiveNodeTypes.number]: 'primitive:number',
-    [primitiveNodeTypes.null]: 'primitive:null',
-    [primitiveNodeTypes.boolean]: 'primitive:boolean',
-    [primitiveNodeTypes.array]: 'primitive:array',
-
-    [specialNodeTypes.placeholder]: 'special:placeholder',
-    [specialNodeTypes.render]: 'special:render',
+  // Either use the user-provided promise,
+  // or just wait until we finish rendering
+  await readyPromise;
+  
+  const serializeElementType = (element: Element) => {
+    switch (typeof element.type) {
+      case 'symbol':
+        return ssrSymbolToStringMap[element.type] || 'special:unknown';
+      case 'function':
+        if (reverseTargetMap.has(element.type as RehydratableComponent))
+          return 'special:target:' + reverseTargetMap.get(element.type as RehydratableComponent) as string;
+        return 'special:placeholder';
+      case 'string':
+        return element.type;
+      default:
+        throw new Error(`Cannot serialize element type "${typeof element.type}"`);
+    }
   }
 
   for (const commit of  reconciler.tree.commits.values()) {
-    const elementType =
-      typeof commit.element.type === 'symbol'
-        ? primitiveMap[commit.element.type] || 'unsupported type'
-        : typeof commit.element.type === 'string'
-        ? commit.element.type
-        : 'special:placeholder'
-
     const dehydrated: DehydratedCommit = {
       id: commit.ref.id,
-      elementType,
+      elementType: serializeElementType(commit.element),
       parent: commit.ref.parent && commit.ref.parent.id || null,
       key: commit.element.props['key'] as string || null,
       children: commit.children.map(ref => ref.id),
@@ -110,22 +70,27 @@ export const dehydrate = async (node: Node, done: null | Promise<void> = null) =
       props: [],
     };
     if (commit.element.type === specialNodeTypes.render) {
-      console.log(commit.element)
       dehydrated.props.push(['type', commit.element.props.type as string])
     }
-
-    if (commit.element.id === element.id) {
-      mountId = commit.ref.id;
+    if (commit.element.type === specialNodeTypes.provider) {
+      if (commit.element.props.id as ContextID === SSRContext.id) {
+        ssrContext.contextCommitID = commit.ref.id;
+      }
     }
-    commits.push(dehydrated);
-  }
-  if (!mountId)
-    throw new Error();
+    if (reverseTargetMap.has(commit.element.type as RehydratableComponent)) {
+      const name = reverseTargetMap.get(commit.element.type as RehydratableComponent) as string;
 
-  const bundle: DehydratedBundle = {
-    mountId,
-    commits,
+      dehydrated.elementType = `special:mount:${name}`
+      const props = commit.element.props as RehydratableProps;
+      for (const [key, value] of Object.entries(props)) {
+        dehydrated.props.push([key, value])
+      }
+    }
+
+    ssrContext.commits.set(dehydrated.id, dehydrated);
   }
 
-  return { bundle, root };
+  const payload = serializeSSRContext(ssrContext);
+
+  return { payload, root };
 }

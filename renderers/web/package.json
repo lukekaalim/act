@@ -4,10 +4,7 @@
   "type": "module",
   "main": "mod.ts",
   "exports": {
-    ".": {
-      "default": "./mod.ts",
-      "node": "./nodejs/index.ts"
-    },
+    ".": "./mod.ts",
     "./node": "./nodejs/index.ts"
   },
   "dependencies": {
