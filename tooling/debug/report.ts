@@ -30,7 +30,7 @@ export const createValueReport = (value: unknown): ValueReport => {
     case 'function':
       return { type: 'complex', name: `function(${value.name})` };
     case 'symbol':
-      return { type: 'complex', name: value.description || 'symbol' }
+      return { type: 'complex', name: value.description ? `symbol(${value.description})` : 'symbol' }
     case 'undefined':
       return { type: 'undefined' }
   }

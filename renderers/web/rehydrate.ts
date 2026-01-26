@@ -1,7 +1,8 @@
 import { createId, Element, ElementType, h, primitiveNodeTypes, specialNodeTypes } from "@lukekaalim/act";
-import { CommitID, CommitRef2, Reconciler2 } from "@lukekaalim/act-recon";
+import { Commit2, CommitID, CommitRef2, Reconciler2 } from "@lukekaalim/act-recon";
 import { deserializeSSRPayload, RehydratableComponent, SSRContext, SSRPayload, ssrStringToSymbolMap } from "./ssr";
 import { RenderSpace2 } from "@lukekaalim/act-backstage";
+import { recon } from "../three/deps";
 
 
 export const rehydrate = (
@@ -20,13 +21,14 @@ export const rehydrate = (
   for (const commit of context.commits.values()) {
     const ref = CommitRef2.rehydrate(createId("CommitID"), commit.distance);
     refs.set(commit.id, ref);
+    context.commitIdRemap.set(ref.id, commit.id);
 
     if (commit.elementType.startsWith('special:mount:')) {
       const targetName = commit.elementType.slice('special:mount:'.length);
       const target = targets[targetName];
 
       const props = Object.fromEntries(commit.props);
-      const element = h(target, props)
+      const element = h(target, props);
       elements.set(commit.id, element);
 
       targetRefs.push(ref);
@@ -36,11 +38,6 @@ export const rehydrate = (
         || specialNodeTypes.placeholder) as string | symbol
 
       switch (elementType) {
-        case primitiveNodeTypes.string:
-        case primitiveNodeTypes.number:
-        case primitiveNodeTypes.boolean:
-          elements.set(commit.id, h(primitiveNodeTypes.null));
-          continue;
         case specialNodeTypes.provider:
           if (commit.id === context.contextCommitID) {
             elements.set(commit.id, h(specialNodeTypes.provider, { id: SSRContext.id, value: context }));
@@ -59,6 +56,9 @@ export const rehydrate = (
       }
     }
   }
+
+  const primitiveCommits: Commit2[] = []
+
   for (const dehydratedCommit of context.commits.values()) {
     const ref = refs.get(dehydratedCommit.id) as CommitRef2;
     ref.parent = (dehydratedCommit.parent && refs.get(dehydratedCommit.parent)) || null;
@@ -76,6 +76,13 @@ export const rehydrate = (
       children
     );
 
+    switch (commit.element.type) {
+      case primitiveNodeTypes.string:
+      case primitiveNodeTypes.boolean:
+      case primitiveNodeTypes.number:
+        primitiveCommits.push(commit);
+    }
+
     const node = document.querySelector(`[data-commit-id="${dehydratedCommit.id}"]`)
     if (node instanceof HTMLElement) {
       space.nodeByCommit.set(commit.ref.id, node);
@@ -88,8 +95,46 @@ export const rehydrate = (
     reconciler.tree.commits.set(commit.ref.id, commit)
   }
 
+  const primitiveParent = new Map<CommitID, Commit2>();
+
+  for (const primitiveCommit of primitiveCommits) {
+    const parent = space.findParent(primitiveCommit.ref)
+    if (parent.node && parent.commit) {
+      primitiveParent.set(parent.commit.ref.id, parent.commit)
+    }
+  }
+
+  for (const [id, commit] of primitiveParent) {
+    const node = space.nodeByCommit.get(id);
+    if (!node)
+      continue;
+
+    const textElements = [...node.childNodes]
+      .filter((x): x is Text => x instanceof Text)
+
+  
+    let queue = [...commit.children];
+    let index = 0;
+
+    let subject: CommitRef2 | undefined;
+    while (subject = queue.shift()) {
+      const commit = reconciler.tree.commits.get(subject.id) as Commit2;
+      if (space.nodeByCommit.has(commit.ref.id))
+        continue;
+
+      switch (commit.element.type) {
+        case primitiveNodeTypes.string:
+        case primitiveNodeTypes.boolean:
+        case primitiveNodeTypes.number:
+          space.nodeByCommit.set(commit.ref.id, textElements[index]);
+          index++;
+          continue;
+      }
+      queue.unshift(...commit.children)
+    }
+  }
+
   reconciler.bus.render = (delta) => {
-    console.log({ delta })
     space.bus.render(delta)
   };
 

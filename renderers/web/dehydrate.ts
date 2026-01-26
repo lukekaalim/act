@@ -1,17 +1,18 @@
-import { CommitID, Reconciler2, Scheduler } from '@lukekaalim/act-recon';
+import { Reconciler2, Scheduler } from '@lukekaalim/act-recon';
 import { Root } from 'hast';
-import { createHASTBuilder } from '../hast';
+import { createHASTBuilder } from './hast';
 import { RenderSpace2 } from '@lukekaalim/act-backstage';
-import { Component, ContextID, convertNodeToElement, createElement, Element, h, Node, primitiveNodeTypes, specialNodeTypes } from '@lukekaalim/act';
-import { HTML } from '../space';
-import { createTickScheduler } from './TickScheduler';
+import { ContextID, createElement, Element, h, Node, primitiveNodeTypes, specialNodeTypes } from '@lukekaalim/act';
+import { HTML } from './space';
+import { createTickScheduler } from './nodejs/TickScheduler';
 import {
   DehydratedCommit, RehydratableComponent, RehydratableProps, 
   serializeSSRContext, SSRContext, ssrSymbolToStringMap
-} from '../ssr';
+} from './ssr';
 
 export const dehydrate = async (
   node: Node,
+  scheduler: Scheduler,
   targets: { [key: string]: RehydratableComponent }
 ) => {
   const reverseTargetMap = new Map<RehydratableComponent, string>(
@@ -20,7 +21,6 @@ export const dehydrate = async (
 
   const root: Root = { type: 'root', children: [] }
 
-  const scheduler = createTickScheduler();
   const reconciler = new Reconciler2(scheduler);
   const space = new RenderSpace2(reconciler.tree, createHASTBuilder(root));
   reconciler.bus = space.bus;
@@ -29,6 +29,7 @@ export const dehydrate = async (
     components: new Map(),
     contexts: new Map(),
     commits: new Map(),
+    commitIdRemap: new Map(),
     mounts: [],
 
     mode: 'server',
@@ -71,6 +72,16 @@ export const dehydrate = async (
     };
     if (commit.element.type === specialNodeTypes.render) {
       dehydrated.props.push(['type', commit.element.props.type as string])
+    }
+    switch (commit.element.type) {
+      case primitiveNodeTypes.number:
+      case primitiveNodeTypes.string:
+      case primitiveNodeTypes.null:
+      case primitiveNodeTypes.boolean:
+        dehydrated.props.push(['value', commit.element.props.value as string])
+        break;
+      default:
+        break;
     }
     if (commit.element.type === specialNodeTypes.provider) {
       if (commit.element.props.id as ContextID === SSRContext.id) {

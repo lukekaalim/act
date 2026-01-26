@@ -1,7 +1,7 @@
 import { Scheduler } from "@lukekaalim/act-recon";
 
 export const createDOMScheduler = (): Scheduler => {
-  let id: number | null = null;
+  let id: number | null | NodeJS.Timeout = null;
   let callbackFunc = () => console.error(`DOMScheduler got callback before callback function was configured`)
   let synccall_available = false;
   let synccall_requested = false;
@@ -42,12 +42,12 @@ export const createDOMScheduler = (): Scheduler => {
         synccall_requested = true;
       }
       else if (!id) {
-        id = window.setTimeout(onTimeout, 0);
+        id = globalThis.setTimeout(onTimeout, 0);
       }
     },
     cancelCallback() {
       if (id !== null)
-        window.clearTimeout(id);
+        globalThis.clearTimeout(id);
     },
   }
 }

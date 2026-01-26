@@ -17,6 +17,8 @@ export type SSRContext = {
   contexts: Map<CommitID, JSONValue>,
 
   commits: Map<CommitID, DehydratedCommit>,
+  commitIdRemap: Map<CommitID, CommitID>,
+
   mounts: CommitID[],
 
   contextCommitID: CommitID | null,
@@ -32,6 +34,7 @@ export type SSRPayload = {
   mounts: CommitID[],
   components: SSRComponentPayload[],
   contexts: [CommitID, JSONValue][],
+  commitIdRemap: [CommitID, CommitID][]
 }
 export type SSRComponentPayload = {
   id: CommitID,
@@ -43,6 +46,7 @@ export const serializeSSRContext = (context: SSRContext): SSRPayload => {
     contextCommitID: context.contextCommitID,
     commits: [...context.commits.values()],
     mounts: context.mounts,
+    commitIdRemap: [...context.commitIdRemap.entries()],
     components: [...context.components.values()].map(component => {
       return {
         id: component.id,
@@ -59,6 +63,7 @@ export const deserializeSSRPayload = (payload: SSRPayload, mode: 'server' | 'cli
     contextCommitID: payload.contextCommitID,
     mode,
     readyForServer,
+    commitIdRemap: new Map(payload.commitIdRemap),
     commits: new Map(payload.commits.map(c => [c.id, c])),
     mounts: payload.mounts,
     components: new Map(payload.components.map(c => ([c.id, {
@@ -74,14 +79,24 @@ export const SSRContext = createContext<SSRContext | null>(null);
 
 const useSSRComponentState = (data: SSRContext, state: ComponentState) => {
   return useMemo(() => {
-    let ssrComponentState = data.components.get(state.ref.id);
+    let id: CommitID;
+    if (data.mode === 'client') {
+      const remappedId = data.commitIdRemap.get(state.ref.id);
+      if (!remappedId)
+        throw new Error(`Missing map from Server CommitID => Client CommitID for ${state.ref.id}`);
+      id = remappedId;
+    } else {
+      id = state.ref.id;
+    }
+
+    let ssrComponentState = data.components.get(id);
     if (!ssrComponentState) {
       ssrComponentState = {
-        id: state.ref.id,
+        id,
         values: new Map(),
         deps: new Map(),
       }
-      data.components.set(state.ref.id, ssrComponentState);
+      data.components.set(id, ssrComponentState);
     }
 
     return ssrComponentState;

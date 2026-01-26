@@ -1,12 +1,12 @@
 import { h, useEffect, useMemo, useState } from '@lukekaalim/act';
-import { dehydrate } from '@lukekaalim/act-web/node';
+import { createDOMScheduler, dehydrate } from '@lukekaalim/act-web';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
 import { toHtml } from 'hast-util-to-html';
 import { createReadStream } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
-import { App } from './app';
+import { App, HydrateMap } from './app';
 
 const main = (port: number = 0) => {
   const onRequest = async (req: IncomingMessage, res: ServerResponse) => {
@@ -17,9 +17,9 @@ const main = (port: number = 0) => {
     }
 
     const node = h(App);
-    const { payload, root } = await dehydrate(node, { App });
+    const { payload, root } = await dehydrate(node, createDOMScheduler(), HydrateMap);
 
-    const css = ``;//await readFile('./client.css', 'utf-8');
+    const css = await readFile('./client.css', 'utf-8');
 
     const chunk = `
 <!DOCTYPE html>

@@ -1,5 +1,5 @@
 import { createWebNodeBuilder, rehydrate, SSRPayload } from '@lukekaalim/act-web';
-import { App } from './app';
+import { App, HydrateMap } from './app';
 import { createDebugPopup } from '@lukekaalim/act-insight';
 import { DebugReconciler } from '@lukekaalim/act-debug';
 import { RenderSpace2 } from '@lukekaalim/act-backstage';
@@ -16,11 +16,11 @@ const main = async () => {
   const reconciler = new DebugReconciler();
   const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(rootElement))
 
-  //await createDebugPopup(reconciler)
+  await createDebugPopup(reconciler)
 
-  console.log('Rehydrating');
+  rehydrate(HydrateMap, reconciler, space, payload);
 
-  rehydrate({ App }, reconciler, space, payload);
+  reconciler.debugBus.externalUpdate();
 }
 
 main();

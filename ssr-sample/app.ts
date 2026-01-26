@@ -1,4 +1,5 @@
 import { h, useEffect, useState } from "@lukekaalim/act";
+import { useInternalComponentState } from "@lukekaalim/act-recon";
 import { ssr } from '@lukekaalim/act-web';
 
 const ChildComponent = () => {
@@ -25,6 +26,9 @@ export const App = () => {
   const [beerType, setBeerType] = ssr.useState<'ale' | 'stouts'>('ale');
   const [beers, setBeers] = ssr.useState<string[]>([]);
 
+  const data = ssr.useSSRContext()
+  const data2 = useInternalComponentState()
+
   const ready = ssr.useSSRReady();
 
   function onInput (event: Event) {
@@ -35,6 +39,7 @@ export const App = () => {
   }
 
   ssr.useEffect(() => {
+    console.log(`Downloading beers (${beerType})`);
     fetch(`https://api.sampleapis.com/beers/${beerType}`)
       .then(r => r.json())
       .then((payload: { name: string }[]) => setBeers(payload.map(d => d.name)))
@@ -45,8 +50,11 @@ export const App = () => {
       ready();
   }, [beers])
 
+  const [a, setA] = useState(false)
+
   return h('article', {}, [
-    h('h1', {}, `Hello, ${name}`),
+    h('h1', {}, a ? ['Hello, ', name] : ['Hello, ', name, 24]),
+    h('button', { onClick: () => setA(!a) }, 'a'),
     h(ChildComponent),
     h('input', { type: 'text', value: name, onInput }),
     h('select', { onInput: onBeerTypeInput }, [
@@ -56,3 +64,9 @@ export const App = () => {
     h('ol', {}, beers.map(beer => h('li', {}, beer)))
   ])
 };
+
+
+export const HydrateMap = {
+  App,
+  //ChildComponent,
+}

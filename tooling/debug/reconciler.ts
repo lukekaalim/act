@@ -7,6 +7,7 @@ export type ReconcilerDebugEventBus = {
   scheduler: ScheduleEventBus,
   thread: DebugWorkThreadEventBus,
 
+  externalUpdate(): void,
   onThreadDone(thread: ThreadReport, delta: DeltaReport): void,
 };
 export type ReconcilerDebugController = {
@@ -38,6 +39,7 @@ export class DebugReconciler extends Reconciler2 {
         onWork() {},
         onRender() {},
       },
+      externalUpdate() {},
       onThreadDone() {},
     };
 

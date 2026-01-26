@@ -1,5 +1,5 @@
 import { h, s } from 'hastscript';
-import { Element, Nodes as HNode, Root } from 'hast';
+import { Element, ElementContent, Nodes as HNode, Root } from 'hast';
 import { NodeBuilder, RenderSpace2, setPropObject } from "@lukekaalim/act-backstage";
 import { Node, primitiveNodeTypes, createElement } from '@lukekaalim/act';
 import { CommitID, CommitTree2, Reconciler2, Scheduler } from '@lukekaalim/act-recon';
@@ -100,7 +100,15 @@ export const createHASTBuilder = (root: Root): NodeBuilder<HNode, 'web:html' | '
   },
   sort(el, children) {
     if ("children" in el) {
-      el.children = children as Element[];
+      el.children.length = 0;
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        (el.children as ElementContent[]).push(child as Element);
+        const nextChild = children[i + 1];
+        if (child.type === 'text' && nextChild && nextChild.type === 'text') {
+          el.children.push({ type: 'comment', value: '' })
+        }
+      }
     }
   },
 })

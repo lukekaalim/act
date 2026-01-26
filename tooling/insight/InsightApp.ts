@@ -25,15 +25,30 @@ export type InsightAppState = {
   paused: boolean,
 }
 
+const INSIGHT_SETTINGS_LOCALSTORAGE_KEY = `INSIGHT_SETTINGS`;
+
 export const InsightApp: Component<InsightAppProps> = ({ onReady, controller, bus, document = window.document }) => {
   const [c, setRenderCounter] = useState(0);
 
+  const storedState = useMemo(() => {
+    const settings = window.localStorage.getItem(INSIGHT_SETTINGS_LOCALSTORAGE_KEY)
+    if (!settings)
+      return;
+    return JSON.parse(settings) as { breakOnAfterUpdate: boolean, breakOnBeforeUpdate: boolean };
+  }, [])
+
   const [insightState, setInsightState] = useState<InsightAppState>({
     commitBreakpoints: new Set(),
-    breakOnAfterUpdate: false,
-    breakOnBeforeUpdate: true,
+    breakOnAfterUpdate: storedState ? storedState.breakOnAfterUpdate : false,
+    breakOnBeforeUpdate: storedState ? storedState.breakOnBeforeUpdate : false,
     paused: false,
   });
+  useEffect(() => {
+    window.localStorage.setItem(INSIGHT_SETTINGS_LOCALSTORAGE_KEY, JSON.stringify({
+      breakOnAfterUpdate: insightState.breakOnAfterUpdate,
+      breakOnBeforeUpdate: insightState.breakOnBeforeUpdate,
+    }))
+  }, [insightState])
 
   const commitCache = useRef(() => new CommitLookupCache()).current;
   const deltaCache = useRef(() => new ThreadLookupCache(commitCache)).current;
@@ -45,6 +60,17 @@ export const InsightApp: Component<InsightAppProps> = ({ onReady, controller, bu
 
   useEffect(() => {
     console.log('[Insight] Populate Cache')
+
+    bus.externalUpdate = () => {
+      const delta  = controller.getDelta();
+      const thread = controller.getThread();
+
+      commitCache.setTree(controller.getTree())
+
+      deltaCache.ingestDelta(delta);
+      deltaCache.ingestThread(thread);
+      setRenderCounter(c => c + 1);
+    }
 
     bus.onThreadDone = (thread, delta) => {
       console.log('[Insight] ThreadDone')
@@ -66,8 +92,7 @@ export const InsightApp: Component<InsightAppProps> = ({ onReady, controller, bu
         if (insightState.breakOnBeforeUpdate)
           controller.scheduler.intercept = true;
 
-        if (deltaCache.report)
-          commitCache.ingest(deltaCache.report);
+        commitCache.setTree(controller.getTree())
         
         deltaCache.reset();
         deltaCache.ingestThread(thread);
