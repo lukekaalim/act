@@ -1,5 +1,15 @@
 # @lukekaalim/act
 
+## 4.1.0
+
+### Minor Changes
+
+- bcbd299: SSR API for @lukekaalim/act-web
+
+### Patch Changes
+
+- beec21c: Fixed Web text element rehydration, remove nodejs dependencies from dehydration
+
 ## 4.0.0
 
 ### Major Changes

@@ -1,5 +1,11 @@
 # @lukekaalim/act-debug
 
+## 1.0.1
+
+### Patch Changes
+
+- beec21c: Fixed Web text element rehydration, remove nodejs dependencies from dehydration
+
 ## 1.0.0
 
 ### Major Changes

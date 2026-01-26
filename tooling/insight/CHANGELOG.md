@@ -1,5 +1,21 @@
 # @lukekaalim/act-insight
 
+## 1.1.0
+
+### Minor Changes
+
+- bcbd299: SSR API for @lukekaalim/act-web
+- beec21c: Fixed Web text element rehydration, remove nodejs dependencies from dehydration
+
+### Patch Changes
+
+- Updated dependencies [bcbd299]
+- Updated dependencies [beec21c]
+  - @lukekaalim/act-web@5.0.0
+  - @lukekaalim/act-recon@3.1.0
+  - @lukekaalim/act@4.1.0
+  - @lukekaalim/act-debug@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
