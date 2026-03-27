@@ -17,7 +17,7 @@ export type OpaqueID<T extends string> = number & { readonly [opaqueType]: T };
 export const createId = <T extends string>(namespace?: T): OpaqueID<T> => {
   if (namespace) {
     if (!(namespace in namespaces))
-      namespaces[namespace] = 0;
+      namespaces[namespace] = 1;
    
     return namespaces[namespace]++ as OpaqueID<T>;
   }

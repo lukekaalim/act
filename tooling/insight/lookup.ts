@@ -28,7 +28,7 @@ export class MutableCommitRef {
   }
 
   resolve(lookupMap: Map<CommitID, MutableCommitRef>) {
-    if (this.report.parent)
+    if (this.report.parent !== null)
       this.linkParent(this.report.parent, lookupMap);
     this.linkChildren(this.report.children, lookupMap);
   }

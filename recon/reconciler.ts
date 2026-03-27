@@ -48,12 +48,14 @@ export class Reconciler2 {
     this.pools.commit.maxSize = 2048
   }
 
+  startNewThread() {
+    this.thread = new WorkThread2(this.tree);
+  }
+
   submitThread() {
     const currentThread = this.thread;
-    // Start a new thread
-    this.thread = new WorkThread2(this.tree);
 
-    this.running = false;
+    this.startNewThread();
 
     // send delta ready
     this.bus.render(currentThread.delta);
@@ -77,7 +79,6 @@ export class Reconciler2 {
       this.submitThread()
     }
   }
-  running = false;
 
   mount(node: Node): CommitRef2 {
     const element = convertNodeToElement(node);

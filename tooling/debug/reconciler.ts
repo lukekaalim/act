@@ -70,32 +70,21 @@ export class DebugReconciler extends Reconciler2 {
     };
     this.thread = new DebugWorkThread(this.tree, debugBus.thread); 
   }
+  startNewThread(): void {
+    this.thread = new DebugWorkThread(this.tree, this.debugBus.thread);
+  }
+
   submitThread(): void {
     const submittedThread = this.thread;
     const { id, visited, passes } = submittedThread;
 
-    this.started = false;
     const delta = createDeltaReport(submittedThread.delta);
+    this.started = false;
+
+    super.submitThread();
+    
     this.debugBus.onThreadDone(createThreadReport(submittedThread), delta)
 
-    // Start a new thread
-    this.thread = new DebugWorkThread(this.tree, this.debugBus.thread);
-
-    this.running = false;
-
-    // send delta ready
-    this.bus.render(submittedThread.delta);
-
-    // run effects
-    for (const cleanup of submittedThread.delta.cleanups.values())
-      cleanup.func();
-    for (const effect of submittedThread.delta.effects.values())
-      effect.func();
-
-    for (const remove of submittedThread.delta.removed.values())
-      this.pools.commit.release(remove);
-    
-    
     performance.mark(`reconciler:thread(${id}):end`);
     performance.measure(`reconciler:thread(${id}, visited=${visited.size})`,
       `reconciler:thread(${id}):start`,
