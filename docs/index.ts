@@ -6,10 +6,8 @@ import { toHtml } from 'hast-util-to-html';
 import { createDOMScheduler, createHASTBuilder, createWebNodeBuilder, hs, HTML, render } from '@lukekaalim/act-web';
 import { Boundary, Component, h, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
-import all from 'typedoc:@lukekaalim/{act,act-recon,act-web,act-three,act-backstage,act-insight}';
+//import all from 'typedoc:@lukekaalim/{act,act-recon,act-web,act-three,act-backstage,act-insight}';
 
-console.log({ all })
-/*
 
 
 import rootReadmeMd from '../README.md?parse';
@@ -164,7 +162,18 @@ doc.demos.add('core.rendering', () => {
   ]
 })
 
+const Test = () => {
+  useEffect(function myEffect() {
+    console.log('up')
+    return () => {
+      console.log('down')
+    }
+  })
+  return null;
+}
+
 const app =  h('div', {}, [
+  h(Test),
   h(BoneTheme, { doc }),
   h('button', { style: { position: 'fixed', right: '24px', bottom: '24px'}, onClick() {
     createDebugPopup(reconciler);
@@ -174,5 +183,3 @@ const app =  h('div', {}, [
 const { ref, reconciler } = renderDEV(h(HTML, {}, app), [createWebNodeBuilder(document.body)])
 
 //render(app, document.body);
-
-*/

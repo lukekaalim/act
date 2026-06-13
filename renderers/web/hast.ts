@@ -1,11 +1,7 @@
 import { h, s } from 'hastscript';
 import { Element, ElementContent, Nodes as HNode, Root } from 'hast';
-import { NodeBuilder, RenderSpace2, setPropObject } from "@lukekaalim/act-backstage";
-import { Node, primitiveNodeTypes, createElement } from '@lukekaalim/act';
-import { CommitID, CommitTree2, Reconciler2, Scheduler } from '@lukekaalim/act-recon';
-import { createDOMScheduler } from './scheduler';
-import { recon } from '../three/deps';
-import { HTML } from './space';
+import { NodeBuilder, setPropObject } from "@lukekaalim/act-backstage";
+import { primitiveNodeTypes } from '@lukekaalim/act';
 
 export const createHASTBuilder = (root: Root): NodeBuilder<HNode, 'web:html' | 'web:svg'> => ({
   roots: new Set(['web:html', 'web:svg']),

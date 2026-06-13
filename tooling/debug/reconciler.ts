@@ -1,159 +1,208 @@
-import { CommitID, CommitRef2, CommitTree2, QueueResult, Reconciler2, Scheduler, WorkReason, WorkThread2 } from "@lukekaalim/act-recon";
-import { createDebugScheduler, ScheduleController, ScheduleEventBus } from "./scheduler";
-import { CommitDetailsReport, createCommitDetailsReport, createDeltaReport, createThreadReport, createTreeReport, createWorkReasonReport, createWorkTaskReport, DeltaReport, ThreadReport, TreeReport, WorkReasonReport, WorkTaskReport } from "./report";
+import { CommitID, CommitRef2, CommitTree2, Delta, EffectID, EffectTask, QueueResult, Reconciler2, Scheduler, WorkReason, WorkTask, WorkThread2 } from "@lukekaalim/act-recon";
+import { CommitDetailsReport, createCommitDetailsReport, createDeltaReport, createEffectReport, createSubmissionReport, createThreadReport, createTreeReport, createWorkReasonReport, createWorkTaskReport, DeltaReport, EffectReport, SubmissionReport, ThreadReport, TreeReport, WorkReasonReport, WorkTaskReport } from "./report";
 import { Node } from "@lukekaalim/act";
-
-export type ReconcilerDebugEventBus = {
-  scheduler: ScheduleEventBus,
-  thread: DebugWorkThreadEventBus,
-
-  externalUpdate(): void,
-  onThreadDone(thread: ThreadReport, delta: DeltaReport): void,
-};
-export type ReconcilerDebugController = {
-  scheduler: ScheduleController,
-
-  getTree(): TreeReport,
-  getThread(): ThreadReport,
-  getDelta(): DeltaReport,
-
-  getDetails(commitId: CommitID): CommitDetailsReport | null
-}
+import { Breakpoints, DEFAULT_BREAKPOINTS } from "./breakpoints";
+import { createEventEmitter } from "./events";
 
 export class DebugReconciler extends Reconciler2 {
-  controller: ReconcilerDebugController;
-  debugBus: ReconcilerDebugEventBus;
-
   started = false;
+  liveEffects: Map<EffectID, EffectTask> = new Map()
 
-  constructor() {
-    const debugBus: ReconcilerDebugEventBus = {
-      scheduler: {
-        onAfterCallbackExecute() {},
-        onInterceptStart() {},
-        onInterceptEnd() {},
-      },
-      thread: {
-        onQueue() {},
-        onStartPass() {},
-        onWork() {},
-        onRender() {},
-      },
-      externalUpdate() {},
-      onThreadDone() {},
-    };
+  paused: boolean = false;
 
-    const scheduler = createDebugScheduler(debugBus.scheduler);
-    super(scheduler);
-    this.debugBus = debugBus;
-    
-    const me = this;
+  breakpoints: Breakpoints = { ...DEFAULT_BREAKPOINTS };
 
-    this.controller = {
-      scheduler: scheduler.controller,
-      getTree() {
-        return createTreeReport(me.tree)
-      },
-      getThread() {
-        return createThreadReport(me.thread)
-      },
-      getDelta() {
-        return createDeltaReport(me.thread.delta);
-      },
-      getDetails(commitId) {
-        const commit = me.tree.commits.get(commitId);
-        if (!commit)
-          return null;
+  #events = {
+    break: createEventEmitter(),
+    submit: createEventEmitter<SubmissionReport>(),
+    effects: createEventEmitter<EffectReport[]>(),
+    finish: createEventEmitter()
+  }
 
-        return createCommitDetailsReport(commit, me.tree) || null;
+  onBreak = this.#events.break.subscribe;
+  onSubmit = this.#events.submit.subscribe;
+  onEffects = this.#events.effects.subscribe;
+  onFinish = this.#events.finish.subscribe;
+
+  step() {
+    this.workInternal()
+  }
+  resume() {
+    this.paused = false;
+    this.workInternal()
+  }
+
+  finish() {
+    this.paused = false;
+    this.#events.finish.run();
+  }
+
+  shouldBreakOnThread() {
+    if (!this.thread.started && this.thread.reasons.length > 0) {
+      if (this.thread.passes === 1) {
+        if (this.breakpoints.threadStart)
+          return true;
+      } else {
+        if (this.breakpoints.threadPass)
+          return true;
       }
-    };
-    this.thread = new DebugWorkThread(this.tree, debugBus.thread); 
-  }
-  startNewThread(): void {
-    this.thread = new DebugWorkThread(this.tree, this.debugBus.thread);
-  }
-
-  submitThread(): void {
-    const submittedThread = this.thread;
-    const { id, visited, passes } = submittedThread;
-
-    const delta = createDeltaReport(submittedThread.delta);
-    this.started = false;
-
-    super.submitThread();
-    
-    this.debugBus.onThreadDone(createThreadReport(submittedThread), delta)
-
-    performance.mark(`reconciler:thread(${id}):end`);
-    performance.measure(`reconciler:thread(${id}, visited=${visited.size})`,
-      `reconciler:thread(${id}):start`,
-      `reconciler:thread(${id}):end`,
-    )
-    console.info(`[Reconciler] Thread ${id} visited ${visited.size} nodes, in ${passes} passes`);
-  }
-
-  mount(node: Node) {
-    if (!this.started) {
-      this.started = true;
-      performance.mark(`reconciler:thread(${this.thread.id}):start`);
     }
-    return super.mount(node);
+    if (this.thread.started && this.thread.done)
+      if (this.breakpoints.threadSubmit)
+        return true;
+
+    const nextTask = this.thread.pendingTasks[this.thread.pendingTasks.length - 1] || null;
+
+    if (nextTask && this.breakpoints.commits.has(nextTask.ref.id))
+      return true;
+
+    return false;
   }
-  unmount(ref: CommitRef2): void {
-    if (!this.started) {
-      this.started = true;
-      performance.mark(`reconciler:thread(${this.thread.id}):start`);
+
+  /**
+   * Check if we should break 
+   * @returns 
+   */
+  shouldBreakOnEffect() {
+    const currentTask = this.currentEffectTask;
+    if (!currentTask)
+      return false
+
+    if (this.breakpoints.effects.has(currentTask.id)) {
+      return true;
     }
-    return super.unmount(ref);
-  }
-  render(ref: CommitRef2): void {
-    if (!this.started) {
-      this.started = true;
-      performance.mark(`reconciler:thread(${this.thread.id}):start`);
+
+    if (this.breakpoints.effectsStart) {
+      if (this.finishedEffects === 0)
+        return true;
     }
-    super.render(ref);
+
+    return false;
   }
-}
 
-export type DebugWorkThreadEventBus = {
-  onWork(prevTask: null | WorkTaskReport, nextTask: null | WorkTaskReport, done: boolean): void,
-  onRender(): void,
+  activeEffects: Map<EffectID, EffectTask> = new Map();
 
-  onStartPass(): void,
-  onQueue(reason: WorkReasonReport, result: QueueResult): void,
-}
+  runPendingEffects() {
+    for (const effectTask of [...this.pendingCleanups]) {
+      effectTask.func();
+      this.tree.cleanups.delete(effectTask.id)
+      this.pendingCleanups.shift()
+      this.activeEffects.delete(effectTask.id);
+      this.finishedEffects++;
+      if (this.shouldBreakOnEffect()) {
+        this.#events.break.run()
+        this.paused = true;
+        return;
+      }
+    }
+    for (const effectTask of [...this.pendingEffects]) {
+      const cleanup = effectTask.func();
+      if (cleanup) {
+        this.tree.cleanups.set(effectTask.id, cleanup)
+        this.activeEffects.set(effectTask.id, effectTask)
+      }
+      this.pendingEffects.shift()
+      this.finishedEffects++;
+      if (this.shouldBreakOnEffect()) {
+        this.#events.break.run()
+        this.paused = true;
+        return;
+      }
+    }
 
-export class DebugWorkThread extends WorkThread2 {
-  debugBus: DebugWorkThreadEventBus;
+    this.#events.effects.run([...this.activeEffects.values()].map(task => createEffectReport(task, 'run')))
+    this.finish()
+  }
 
-  constructor(tree: CommitTree2, debugBus: DebugWorkThreadEventBus) {
-    super(tree);
-    this.debugBus = debugBus;
+  get workState() {
+    if (!this.thread.done)
+      return 'thread';
+    if (this.currentEffectTask)
+      return 'effects';
+    if (this.thread.done && this.thread.started && !this.thread.submitted)
+      return 'submitting';
+
+    return 'idle'
+  }
+
+  // KLUDGE: need a better name
+  /**
+   * Perform tasks without checking for
+   * breakpoints (unlike `work()`)
+   * @returns 
+   */
+  workInternal() {
+    switch (this.workState) {
+      case 'effects':
+        this.runPendingEffects()
+        return;
+      case 'submitting':
+        this.submitThread();
+        return;
+      case 'thread':
+        this.thread.work();
+        this.scheduler.requestCallback();
+        return;
+      case 'idle':
+        this.paused = false;
+        return;
+    }
   }
 
   work(): void {
-    const prevTask = this.pendingTasks[this.pendingTasks.length - 1];
-    super.work();
-    const nextTask = this.pendingTasks[this.pendingTasks.length - 1];
-    this.debugBus.onWork(
-      prevTask && createWorkTaskReport(prevTask) || null,
-      nextTask && createWorkTaskReport(nextTask) || null,
-      this.done
-    )
+    if (this.paused)
+      return;
+
+    if (this.shouldBreakOnEffect() || this.shouldBreakOnThread()) {
+      this.#events.break.run()
+      this.paused = true;
+      return;
+    }
+    if (this.paused)
+      return;
+
+    this.workInternal()
   }
 
-  queue(reason: WorkReason): QueueResult {
-    const result = super.queue(reason);
+  constructor(scheduler: Scheduler) {
+    super(scheduler);
+  }
+  
+  // Effects are now "pausable", so we need
+  // to store effects that we didn't get around to
+  // actioning yet
+  pendingEffects: EffectTask[] = [];
+  pendingCleanups: EffectTask[] = [];
+  finishedEffects = 0;
 
-    this.debugBus.onQueue(createWorkReasonReport(reason), result);
+  get currentEffectTask() {
+    if (this.pendingCleanups.length !== 0)
+      return this.pendingCleanups[0];
+    if (this.pendingEffects.length !== 0)
+      return this.pendingEffects[0];
 
-    return result;
+    return null;
   }
 
-  startNextPass(): void {
+  runEffects(delta: Delta): void {
+    this.pendingCleanups = [...delta.cleanups.values()];
+    this.pendingEffects = [...delta.effects.values()];
+    this.finishedEffects = 0;
 
-    super.startNextPass()
-    this.debugBus.onStartPass();
+    if (this.currentEffectTask) {
+      // (effects are now done in the scheduler)
+      this.scheduler.requestCallback()
+    } else {
+      this.finish()
+    }
+  }
+
+  submitThread(): void {
+    this.started = false;
+
+    this.#events.submit.run(createSubmissionReport(this.thread));
+
+    super.submitThread();
   }
 }
+

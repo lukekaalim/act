@@ -25,6 +25,8 @@ export const render = (node: Node, root: HTMLElement, options: Options = {}) => 
   const reconciler = new Reconciler2(scheduler);
   const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(root, options.window));
 
+  console.log('some classic rendering!')
+
   reconciler.bus = space.bus;
   const ref = reconciler.mount(h(HTML, {}, node));
 

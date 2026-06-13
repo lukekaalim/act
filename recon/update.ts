@@ -1,4 +1,4 @@
-import { convertNodeToElements, createId, Element, Node, specialNodeTypes } from "@lukekaalim/act";
+import { convertNodeToElements, createId, Element, Node, primitiveNodeTypes, specialNodeTypes } from "@lukekaalim/act";
 import { ChangeEqualityTest, ChangeReport2 } from "./algorithms.ts";
 import { Commit2, CommitID, CommitRef2 } from "./commit.ts";
 import { createObjectPool, ObjectPool } from "./pool.ts";

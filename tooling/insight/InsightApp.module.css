@@ -17,3 +17,41 @@
   position: absolute;
   */
 }
+
+.insightRoot {
+  display: flex;
+  flex-direction: column;
+  
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  position: absolute;
+  overflow: hidden;
+
+  font-family: 'Fira Code';
+}
+
+.insightRoot h4 {
+  margin: 8px;
+
+}
+
+.insightContent {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
+
+  min-width: 0px;
+}
+
+.activeWindow {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.199);
+  padding: 8px;
+  min-width: 0px;
+}

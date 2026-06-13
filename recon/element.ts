@@ -51,12 +51,9 @@ export class ElementOutput2 {
 
   processComponent(component: Component<{}>, element: Element, tree: CommitTree2, state: ComponentState) {
     this.element = element;
-    state.effectTasks = null;
     
     state.hookIndex = 0;
-    if (!state.hooks)
-      state.hooks = loadHooks2(tree.reconciler, state, this.ref);
-
+    state.hooks = loadHooks2(tree.reconciler, state, this);
 
     hookImplementation.useContext = state.hooks.useContext;
     hookImplementation.useEffect = state.hooks.useEffect;
@@ -76,10 +73,8 @@ export class ElementOutput2 {
         if (state.boundary)
           state.boundary.clearThrow(this.ref);
       }
-      this.effects = state.effectTasks;
       this.calculateDiff();
     } catch (thrownValue) {
-    
       if (!state.boundary) {
         const boundary = tree.findClosestBoundary(this.ref);
         if (!boundary)

@@ -1,4 +1,4 @@
-import { ContextID, Element, specialNodeTypes } from "@lukekaalim/act";
+import { ContextID, EffectCleanup, Element, specialNodeTypes } from "@lukekaalim/act";
 import { Commit2, CommitID, CommitRef2 } from "./commit.ts";
 import { ElementOutput2 } from "./element.ts";
 import { BoundaryState, ComponentState, ContextState, EffectID } from "./state.ts";
@@ -32,6 +32,8 @@ export class CommitTree2 {
   contexts: Map<CommitID, ContextState<unknown>> = new Map();
   boundaries: Map<CommitID, BoundaryState> = new Map();
 
+  cleanups: Map<EffectID, EffectCleanup> = new Map();
+
   commits: Map<CommitID, Commit2> = new Map();
   roots: Set<CommitID> = new Set();
 
@@ -49,8 +51,6 @@ export class CommitTree2 {
         rejection: null,
         boundary: null,
         hooks: null,
-        effectTasks: [],
-        cleanups: new Map(),
         providers: new Map(),
         values: new Map(),
         deps: new Map(),
@@ -109,7 +109,6 @@ export class CommitTree2 {
     }
   }
 
-
   unmountCommit(prev: Commit2) {
     const output = new ElementOutput2(prev.ref);
     output.prevChildren = prev.children.map(c => this.commits.get(c.id) as Commit2);
@@ -141,12 +140,12 @@ export class CommitTree2 {
           componentState.boundary.clearThrow(prev.ref);
         }
         output.cleanups = [];
-        for (const [index, cleanup] of componentState.cleanups) {
+        for (const effectId of componentState.effects.values()) {
+          const cleanup = this.cleanups.get(effectId);
           if (!cleanup)
             continue;
-          const id = componentState.effects.get(index) as EffectID;
           output.cleanups.push({
-            id,
+            id: effectId,
             ref: prev.ref,
             func: cleanup
           });

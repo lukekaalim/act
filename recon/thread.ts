@@ -1,4 +1,4 @@
-import { createId, Element } from "@lukekaalim/act";
+import { createId, Element, primitiveNodeTypes } from "@lukekaalim/act";
 import { Commit2, CommitID, CommitRef2 } from "./commit.ts";
 import { Delta } from "./delta.ts";
 import { CommitTree2 } from "./tree.ts";
@@ -77,6 +77,8 @@ export class WorkThread2 {
 
   id = createId("ThreadID")
   passes = 1;
+
+  submitted = false;
 
   constructor(tree: CommitTree2) {
     this.tree = tree;
@@ -239,25 +241,33 @@ export class WorkThread2 {
   processTask(task: WorkTask) {
     const { next, prev, ref } = task;
 
-    const identicalChange = next && prev && (next.id === prev.element.id);
 
-    if (identicalChange) {
-      const mustVisit = this.mustVisit.has(ref.id);
-      if (!mustVisit)
-        return;
+    if (next && prev) {
+      let identicalChange = (
+        (next.id === prev.element.id)
+        || ((next.type === primitiveNodeTypes.string || next.type === primitiveNodeTypes.number) && next.props.value === prev.element.props.value)
+      );
 
-      const mustRender = this.mustRender.has(ref.id);
+      if (identicalChange) {
+        const mustVisit = this.mustVisit.has(ref.id);
+        if (!mustVisit)
+          return;
 
-      if (!mustRender) {
-        this.skipCommit(prev)
-        return
+        const mustRender = this.mustRender.has(ref.id);
+
+        if (!mustRender) {
+          this.skipCommit(prev)
+          return
+        }
       }
     }
     
     this.visit(task);
   }
 
+  started = false
   work() {
+    this.started = true
     const task = this.pendingTasks.pop();
     if (task) {
       this.processTask(task);
@@ -272,6 +282,7 @@ export class WorkThread2 {
     this.mustRender.clear();
     this.mustVisit.clear();
     this.visited.clear();
+    this.started = false
 
     this.passes++;
 

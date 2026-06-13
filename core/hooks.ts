@@ -67,8 +67,8 @@ export type Updater<T> = T | ((prev: T) => T);
 export const useEffect = (effect: EffectConstructor, deps: Deps = []): void => {
   return hookImplementation.useEffect(effect, deps);
 };
-export type EffectConstructor = () => EffectCleanup;
-export type EffectCleanup = void | (() => void)
+export type EffectConstructor = () => void | EffectCleanup;
+export type EffectCleanup = () => void;
 
 /**
  * Use Context

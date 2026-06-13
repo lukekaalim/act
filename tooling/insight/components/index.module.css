@@ -1,0 +1,110 @@
+.controlBar {
+  display: flex;
+  flex-direction: row;
+
+  background-color: rgb(236, 236, 236);
+  border-bottom: 1px solid rgba(110, 110, 110, 0.473);
+}
+
+.toggle {
+  display: flex;
+  flex-direction: row;
+
+  background: rgba(240, 240, 240, 0);
+  border: none;
+  border-radius: 4px;
+  padding: 2px;
+  margin: 4px;
+  transition: background 0.1s, opacity 0.1s;
+}
+.toggle.off {
+  opacity: 0.5;
+}
+.toggle:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.466);
+}
+.toggle:disabled {
+  opacity: 1;
+  background: rgb(255, 255, 255);
+}
+
+.controlBar > .breakpointToggle {
+  position: absolute;
+  left: 0;
+
+}
+
+.controlBar > .inspectorToggle {
+  position: absolute;
+  right: 0;
+}
+
+.controlBar > .windowToggle {
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+}
+
+.controlBar > .windowToggle > button {
+
+}
+
+.panel {
+  width: 200px;
+  flex: 0 0 200px;
+  resize: horizontal;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  border-right: 1px solid rgba(110, 110, 110, 0.473);
+}
+
+.namedBreakpointList {
+  display: flex;
+  flex-direction: column;
+}
+
+.playbackBar {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  padding: 4px;
+  background-color: rgb(200, 61, 29);
+  border-radius: 6px;
+}
+
+.playbackBar > menu {
+  margin: 0;
+  padding: 0;
+
+  gap: 4px;
+  display: flex;
+  flex-direction: row;
+}
+
+.playbackButton {
+  background: white;
+  border: none;
+  border-radius: 4px;
+
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.playbackButton img {
+  width: 24px;
+  height: 24px;
+}
+
+.playbackButton:hover {
+  transform: scale(1.1);
+}
+.playbackButton:active {
+  transform: scale(0.9);
+}

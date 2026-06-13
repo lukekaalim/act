@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="11.940001mm"
+   height="11.94mm"
+   viewBox="0 0 11.940001 11.94"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="source.svg"
+   inkscape:export-batch-name=""
+   inkscape:export-batch-path="/home/lukekaalim/Projects/act/tooling/insight/assets/icons"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="3.9482604"
+     inkscape:cx="62.179283"
+     inkscape:cy="76.109468"
+     inkscape:window-width="1920"
+     inkscape:window-height="1018"
+     inkscape:window-x="1920"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:page
+       x="4.405592e-08"
+       y="1.6022161e-08"
+       width="11.940001"
+       height="11.940001"
+       id="page13"
+       margin="0"
+       bleed="0"
+       inkscape:label="magnifying_glass" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-39.282245,-2.2271)">
+    <circle
+       style="fill:#5d8862;fill-opacity:1;stroke:none;stroke-width:0.165;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path13"
+       cx="43.689053"
+       cy="6.4206791"
+       r="3.1274157" />
+    <rect
+       style="fill:#5d8862;fill-opacity:1;stroke:none;stroke-width:0.165;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect13"
+       width="10.377335"
+       height="2.2960846"
+       x="33.192822"
+       y="-27.333229"
+       ry="0.54492855"
+       transform="rotate(45)" />
+    <circle
+       style="fill:#e0ede1;fill-opacity:1;stroke:none;stroke-width:0.1225;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path13-9"
+       cx="43.689053"
+       cy="6.4206791"
+       r="2.3218691" />
+  </g>
+</svg>

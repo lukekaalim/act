@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="12.010001mm"
+   height="5.5199995mm"
+   viewBox="0 0 12.010001 5.5199997"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="source.svg"
+   inkscape:export-batch-name=""
+   inkscape:export-batch-path="/home/lukekaalim/Projects/act/tooling/insight/assets/icons"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="3.9482604"
+     inkscape:cx="62.179283"
+     inkscape:cy="76.109468"
+     inkscape:window-width="1920"
+     inkscape:window-height="1018"
+     inkscape:window-x="1920"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:page
+       x="-3.8371727e-06"
+       y="-3.7857056e-08"
+       width="12.01"
+       height="5.52"
+       id="page16"
+       margin="0"
+       bleed="0"
+       inkscape:label="breakpoint_arrow_paused" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-55.153047,-11.508348)">
+    <path
+       id="rect15-7"
+       style="fill:#9babba;fill-opacity:1;stroke:none;stroke-width:0.139224;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 56.78394,12.51294 v 3.438583 l 5.914398,-0.0013 2.966792,-1.712314 -2.963739,-1.717984 z"
+       sodipodi:nodetypes="cccccc" />
+    <rect
+       style="fill:#5d7388;fill-opacity:1;stroke-width:0.22508"
+       id="rect5-3"
+       width="1.5069969"
+       height="4.8598962"
+       x="59.121918"
+       y="11.787687"
+       ry="0.085511364" />
+    <rect
+       style="fill:#5d7388;fill-opacity:1;stroke-width:0.22508"
+       id="rect5-5-9"
+       width="1.5069969"
+       height="4.8598962"
+       x="61.681629"
+       y="11.787687"
+       ry="0.085511364" />
+  </g>
+</svg>

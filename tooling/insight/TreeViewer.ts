@@ -34,6 +34,7 @@ export type CommitPreviewProps = {
   attributes?: [string, string][],
 
   color?: string,
+  border?: string,
 
   depth?: number,
 
@@ -46,6 +47,7 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
   attributes = [],
   renderCommit,
   color,
+  border = 'none',
   onClick,
 }) => {
   const background = `hsl(${(depth * 22.3) % 360}deg, 50%, 80%)`;
@@ -62,7 +64,7 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
       } }),
 
     hs('div', { className: [classes.elementBar].join(' '), style: { 'position': 'relative' } }, [
-      hs('button', { onClick, className: classes.elementName, style: { background: elementBackground } },
+      hs('button', { onClick, className: classes.elementName, style: { background: elementBackground, border } },
         commit.element.type),
       h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
       attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
@@ -79,5 +81,9 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
     ]))),
   ])
 };
+
+const renderElementName = () => {
+  
+}
 
 // h(CommitPreview, { commit: child, tree, depth: depth + 1, selectedCommits, onSelectCommit })))

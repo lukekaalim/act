@@ -52,21 +52,38 @@ export class Reconciler2 {
     this.thread = new WorkThread2(this.tree);
   }
 
+  runEffects(delta: Delta) {
+    for (const cleanup of delta.cleanups.values()) {
+      try {
+        cleanup.func();
+      } finally {
+        this.tree.cleanups.delete(cleanup.id);
+      }
+    }
+    for (const effect of delta.effects.values()) {
+      try {
+        const cleanup = effect.func();
+        if (cleanup)
+          this.tree.cleanups.set(effect.id, cleanup);
+      } finally {}
+    }
+  }
+
   submitThread() {
-    const currentThread = this.thread;
+    const threadToSubmit = this.thread;
 
     this.startNewThread();
 
+    threadToSubmit.submitted = true;
+
     // send delta ready
-    this.bus.render(currentThread.delta);
+    this.bus.render(threadToSubmit.delta);
 
     // run effects
-    for (const cleanup of currentThread.delta.cleanups.values())
-      cleanup.func();
-    for (const effect of currentThread.delta.effects.values())
-      effect.func();
+    this.runEffects(threadToSubmit.delta);
 
-    for (const remove of currentThread.delta.removed.values())
+    // memory release
+    for (const remove of threadToSubmit.delta.removed.values())
       this.pools.commit.release(remove);
   }
 
@@ -75,7 +92,8 @@ export class Reconciler2 {
       // do some work
       this.thread.work();
       this.scheduler.requestCallback();
-    } else {
+    }
+    else {
       this.submitThread()
     }
   }

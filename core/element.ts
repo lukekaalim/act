@@ -33,24 +33,14 @@ const EMPTY_PROPS = Object.freeze({});
  * Generate a unique element. Each element has an internal
  * ID to quickly tell if elements are different.
  */
-export function createElement<Type extends ElementType<any>>(
-  type: Type,
-  props: Type extends ElementType<infer X> ? X & { key?: ElementKey } : never,
-  children?: Node
-): Element;
-export function createElement(
-  type: string | symbol,
-  props?: Record<string, unknown> & { key?: ElementKey },
-  children?: Node
-): Element;
-export function createElement<Type extends Component<EmptyProps>>(
-  type: Type,
-  props?: { key?: ElementKey },
+export function createElement<P extends Props>(
+  type: Component<P> | string | symbol,
+  props: P | void,
   children?: Node
 ): Element;
 export function createElement(
   type: ElementType,
-  props?: Record<string, unknown> & { key?: ElementKey },
+  props?: Props,
   children: Node = []
 ): Element {
   return {

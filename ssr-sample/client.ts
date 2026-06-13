@@ -1,4 +1,4 @@
-import { createWebNodeBuilder, rehydrate, SSRPayload } from '@lukekaalim/act-web';
+import { createDOMScheduler, createWebNodeBuilder, rehydrate, SSRPayload } from '@lukekaalim/act-web';
 import { App, HydrateMap } from './app';
 import { createDebugPopup } from '@lukekaalim/act-insight';
 import { DebugReconciler } from '@lukekaalim/act-debug';
@@ -13,14 +13,14 @@ const main = async () => {
 
   const payload = JSON.parse(dataElement.innerText) as SSRPayload;
 
-  const reconciler = new DebugReconciler();
+  const reconciler = new DebugReconciler(createDOMScheduler());
   const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(rootElement))
 
   await createDebugPopup(reconciler)
 
   rehydrate(HydrateMap, reconciler, space, payload);
 
-  reconciler.debugBus.externalUpdate();
+  //reconciler.debugBus.externalUpdate();
 }
 
 main();

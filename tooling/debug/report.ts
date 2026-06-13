@@ -1,5 +1,5 @@
 import { Element, ElementID, OpaqueID } from "@lukekaalim/act";
-import { Commit2, CommitID, CommitTree2, CommitVersion, ComponentState, Delta, WorkReason, WorkTask, WorkThread2 } from "@lukekaalim/act-recon";
+import { Commit2, CommitID, CommitTree2, CommitVersion, ComponentState, Delta, EffectID, EffectTask, WorkReason, WorkTask, WorkThread2 } from "@lukekaalim/act-recon";
 import { getElementName } from "./utils";
 
 /**
@@ -111,13 +111,16 @@ export const createCommitReport = (commit: Commit2): CommitReport => {
 export type DeltaReport = {
   created: CommitReport[],
   removed: CommitReport[],
-  updated: CommitReport[]
+  updated: CommitReport[],
+
+  effects: EffectReport[],
 }
 export const createDeltaReport = (delta: Delta): DeltaReport => {
   const report: DeltaReport = {
     created: [],
     removed: [],
     updated: [],
+    effects: [],
   }
   for (const commit of delta.fresh.values())
     report.created.push(createCommitReport(commit));
@@ -125,6 +128,11 @@ export const createDeltaReport = (delta: Delta): DeltaReport => {
     report.updated.push(createCommitReport(next));
   for (const commit of delta.removed.values())
     report.removed.push(createCommitReport(commit));
+
+  for (const effect of delta.effects.values())
+    report.effects.push(createEffectReport(effect, 'run'))
+  for (const effect of delta.cleanups.values())
+    report.effects.push(createEffectReport(effect, 'cleanup'))
 
   return report;
 }
@@ -136,6 +144,7 @@ export type WorkTaskReport = {
 
   parent: null | CommitID,
   id: CommitID,
+  distance: number,
 }
 export const createWorkTaskReport = (task: WorkTask): WorkTaskReport => {
   return {
@@ -144,6 +153,7 @@ export const createWorkTaskReport = (task: WorkTask): WorkTaskReport => {
     moved: task.moved,
 
     parent: task.ref.parent && task.ref.parent.id,
+    distance: task.ref.length,
     id: task.ref.id,
   }
 }
@@ -186,17 +196,21 @@ export const createThreadReport = (thread: WorkThread2): ThreadReport => {
 
 export type TreeReport = {
   commits: CommitReport[],
-  roots: CommitID[]
+  roots: CommitID[],
+  effects: EffectReport[]
 }
 
-export const createTreeReport = (tree: CommitTree2) => {
-  const report: TreeReport = { commits: [], roots: [] };
+export const createTreeReport = (tree: CommitTree2, effects: EffectTask[]) => {
+  const report: TreeReport = { commits: [], roots: [], effects: [] };
 
   for (const commit of tree.commits.values()) {
     report.commits.push(createCommitReport(commit));
   }
   for (const root of tree.roots) {
     report.roots.push(root);
+  }
+  for (const effect of effects) {
+    report.effects.push(createEffectReport(effect, 'active'))
   }
 
   return report;
@@ -205,6 +219,7 @@ export const createTreeReport = (tree: CommitTree2) => {
 export const updateTreeReport = (tree: TreeReport, delta: DeltaReport) => {
   const commits = new Map(tree.commits.map(c => [c.id, c]));
   const roots = new Set(tree.roots);
+  const effects = new Map(tree.effects.map(e => [e.id, e]));
 
   for (const commit of delta.created.values()) {
     commits.set(commit.id, commit);
@@ -219,8 +234,42 @@ export const updateTreeReport = (tree: TreeReport, delta: DeltaReport) => {
     if (commit.parent === null)
       roots.delete(commit.id);
   }
+  for (const effect of delta.effects)
+    if (effect.state === 'cleanup')
+      effects.delete(effect.id);
+    else
+      effects.set(effect.id, effect);
 
   tree.roots = [...roots];
   tree.commits = [...commits.values()]
+  tree.effects = [...effects.values()]
 }
 
+export type EffectReport = {
+  id: EffectID,
+  commit: CommitID,
+  functionName: string | null,
+  state: 'run' | 'cleanup' | 'active'
+};
+
+export const createEffectReport = (task: EffectTask, state: 'run' | 'cleanup' | 'active'): EffectReport => {
+  //debugger;
+  return {
+    id: task.id,
+    commit: task.ref.id,
+    functionName: task.func.name || null,
+    state,
+  }
+}
+
+export type SubmissionReport = {
+  thread: ThreadReport,
+  delta: DeltaReport
+}
+
+export const createSubmissionReport = (thread: WorkThread2) => {
+  return {
+    thread: createThreadReport(thread),
+    delta: createDeltaReport(thread.delta)
+  }
+}
