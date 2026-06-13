@@ -30,7 +30,6 @@
   overflow: visible;
   white-space: pre;
   width: max-content;
-  flex: 1;
 }
 
 .elementBar.selected .elementName {

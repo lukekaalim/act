@@ -6,6 +6,7 @@ import { CommitPreview } from "../TreeViewer";
 import treeColumnURL from '../assets/icons/tree_column.svg'
 import treeJunctionURL from '../assets/icons/tree_junction.svg'
 import treeEndURL from '../assets/icons/tree_end.svg'
+import { useSelection } from "../lib/selection";
 
 
 export type CommitTreeProps = {
@@ -68,6 +69,8 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
     }
   }
 
+  const selection = useSelection()
+
   const renderChunk = (index: number, width: number) => {
     if (index < 0)
       return null;
@@ -80,6 +83,7 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
 
       const onClick = () => {
         //setSelectedCommitId(report.id);
+        selection.select({ type: 'commit', id: report.id })
       };
       const attributes: [string, string][] = [
         //insightState.commitBreakpoints.has(report.id) ? ['Breakpoint', 'Enabled'] as [string, string] : null

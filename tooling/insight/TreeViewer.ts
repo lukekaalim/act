@@ -56,12 +56,6 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
 
 
   return hs('div', { className: classes.commit, style: { position: 'relative' }, id: `commit:${commit.id}` }, [
-    commit.children.length > 0 &&
-      h('div', { style: {
-        position: 'absolute',
-        top: '5px',
-        height: 'calc(100% - 18px)', width: '1px', background: lineColor, transform: `translate(20px, 0px)`
-      } }),
 
     hs('div', { className: [classes.elementBar].join(' '), style: { 'position': 'relative' } }, [
       hs('button', { onClick, className: classes.elementName, style: { background: elementBackground, border } },

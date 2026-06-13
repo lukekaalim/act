@@ -1,4 +1,4 @@
-import { Component, h, OpaqueID, useEffect, useRef, useState } from "@lukekaalim/act";
+import { Component, h, Node, OpaqueID, useEffect, useRef, useState } from "@lukekaalim/act";
 import { CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectReport, ThreadReport } from "@lukekaalim/act-debug";
 
 import classes from './InsightApp.module.css';
@@ -9,25 +9,19 @@ import { ControlBar } from "./components/ControlBar";
 import { BreakpointPanel } from "./components/BreakpointPanel";
 import { InspectorPanel } from "./components/InspectorPanel";
 import { PlaybackBar } from "./components/PlaybackBar";
-import { CommitID, EffectID } from "@lukekaalim/act-recon";
+import { SelectionContext, SelectionTarget, useSelectionManager } from "./lib/selection";
 
 export type InsightApp2Props = {
   client: DebugClient;
   onReady(): void;
 }
 
-export type SelectionTarget =
-  | { type: 'commit', id: CommitID }
-  | { type: 'effect', id: EffectID }
-  | { type: 'thread', id: OpaqueID<"ThreadID"> }
-  | { type: 'none' }
-
 export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) => {
   const [commits, setCommits] = useState<CommitReport[]>([]);
   const [effects, setEffects] = useState<EffectReport[]>([]);
   const [thread, setThread] = useState<ThreadReport | null>(null);
 
-  const [selection, setSelection] = useState<SelectionTarget>({ type: 'none' });
+  const selection = useSelectionManager();
 
 
   const [activeWindow, setActiveWindow] = useState<'commits' | 'effects' | 'history'>('commits');
@@ -70,7 +64,13 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
     }
   }, [client]);
 
-  return h('div', { className: classes.insightRoot }, [
+  const providers = (child: Node) => {
+    return h(SelectionContext.Provider, { value: selection },
+      child
+    )
+  }
+
+  return providers(h('div', { className: classes.insightRoot }, [
     h(ControlBar, {
       showBreakpointPanel,
       showInspectorPanel,
@@ -85,6 +85,7 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
         onBreakpointsChange: (breakpoints) => client.setBreakpoints(breakpoints),
         breakpoints,
         paused,
+        cache: client.cache,
 
         onResumePressed: () => client.resume(),
         onStepPressed: () => client.step(),
@@ -93,7 +94,7 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
         activeWindow === 'commits' && h(CommitTree, { commits, client, thread }),
         activeWindow === 'effects' && h(EffectTable, { cache: client.cache, effects }),
       ]),
-      showInspectorPanel && h(InspectorPanel),
+      showInspectorPanel && h(InspectorPanel, { client, breakpoints }),
     ]),
     paused && h(PlaybackBar, {
       onResumeClick: () => client.resume(),
@@ -103,5 +104,5 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
       breakpointsEnabled: true,
       currentBreakLocation: null
     }),
-  ])
+  ]))
 };

@@ -1,9 +1,12 @@
 import { Component, h } from "@lukekaalim/act";
-import { Breakpoints } from "@lukekaalim/act-debug";
+import { Breakpoints, DebugCache } from "@lukekaalim/act-debug";
 
 import classes from './index.module.css';
+import { CommitPreview } from "../TreeViewer";
 
 export type BreakpointPanelProps = {
+  cache: DebugCache,
+
   breakpoints: Readonly<Breakpoints>,
   paused: boolean,
 
@@ -12,7 +15,7 @@ export type BreakpointPanelProps = {
   onResumePressed(): void,
 }
 
-export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, paused, onBreakpointsChange }) => {
+export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, paused, onBreakpointsChange, cache }) => {
   type Toggles = "threadStart" | "threadPass" | "effectsStart" | "threadSubmit"
 
   const setBreakpointToggle = (toggle: Toggles) => (event: InputEvent) => {
@@ -42,6 +45,9 @@ export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, 
       ]),
     ]),
     h('h4', {}, 'Commit Breakpoints'),
+    h('ul', {}, [...breakpoints.commits.values()].map((id) => {
+      return h('li', {}, h(CommitPreview, { commit: cache.getCommitOrThrow(id) }))
+    })),
     h('h4', {}, 'Effect Breakpoints'),
   ])
 }

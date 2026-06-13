@@ -125,6 +125,12 @@ export class DebugCache {
   getCommit(id: CommitID) {
     return this.pendingCommits.get(id) || this.liveCommits.get(id) || null;
   }
+  getCommitOrThrow(id: CommitID) {
+    const commit = this.getCommit(id);
+    if (!commit)
+      throw new Error();
+    return commit;
+  }
   getCommitState(id: CommitID) {
     if (this.mountTasks.has(id))
       return 'mount-task';
