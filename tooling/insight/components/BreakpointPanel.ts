@@ -45,8 +45,11 @@ export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, 
       ]),
     ]),
     h('h4', {}, 'Commit Breakpoints'),
-    h('ul', {}, [...breakpoints.commits.values()].map((id) => {
-      return h('li', {}, h(CommitPreview, { commit: cache.getCommitOrThrow(id) }))
+    h('ul', { className: classes.breakpointCommitList }, [...breakpoints.commits.values()].map((id) => {
+      const commit = cache.getCommit(id);
+      if (!commit)
+        return null;
+      return h('li', {}, h(CommitPreview, { commit }))
     })),
     h('h4', {}, 'Effect Breakpoints'),
   ])

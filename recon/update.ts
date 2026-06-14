@@ -27,7 +27,8 @@ export class WorkTask {
   ref: CommitRef2;
 
   /** If null, this update should cause
-   * this commit to be created */
+   * this commit to be created
+   * */
   prev: null | Commit2;
   /** If null, this update should cause
    * this commit to be removed

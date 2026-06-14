@@ -1,16 +1,23 @@
 import { Component, h, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
-import { Virtual1D } from "../Virtual";
-import { CommitReport, DebugClient, ThreadReport } from "@lukekaalim/act-debug";
+import { CommitReport, DebugCache, DebugClient, FlattenedCommitReport, ThreadReport } from "@lukekaalim/act-debug";
+
 import { CommitPreview } from "../TreeViewer";
+import { Virtual1D } from "../Virtual";
+import { useSelection } from "../lib/selection";
+import { CommitListEntry } from "../lib/list";
+
+import classes from './index.module.css';
 
 import treeColumnURL from '../assets/icons/tree_column.svg'
 import treeJunctionURL from '../assets/icons/tree_junction.svg'
 import treeEndURL from '../assets/icons/tree_end.svg'
-import { useSelection } from "../lib/selection";
+
+import breakpointURL from '../assets/icons/breakpoint.svg'
+import breakpointUnsetURL from '../assets/icons/breakpoint_unset.svg'
 
 
 export type CommitTreeProps = {
-  commits: CommitReport[],
+  commits: CommitListEntry[],
   client: DebugClient,
   thread: ThreadReport | null,
 }
@@ -19,57 +26,152 @@ const COMMIT_VIEW_HEIGHT_PX = 33;
 const CHUNK_COMMIT_COUNT = 8;
 const CHUNK_HEIGHT_PX = COMMIT_VIEW_HEIGHT_PX * CHUNK_COMMIT_COUNT;
 
+type CommitRowProps = {
+  commit: CommitReport,
+
+  index: number,
+  list: CommitListEntry[],
+
+  client: DebugClient,
+  thread: null | ThreadReport,
+
+  width: number,
+}
+
+export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, client, index, list }) => {
+  const ancestors = buildAncestorList(index, list);
+  const border = getCommitBorder(commit, client.cache,  thread);
+  const color =  getCommitColor(commit, client.cache, thread);
+
+  const entry = list[index]
+  const distance = entry.distance;
+
+  const selection = useSelection()
+
+  const onClick = () => {
+    selection.select({ type: 'commit', id: commit.id })
+  }
+
+  const [focused, setFocused] = useState(false);
+
+  const onMouseEnter = () => {
+    setFocused(true)
+  };
+  const onMouseLeave = () => {
+    setFocused(false)
+  }
+
+  const breakpointSet = client.breakpoints.commits.has(commit.id)
+  const onClickBreakpointToggle = () => {
+    const next = { ...client.breakpoints, commits: new Set(client.breakpoints.commits) };
+    if (breakpointSet) {
+      next.commits.delete(commit.id)
+    } else {
+      next.commits.add(commit.id)
+    }
+    client.setBreakpoints(next);
+  }
+  
+  return [
+    h('div', { onMouseEnter, onMouseLeave, className: classes.commitRow }, [
+      h('div', { className: classes.commitRowBackground, style: { width: width + 'px' } }),
+      ancestors.map((ancestorCommitIndex, ancestorIndex) => {
+        const childCommitIndex = ancestors[ancestorIndex + 1];
+        const ancestor = list[ancestorCommitIndex];
+        const child = list[childCommitIndex]
+
+        const left = ancestorIndex * 32 + 'px';
+        const style = { left };
+
+        if (!child) {
+          if (ancestor.children[ancestor.children.length - 1] === index) {
+            return h('img', { src: treeEndURL, style });
+          } else {
+            return h('img', { src: treeJunctionURL, style });
+          }
+        }
+        if (ancestor.children[ancestor.children.length - 1] === childCommitIndex) {
+          return null;
+        }
+
+        return h('img', { src: treeColumnURL, style });
+      }),
+      h('div', { className: classes.commitRowPreviewContainer, style: {
+        'margin-left': ((distance - 1) * 32) + 'px',
+      } }, [
+        h(CommitPreview, { color, commit, onClick, border }),
+        h('div', { className: classes.commitRowControls }, [
+          (focused || breakpointSet) && h('button', {
+            classList: [classes.commitRowBreakpointToggle, !breakpointSet && classes.off],
+            onClick: onClickBreakpointToggle
+          },
+            h('img', { src: breakpointSet ? breakpointURL : breakpointUnsetURL, title: 'Set Breakpoint' }))
+        ])
+      ])
+    ]),
+  ];
+}
+
+
+const getCommitBorder = (commit: CommitReport, cache: DebugCache, thread: ThreadReport | null) => {
+  const nextTask = thread && thread.pendingTasks[thread.pendingTasks.length - 1];
+  if (nextTask && nextTask.id === commit.id)
+    return '2px solid rgb(255, 145, 0)';
+
+  const state = cache.getCommitState(commit.id);
+  if (state === 'mount-task')
+      return '2px dashed rgb(26, 123, 234)'
+
+  if (thread) {
+    if (thread.mustRender.includes(commit.id))
+      return '1px solid rgb(19, 33, 231)';
+    if (thread.pendingTasks.some(c => c.id === commit.id)) {
+      return '2px dashed rgb(255, 145, 0)'
+    }
+    if (state !== 'live' && thread.visited.includes(commit.id)) {
+      return '1px dashed rgb(160, 160, 160)';
+    }
+  }
+
+  return 'none';
+}
+
+const getCommitColor = (commit: CommitReport, cache: DebugCache, thread: ThreadReport | null) => {
+  const state = cache.getCommitState(commit.id);
+  switch (state) {
+    case 'created':
+      return '#4bc847ff';
+    case 'live':
+      if (thread && thread.visited.includes(commit.id)) {
+        return '#8b8b8b';
+      }
+      return '#d8d8d8';
+    case 'removed':
+      return '#f25252ff';
+    case 'updated':
+      return '#1ab9eaff';
+    case 'mount-task':
+      return 'rgb(221, 247, 255)';
+  }
+}
+
+const buildAncestorList = (index: number, list: CommitListEntry[]) => {
+  const ancestors: number[] = [];
+  let current_index: number = list[index].parent;
+
+  while (current_index !== -1) {
+    ancestors.unshift(current_index);
+    const entry = list[current_index];
+    current_index = entry.parent;
+  }
+
+  return ancestors;
+}
+
 export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread }) => {
   const viewportRef = useRef<HTMLElement | null>(null);
 
   const nextTask = thread && thread.pendingTasks[thread.pendingTasks.length - 1];
-
-  const getCommitBorder = (commit: CommitReport) => {
-    if (nextTask && nextTask.id === commit.id)
-      return '2px solid rgb(255, 145, 0)';
-
-    const state = client.cache.getCommitState(commit.id);
-    if (state === 'mount-task')
-        return '2px dashed rgb(26, 123, 234)'
-
-    if (thread) {
-      if (thread.mustRender.includes(commit.id))
-        return '1px solid rgb(19, 33, 231)';
-      if (thread.pendingTasks.some(c => c.id === commit.id)) {
-        return '2px dashed rgb(255, 145, 0)'
-      }
-      if (state !== 'live' && thread.visited.includes(commit.id)) {
-        return '1px dashed rgb(160, 160, 160)';
-      }
-    }
-
-    return 'none';
-  }
-
-  const getCommitColor = (commit: CommitReport) => {
-    // maybe do border stuff instead
-
-    //: deltaCache.created.has(commitId) ? (deltaCache.prevTask && deltaCache.prevTask.id === commitId ? '#4bc847ff' : '#21a51cff')
-
-    const state = client.cache.getCommitState(commit.id);
-    switch (state) {
-      case 'created':
-        return '#4bc847ff';
-      case 'live':
-        if (thread && thread.visited.includes(commit.id)) {
-          return '#8b8b8b';
-        }
-        return '#d8d8d8';
-      case 'removed':
-        return '#f25252ff';
-      case 'updated':
-        return '#1ab9eaff';
-      case 'mount-task':
-        return 'rgb(221, 247, 255)';
-    }
-  }
-
-  const selection = useSelection()
 
   const renderChunk = (index: number, width: number) => {
     if (index < 0)
@@ -77,84 +179,21 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
 
     return Array.from({ length: CHUNK_COMMIT_COUNT }).map((_, chunkIndex) => {
       const commitIndex = (index  * CHUNK_COMMIT_COUNT) + (chunkIndex);
-      const report = commits[commitIndex];
-      if (!report)
+      const entry = commits[commitIndex];
+      const commit = entry && client.cache.getCommit(entry.id);
+
+      if (!commit)
         return null;
 
-      const onClick = () => {
-        //setSelectedCommitId(report.id);
-        selection.select({ type: 'commit', id: report.id })
-      };
-      const attributes: [string, string][] = [
-        //insightState.commitBreakpoints.has(report.id) ? ['Breakpoint', 'Enabled'] as [string, string] : null
-        //['Version', report.version]
-      ].filter(x => !!x);
-
-      const buildAncestorList = (commit: CommitReport) => {
-        const ancestors: CommitReport[] = [];
-        let current_commit: CommitReport | null = commit;
-
-        while (current_commit) {
-          current_commit = current_commit.parent && client.cache.getCommit(current_commit.parent);
-
-          if (current_commit)
-            ancestors.unshift(current_commit);
-        }
-
-        return ancestors;
-      }
-
-      const ancestors = buildAncestorList(report);
-      const border = getCommitBorder(report);
-      const color =  getCommitColor(report);
-
-      return [
-        h('div', { style: {
-          position: 'absolute',
-          top: chunkIndex * COMMIT_VIEW_HEIGHT_PX + 'px',
-          width: width + 'px',
-          'background-color': commitIndex % 2 === 0 ? '#f4f4f4' : 'white',
-          height: COMMIT_VIEW_HEIGHT_PX + 'px'
-        } }),
-        h('div', { style: {
-          position: 'absolute',
-          top: chunkIndex * COMMIT_VIEW_HEIGHT_PX + 'px',
-        }},
-          ancestors.map((ancestor, ancestorIndex) => {
-            const child = ancestors[ancestorIndex + 1] || null;
-
-            const left = ancestorIndex * 32 + 'px';
-            const style = { position: 'absolute', left };
-
-            if (!child) {
-              if (ancestor.children[ancestor.children.length - 1] === report.id) {
-                return h('img', { height: 33, width: 32, src: treeEndURL, style });
-              } else {
-                return h('img', { height: 33, width: 32, src: treeJunctionURL, style });
-              }
-            }
-            if (ancestor.children[ancestor.children.length - 1] === child.id) {
-              return null;
-            } else {
-              return h('img', { height: 33, width: 32, src: treeColumnURL, style });
-            }
-
-
-            // if (ancestor) {
-            //   const parent = report.parent && client.cache.getCommit(report.parent);
-            //   return h('img', { height: 32, width: 32, src: treeJunctionURL });
-            // }
-
-            return h('img', { height: 32, width: 32, src: treeColumnURL });
-          })
-        ),
-        h('div', { style: {
-          'margin-left': ((report.distance - 1) * 32) + 'px',
-          height: '33px',
-        } }, [
-          h(CommitPreview, { color, commit: report, onClick, attributes, border })
-        ]),
-      ];
+      return h(CommitRow, {
+        width,
+        
+        client,
+        commit,
+        list: commits,
+        index: commitIndex,
+        thread,
+      });
     });
   };
   

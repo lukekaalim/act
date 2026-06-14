@@ -4,7 +4,7 @@
 <svg
    width="11.410001mm"
    height="11.079999mm"
-   viewBox="0 0 11.41 11.079999"
+   viewBox="0 0 11.410001 11.079999"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
@@ -22,12 +22,12 @@
      borderopacity="0.25"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
+     inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="3.9482604"
-     inkscape:cx="62.179283"
-     inkscape:cy="76.109468"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="-58.071144"
+     inkscape:cy="61.783455"
      inkscape:window-width="1920"
      inkscape:window-height="1018"
      inkscape:window-x="1920"
@@ -35,8 +35,8 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1">
     <inkscape:page
-       x="-1.3041976e-06"
-       y="2.4616754e-06"
+       x="9.0871687e-08"
+       y="3.8353305e-06"
        width="11.41"
        height="11.08"
        id="page22"
@@ -50,7 +50,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-32.201213,-25.815544)">
+     transform="translate(-32.201208,-25.815545)">
     <rect
        style="fill:#3c89a9;fill-opacity:1;stroke:none;stroke-width:0.665001;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect22-8"

@@ -4,7 +4,7 @@
 <svg
    width="5.8500004mm"
    height="5.9899998mm"
-   viewBox="0 0 5.8500001 5.99"
+   viewBox="0 0 5.8500004 5.99"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
@@ -22,12 +22,12 @@
      borderopacity="0.25"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
+     inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="3.9482604"
-     inkscape:cx="62.179283"
-     inkscape:cy="76.109468"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="-58.071144"
+     inkscape:cy="61.783455"
      inkscape:window-width="1920"
      inkscape:window-height="1018"
      inkscape:window-x="1920"
@@ -35,8 +35,8 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1">
     <inkscape:page
-       x="-4.4940653e-06"
-       y="9.8619898e-07"
+       x="-7.3223106e-07"
+       y="1.8625119e-06"
        width="5.8499999"
        height="5.9900002"
        id="page23"
@@ -70,7 +70,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-43.224793,-16.969878)">
+     transform="translate(-43.224788,-16.969879)">
     <path
        id="path24"
        style="fill:none;stroke:#5d7388;stroke-width:0.909;stroke-dasharray:none;marker-start:url(#marker20)"

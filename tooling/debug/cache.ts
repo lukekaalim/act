@@ -1,6 +1,13 @@
 import { CommitID, CommitVersion, EffectID } from "@lukekaalim/act-recon";
 import { CommitReport, DeltaReport, EffectReport, ElementReport, ThreadReport, TreeReport, WorkTaskReport } from "./report";
 
+export type FlattenedCommitReport = {
+  id: CommitID,
+  task: WorkTaskReport | null,
+  commit: CommitReport,
+  children: CommitID[],
+}
+
 /**
  * The DebugCache is a mutable store for accumulating
  * reports from Debug Event Buses, to reconstruct
@@ -123,7 +130,33 @@ export class DebugCache {
   }
 
   getCommit(id: CommitID) {
-    return this.pendingCommits.get(id) || this.liveCommits.get(id) || null;
+    const mountTask = this.mountTasks.get(id);
+    if (mountTask) {
+      // this commit isn't "real" yet
+      // so lets make up shit.
+      const commit = {
+        id: mountTask.id,
+        // mountTasks will always have element defined
+        element: mountTask.element as ElementReport,
+        children: [],
+        parent: mountTask.parent,
+        distance: mountTask.distance,
+        version: -1 as CommitVersion
+      };
+      return commit;
+    }
+
+    const pendingCommit = this.pendingCommits.get(id);
+    const liveCommit = this.liveCommits.get(id);
+
+    if (pendingCommit && liveCommit) {
+      // merge children if we have old + new
+      return {
+        ...pendingCommit,
+        children: [...new Set([...pendingCommit.children, ...liveCommit.children])],
+      }
+    }
+    return pendingCommit || liveCommit || null;
   }
   getCommitOrThrow(id: CommitID) {
     const commit = this.getCommit(id);
@@ -137,57 +170,7 @@ export class DebugCache {
 
     return this.pendingCommitStates.get(id) || 'live';
   }
-  getCommitList() {
-    const idStack: CommitID[] = [...this.roots.values()];
-
-    const flat: CommitReport[] = [];
-    
-    while (idStack.length > 0) {
-      const commitId = idStack.pop() as CommitID;
-
-      const mountTask = this.mountTasks.get(commitId);
-      if (mountTask) {
-        // this commit isn't "real" yet
-        // so lets make up shit.
-        flat.push({
-          id: mountTask.id,
-          element: mountTask.element as ElementReport,
-          children: [],
-          parent: mountTask.parent,
-          distance: mountTask.distance,
-          version: -1 as CommitVersion
-        })
-        continue;
-      }
-
-
-      const pendingCommit = this.pendingCommits.get(commitId);
-      const liveCommit = this.liveCommits.get(commitId);
-
-
-      const commit = pendingCommit || liveCommit;
-      if (!commit) {
-        console.log(`Could not resolve "${commitId}"`);
-        continue;
-      }
-
-      let children: CommitID[];
-      if (pendingCommit && liveCommit) {
-        // Include _both_ new and old children
-        children = [...new Set([...pendingCommit.children, ...liveCommit.children])];
-      } else {
-        children = commit.children;
-      }
-
-      flat.push(commit);
-
-      for (const childId of children.toReversed()) {
-        idStack.push(childId);
-      }
-    }
-
-    return flat;
-  }
+  
   getEffectList() {
     const effects = new Map<EffectID, EffectReport>(this.liveEffects);
 

@@ -1,7 +1,7 @@
 
 import { h, Node } from "@lukekaalim/act";
 import { NodeBuilder, RenderSpace2 } from "@lukekaalim/act-backstage";
-import { DebugReconciler, ValueReport } from "@lukekaalim/act-debug";
+import { DebugReconciler, ElementReport, ElementTypeReport, ValueReport } from "@lukekaalim/act-debug";
 import { createDOMScheduler, createWebNodeBuilder, HTML, render } from "@lukekaalim/act-web";
 import { CommitID, Reconciler2 } from "@lukekaalim/act-recon";
 import { InsightApp2 } from "./InsightApp2";
@@ -91,5 +91,32 @@ export const getTextForValue = (value: ValueReport): string => {
       return `undefined`;
     default:
       return  value;
+  }
+}
+
+export const getTextForElementType = (element: ElementReport): string => {
+  switch (element.type.type) {
+    case 'component':
+      return `<${element.type.name || 'Anonymous'}>`
+    case 'string':
+      return `<${element.type.name}>`
+    case 'symbol':
+      return `<symbol(${element.type.name || 'Anonymous'})>`
+    case 'array':
+      return `<array>`;
+    case 'render':
+      return `<render(${element.type.render})>`;
+    
+    case 'primitive':
+      switch (typeof element.type.value) {
+        case 'object':
+          return 'null';
+        case 'string':
+          return `"${element.type.value}"`;
+        default:
+          return `${element.type.value.toString()}`;
+      }
+    case 'special':
+      return `<special(${element.type.special})>`
   }
 }

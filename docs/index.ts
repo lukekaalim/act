@@ -169,7 +169,10 @@ const Test = () => {
       console.log('down')
     }
   })
-  return null;
+  return [
+    h('span', {}, 'fake!'),
+    null,
+  ];
 }
 
 const app =  h('div', {}, [

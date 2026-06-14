@@ -1,6 +1,7 @@
 import { Component, h } from "@lukekaalim/act"
 import { DeltaReport, EffectReport } from "@lukekaalim/act-debug"
 import { DebugCache } from "@lukekaalim/act-debug/cache"
+import { getTextForElementType } from "../utils"
 
 export type EffectTableProps = {
   effects: EffectReport[],
@@ -27,7 +28,7 @@ export const EffectTable: Component<EffectTableProps> = ({ effects, cache }) => 
       return h('tr', {}, [
         h('td', {}, effect.commit),
         h('td', {}, effect.id),
-        h('td', {}, commit.element.type),
+        h('td', {}, getTextForElementType(commit.element)),
         h('td', {}, effect.functionName),
         h('td', {}, effect.state),
       ])

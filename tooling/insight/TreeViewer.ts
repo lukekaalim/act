@@ -7,6 +7,7 @@ import classes from './TreeViewer.module.css';
 import { CommitReport, TreeReport } from "@lukekaalim/act-debug";
 import { CommitID } from "@lukekaalim/act-recon";
 import { CommitAttributeTag } from './AttributeTag';
+import { getTextForElementType } from "./utils";
 
 export type TreeViewerProps = {
   //commits: Map<CommitID, CommitReport>,
@@ -51,7 +52,8 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
   onClick,
 }) => {
   const background = `hsl(${(depth * 22.3) % 360}deg, 50%, 80%)`;
-  const elementBackground = color || `hsl(${stringHash(commit.element.type) % 360}deg, 60%, 80%)`;
+  const text = getTextForElementType(commit.element);
+  const elementBackground = color || `hsl(${stringHash(text) % 360}deg, 60%, 80%)`;
   const lineColor = `hsl(${stringHash(commit.id.toString()) % 360}, 100%, 20%)`
 
 
@@ -59,7 +61,7 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
 
     hs('div', { className: [classes.elementBar].join(' '), style: { 'position': 'relative' } }, [
       hs('button', { onClick, className: classes.elementName, style: { background: elementBackground, border } },
-        commit.element.type),
+        text),
       h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
       attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
       //h(CommitAttributeTag, { name: 'Version', value: commit.version.toString() }),

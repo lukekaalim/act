@@ -51,8 +51,8 @@
 }
 
 .panel {
-  width: 200px;
-  flex: 0 0 200px;
+  width: 300px;
+  flex: 0 0 300px;
   resize: horizontal;
 
   overflow: hidden;
@@ -107,4 +107,54 @@
 }
 .playbackButton:active {
   transform: scale(0.9);
+}
+
+.commitRowBackground {
+  position: absolute;
+  height: 33px;
+  background-color: #ffffff;
+}
+
+.commitRow:nth-child(odd) > .commitRowBackground {
+  background-color: #f4f4f4;
+}
+
+.commitRow > img {
+  position: absolute;
+  height: 33px;
+  width: 33px;
+}
+
+.commitRowPreviewContainer {
+  height: 33px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.commitRowControls {
+  display: inline-flex;
+  height: 33px;
+}
+
+.commitRowBreakpointToggle {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: none;
+
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+  opacity: 1;
+}
+.commitRowBreakpointToggle.off {
+  opacity: 0.5;
+}
+.commitRowBreakpointToggle:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.commitRowBreakpointToggle > img {
+  height: 22px;
 }

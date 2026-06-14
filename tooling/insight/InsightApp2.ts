@@ -1,5 +1,5 @@
 import { Component, h, Node, OpaqueID, useEffect, useRef, useState } from "@lukekaalim/act";
-import { CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectReport, ThreadReport } from "@lukekaalim/act-debug";
+import { CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectReport, FlattenedCommitReport, ThreadReport } from "@lukekaalim/act-debug";
 
 import classes from './InsightApp.module.css';
 
@@ -10,6 +10,7 @@ import { BreakpointPanel } from "./components/BreakpointPanel";
 import { InspectorPanel } from "./components/InspectorPanel";
 import { PlaybackBar } from "./components/PlaybackBar";
 import { SelectionContext, SelectionTarget, useSelectionManager } from "./lib/selection";
+import { CommitListEntry, createCommitList } from "./lib/list";
 
 export type InsightApp2Props = {
   client: DebugClient;
@@ -17,7 +18,7 @@ export type InsightApp2Props = {
 }
 
 export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) => {
-  const [commits, setCommits] = useState<CommitReport[]>([]);
+  const [commits, setCommits] = useState<CommitListEntry[]>([]);
   const [effects, setEffects] = useState<EffectReport[]>([]);
   const [thread, setThread] = useState<ThreadReport | null>(null);
 
@@ -33,11 +34,18 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
 
 
   useEffect(() => {
-    setCommits(client.cache.getCommitList());
+    const skip = (c: CommitReport) => {
+      return c.element.type.type !== 'component'
+      //return c.element.type.type !== 'string' && c.element.type.type !== 'primitive';
+    }
+    const hide = (c: CommitReport) => {
+      return c.element.type.type === 'primitive';
+    }
+    setCommits(createCommitList(client.cache, { skip }));
     setEffects(client.cache.getEffectList());
 
     const sync = (thread: ThreadReport) => {
-      setCommits(client.cache.getCommitList())
+      setCommits(createCommitList(client.cache, { skip }));
       setThread(thread)
     }
 

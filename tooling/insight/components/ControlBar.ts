@@ -10,6 +10,7 @@ import sideEffectsURL from '../assets/icons/side_effects.svg';
 import historyListURL from '../assets/icons/history_list.svg';
 
 let breakpointPanelURL2 = new URL(breakpointPanelURL, document.location.href);
+let inspectorPanelURL2 = new URL(inspectorPanelURL, document.location.href);
 
 export type ControlBarProps = {
   showBreakpointPanel: boolean,
@@ -35,20 +36,20 @@ export const ControlBar: Component<ControlBarProps> = ({
     h('button', {
       classList: [classes.toggle, !showBreakpointPanel && classes.off],
       onClick: () => onShowBreakpointPanelChange(!showBreakpointPanel)
-    }, h('img', { height: '22', src: breakpointPanelURL2, title: "Toggle Breakpoints" })),
+    }, h('img', { height: '32', src: breakpointPanelURL2, title: "Toggle Breakpoints" })),
 
     h('div', { className: classes.windowToggle }, [
       h('button', { className: classes.toggle, disabled: activeWindow === 'commits', onClick: () => onChangeWindow('commits') }, 
-        h('img', { height: '22', src: commitTreeURL, title: "Commits" })),
+        h('img', { height: '32', src: commitTreeURL, title: "Commits" })),
       h('button', { className: classes.toggle, disabled: activeWindow === 'effects', onClick: () => onChangeWindow('effects') },
-        h('img', { height: '22', src: sideEffectsURL, title: "Effects" })),
+        h('img', { height: '32', src: sideEffectsURL, title: "Effects" })),
       h('button', { className: classes.toggle, disabled: activeWindow === 'history', onClick: () => onChangeWindow('history') },
-        h('img', { height: '22', src: historyListURL, title: "History" })),
+        h('img', { height: '32', src: historyListURL, title: "History" })),
     ]),
 
     h('button', {
       classList: [classes.toggle, !showInspectorPanel && classes.off],
       onClick: () => onShowInspectorPanelChange(!showInspectorPanel)
-    }, h('img', { height: '22', src: inspectorPanelURL, title: "Toggle Inspector" })),
+    }, h('img', { height: '32', src: inspectorPanelURL2, title: "Toggle Inspector" })),
   ])
 };

@@ -22,12 +22,12 @@
      borderopacity="0.25"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
+     inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="3.9482604"
-     inkscape:cx="62.179283"
-     inkscape:cy="76.109468"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="-58.071144"
+     inkscape:cy="61.783455"
      inkscape:window-width="1920"
      inkscape:window-height="1018"
      inkscape:window-x="1920"
@@ -51,17 +51,20 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-5.4966703,-2.2270989)">
-    <circle
-       style="fill:#d76a51;fill-opacity:1;stroke-width:0.20519"
-       id="path1"
-       cx="11.467192"
-       cy="8.1976204"
-       r="4.6302686" />
-    <circle
-       style="fill:#c83d1d;fill-opacity:1;stroke-width:0.162849"
-       id="path1-3"
-       cx="11.467192"
-       cy="8.1976204"
-       r="3.6748166" />
+    <g
+       id="g20">
+      <circle
+         style="fill:#d76a51;fill-opacity:1;stroke-width:0.20519"
+         id="path1"
+         cx="11.467192"
+         cy="8.1976204"
+         r="4.6302686" />
+      <circle
+         style="fill:#c83d1d;fill-opacity:1;stroke-width:0.162849"
+         id="path1-3"
+         cx="11.467192"
+         cy="8.1976204"
+         r="3.6748166" />
+    </g>
   </g>
 </svg>

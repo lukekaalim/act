@@ -25,7 +25,7 @@
 }
 
 .commit {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   overflow: visible;
   white-space: pre;

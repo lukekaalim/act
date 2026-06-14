@@ -1,4 +1,4 @@
-import { Element, ElementID, OpaqueID } from "@lukekaalim/act";
+import { Element, ElementID, ElementType, OpaqueID, primitiveNodeTypes, specialNodeTypes } from "@lukekaalim/act";
 import { Commit2, CommitID, CommitTree2, CommitVersion, ComponentState, Delta, EffectID, EffectTask, WorkReason, WorkTask, WorkThread2 } from "@lukekaalim/act-recon";
 import { getElementName } from "./utils";
 
@@ -69,10 +69,56 @@ export const createCommitDetailsReport = (commit: Commit2, tree: CommitTree2): C
   }
 }
 
+export type ElementTypeReport =
+  | { type: 'primitive', value: string | number | boolean | null }
+  | { type: 'array' }
+  | { type: 'render', render: string }
+  | { type: 'special', special: 'boundary' | 'provider' | 'fallback' | 'suspend' | 'placeholder' }
+  | { type: 'symbol', name: string | null }
+  | { type: 'string', name: string }
+  | { type: 'component', name: string | null }
 
+export const createElementTypeReport = (elementType: ElementType, element: Element): ElementTypeReport => {
+  switch (elementType) {
+    case primitiveNodeTypes.string:
+      return { type: 'primitive', value: element.props.value as string };
+    case primitiveNodeTypes.number:
+      return { type: 'primitive', value: element.props.value as number };
+    case primitiveNodeTypes.boolean:
+      return { type: 'primitive', value: element.props.value as boolean };
+    case primitiveNodeTypes.null:
+      return { type: 'primitive', value: null };
+    case primitiveNodeTypes.array:
+      return { type: 'array' };
+    case specialNodeTypes.boundary:
+      return { type: 'special', special: 'boundary' };
+    case specialNodeTypes.render:
+      return { type: 'render', render: element.props.type as string };
+    case specialNodeTypes.provider:
+      return { type: 'special', special: 'provider' };
+    case specialNodeTypes.fallback:
+      return { type: 'special', special: 'fallback' };
+    case specialNodeTypes.suspend:
+      return { type: 'special', special: 'suspend' };
+    case specialNodeTypes.placeholder:
+      return { type: 'special', special: 'placeholder' };
+    default: {
+      switch (typeof elementType) {
+        case 'string':
+          return { type: 'string', name: elementType };
+        case 'function':
+          return { type: 'component', name: elementType.name };
+        case 'symbol':
+          return { type: 'symbol', name: elementType.description || null };
+        default:
+          throw new Error();
+      }
+    }
+  }
+}
 
 export type ElementReport = {
-  type: string,
+  type: ElementTypeReport,
   //props: Record<string, ValueReport>,
   id: ElementID;
 }
@@ -81,7 +127,7 @@ export const createElementReport = (element: Element): ElementReport => {
   return {
     id: element.id,
     //props: Object.entries(element.props).map(([name, value]) => [name, createValueReport(value)])
-    type: getElementName(element),
+    type: createElementTypeReport(element.type, element),
   }
 }
 

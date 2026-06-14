@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="5.8499999mm"
-   height="5.9900002mm"
-   viewBox="0 0 5.8499998 5.9900005"
+   width="5.8500004mm"
+   height="5.9899998mm"
+   viewBox="0 0 5.8500004 5.99"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
@@ -22,12 +22,12 @@
      borderopacity="0.25"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
+     inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="3.9482604"
-     inkscape:cx="62.179283"
-     inkscape:cy="76.109468"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="-58.071144"
+     inkscape:cy="61.783455"
      inkscape:window-width="1920"
      inkscape:window-height="1018"
      inkscape:window-x="1920"
@@ -35,8 +35,8 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1">
     <inkscape:page
-       x="0"
-       y="0"
+       x="3.5456256e-07"
+       y="1.8495964e-06"
        width="5.8499999"
        height="5.9900002"
        id="page7"
@@ -70,7 +70,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-28.952292,-16.774321)">
+     transform="translate(-28.952292,-16.774322)">
     <circle
        style="fill:#5d7388;fill-opacity:1;stroke-width:0.293366"
        id="path7"
