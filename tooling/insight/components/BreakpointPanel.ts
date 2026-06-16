@@ -3,8 +3,11 @@ import { Breakpoints, DebugCache } from "@lukekaalim/act-debug";
 
 import classes from './index.module.css';
 import { CommitPreview } from "../TreeViewer";
+import { IconButton } from "./Button";
+import { InsightController } from "../lib/controller";
 
 export type BreakpointPanelProps = {
+  controller: InsightController,
   cache: DebugCache,
 
   breakpoints: Readonly<Breakpoints>,
@@ -15,7 +18,7 @@ export type BreakpointPanelProps = {
   onResumePressed(): void,
 }
 
-export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, paused, onBreakpointsChange, cache }) => {
+export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, paused, onBreakpointsChange, cache, controller }) => {
   type Toggles = "threadStart" | "threadPass" | "effectsStart" | "threadSubmit"
 
   const setBreakpointToggle = (toggle: Toggles) => (event: InputEvent) => {
@@ -23,6 +26,8 @@ export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, 
     const nextBreakpoints: Breakpoints = { ...breakpoints, [toggle]: input.checked }
     onBreakpointsChange(nextBreakpoints);
   }
+
+  const commitBreakpoints = [...breakpoints.commits.values()];
 
   return h('div', { classList: [classes.panel] }, [
     h('h4', {}, 'Breakpoint Controls'),
@@ -44,13 +49,17 @@ export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, 
         h('span', {}, 'After Thread'),
       ]),
     ]),
-    h('h4', {}, 'Commit Breakpoints'),
-    h('ul', { className: classes.breakpointCommitList }, [...breakpoints.commits.values()].map((id) => {
-      const commit = cache.getCommit(id);
-      if (!commit)
-        return null;
-      return h('li', {}, h(CommitPreview, { commit }))
-    })),
+    commitBreakpoints.length > 0 && [
+      h('h4', {}, 'Collapsed Commits'),
+      h('ul', { className: classes.commitList }, commitBreakpoints.map(commitId => {
+        const commit = cache.getCommit(commitId);
+        if (!commit)
+          return null;
+        return h('li', {}, [h(IconButton, { icon: 'breakpoint', title: 'Clear Breakpoint', onClick() {}, className: classes.commitRowBreakpointToggle }), h(CommitPreview, { commit, onClick: () => {
+          controller.select({ type: 'commit', id: commitId })
+        } })])
+      }))
+    ],
     h('h4', {}, 'Effect Breakpoints'),
   ])
 }

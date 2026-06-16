@@ -43,6 +43,7 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
     }),
     h('div', { className: classes.insightContent }, [
       state.panels.breakpoints && h(BreakpointPanel, {
+        controller,
         onBreakpointsChange: (breakpoints) => client.setBreakpoints(breakpoints),
         breakpoints: state.breakpoints,
         paused: state.paused,

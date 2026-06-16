@@ -17,10 +17,12 @@ export type InspectorPanelProps = {
 export const InspectorPanel: Component<InspectorPanelProps> = ({ client, breakpoints, state, controller }) => {
   const { target } = useSelection();
 
+  const commit = target.type === 'commit' && client.cache.getCommit(target.id)
+
   return h('div', { className: classes.panel }, [
     h('h4', {}, 'Thread'),
-    target.type === 'commit' && h(CommitInspector, {
-      commit: client.cache.getCommitOrThrow(target.id),
+    commit && h(CommitInspector, {
+      commit,
       breakpoints,
       client,
       state,

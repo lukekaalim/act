@@ -22,10 +22,10 @@ export type Filters = {
 const DEFAULT_FILTERS: Filters = {
   collapsed: new Set(),
 
-  skipComponents: true,
-  skipPrimitives: true,
-  skipSpecial: true,
-  skipNamed: true,
+  skipComponents: false,
+  skipPrimitives: false,
+  skipSpecial: false,
+  skipNamed: false,
 }
 
 export const toggleCollapsedCommit = (filters: Filters, collapseToggledCommit: CommitID) => {
@@ -90,6 +90,15 @@ export const useInsightManager = (client: DebugClient) => {
 
   useEffect(() => {
     const skip = (c: CommitReport) => {
+      if (filters.skipPrimitives && (c.element.type.type === 'primitive' || c.element.type.type === 'array'))
+        return true;
+      if (filters.skipComponents && c.element.type.type === 'component')
+        return true;
+      if (filters.skipNamed && (c.element.type.type === 'string' || c.element.type.type === 'symbol'))
+        return true;
+      if (filters.skipSpecial && (c.element.type.type === 'special' || c.element.type.type === 'render'))
+        return true;
+
       //return c.element.type.type !== 'component'
       //return c.element.type.type !== 'string' && c.element.type.type !== 'primitive';
       return false;
@@ -152,7 +161,7 @@ export const useInsightManager = (client: DebugClient) => {
     setShowBreakpointPanel,
     setShowInspectorPanel,
     select(newTarget) {
-      
+      selection.select(newTarget)
     },
     focus(focusTarget) {
       

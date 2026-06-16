@@ -33,16 +33,22 @@ export const Virtual1D: Component<VirtualTreeProps> = ({ chunkSize, chunkCount, 
     const setViewport = () => {
       const rect = viewport.getBoundingClientRect();
 
-      setStart(Math.floor((viewport.scrollTop) / chunkSize))
-      setEnd(Math.ceil((viewport.scrollTop + rect.height) / chunkSize))
+      const start = Math.floor((viewport.scrollTop) / chunkSize);
+      const end = Math.ceil((viewport.scrollTop + rect.height) / chunkSize)
+
+      setStart(start)
+      setEnd(end)
     };
     setViewport();
 
     viewport.addEventListener('scroll', setViewport)
+    const resize = new ResizeObserver(setViewport);
+    resize.observe(viewport);
     return () => {
       viewport.removeEventListener('scroll', setViewport)
+      resize.disconnect();
     }
-  }, [propViewportRef])
+  }, [propViewportRef, chunkSize])
 
   const renderedIndices = Array
     .from({ length: end - start })
@@ -53,10 +59,13 @@ export const Virtual1D: Component<VirtualTreeProps> = ({ chunkSize, chunkCount, 
 
   useEffect(() => {
     const list = listRef.current;
-    if (!list)
+    const viewport = viewportRef.current;
+    if (!list || !viewport)
       return;
+    const rect = viewport.getBoundingClientRect();
 
-    const maxWidth = [...list.children].reduce((acc, curr) => Math.max(curr.getBoundingClientRect().width, acc), 0)
+    const maxWidth = [...list.children].reduce((acc, curr) => Math.max(curr.getBoundingClientRect().width, acc), rect.width)
+
     setWidth(prevMaxWidth => Math.max(maxWidth, prevMaxWidth));
   }, [start, end])
     

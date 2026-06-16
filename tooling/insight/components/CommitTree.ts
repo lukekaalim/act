@@ -16,6 +16,7 @@ import breakpointURL from '../assets/icons/breakpoint.svg'
 import breakpointUnsetURL from '../assets/icons/breakpoint_unset.svg'
 import { IconButton } from "./Button";
 import { InsightController, InsightState, toggleCollapsedCommit } from "../lib/controller";
+import { FiltersPanel } from "./FiltersPanel";
 
 
 export type CommitTreeProps = {
@@ -237,10 +238,18 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
     });
   }, [nextTask])
 
-  return h(Virtual1D, {
-    viewportRef,
-    chunkCount: commits.length / CHUNK_COMMIT_COUNT,
-    chunkSize: CHUNK_HEIGHT_PX,
-    renderChunk
-  })
+  const [showFilter, setShowFilter] = useState(false);
+
+  return h('div', { className: classes.commitTree }, [
+    h(Virtual1D, {
+      viewportRef,
+      chunkCount: commits.length / CHUNK_COMMIT_COUNT,
+      chunkSize: CHUNK_HEIGHT_PX,
+      renderChunk
+    }),
+    h(IconButton, { className: classes.filterButton, icon: 'filter', title: 'Filters', onClick() {
+      setShowFilter(!showFilter)
+    }, }),
+    showFilter && h(FiltersPanel, { controller, state }),
+  ])
 };
