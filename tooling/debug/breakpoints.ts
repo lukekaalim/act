@@ -40,3 +40,13 @@ export const DEFAULT_BREAKPOINTS: Breakpoints = {
   commits: new Set(),
   effects: new Set(),
 }
+
+export const toggleCommitBreakpoint = (breakpoints: Breakpoints, commitId: CommitID): Breakpoints => {
+  const nextBreakpoints = { ...breakpoints, commits: new Set(breakpoints.commits) };
+  if (nextBreakpoints.commits.has(commitId)) {
+    nextBreakpoints.commits.delete(commitId)
+  } else {
+    nextBreakpoints.commits.add(commitId)
+  }
+  return nextBreakpoints;
+}

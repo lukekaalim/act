@@ -158,3 +158,60 @@
 .commitRowBreakpointToggle > img {
   height: 22px;
 }
+
+.iconButton {
+  opacity: 0.75;
+  border: 0;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  cursor: pointer;
+  padding: 4px;
+}
+.iconButton:hover {
+  opacity: 1;
+  border: 1px solid rgba(63, 63, 63, 0.295);
+  background: rgb(243, 243, 243);
+}
+.iconButton:active {
+  opacity: 1;
+  border: 1px solid black;
+}
+
+.iconButton > img {
+  height: 20px;
+}
+
+.commitControlBar {
+  display: flex;
+  flex-direction: row;
+
+  margin: 0 auto;
+  gap: 4px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: rgb(231, 231, 231);
+}
+
+.commitRowCollapseButton {
+  position: absolute;
+  left: 0;
+  transform: translateX(-100%);
+
+  background: none;
+}
+.commitRowCollapseButton:hover {
+  background: none;
+}
+
+.commitInspectorPreviewRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.commitInspector {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}

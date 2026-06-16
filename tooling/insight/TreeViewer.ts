@@ -45,7 +45,7 @@ export type CommitPreviewProps = {
 
 export const CommitPreview: Component<CommitPreviewProps> = ({
   commit, depth = 0,
-  attributes = [],
+  attributes = [['Id', commit.id.toString()]],
   renderCommit,
   color,
   border = 'none',
@@ -62,7 +62,7 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
     hs('div', { className: [classes.elementBar].join(' '), style: { 'position': 'relative' } }, [
       hs('button', { onClick, className: classes.elementName, style: { background: elementBackground, border } },
         text),
-      h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
+      //h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
       attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
       //h(CommitAttributeTag, { name: 'Version', value: commit.version.toString() }),
     ]),

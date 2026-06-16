@@ -4,7 +4,7 @@ import { Root } from 'hast';
 import { toHtml } from 'hast-util-to-html';
 
 import { createDOMScheduler, createHASTBuilder, createWebNodeBuilder, hs, HTML, render } from '@lukekaalim/act-web';
-import { Boundary, Component, h, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
+import { Boundary, Component, h, primitiveNodeTypes, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
 //import all from 'typedoc:@lukekaalim/{act,act-recon,act-web,act-three,act-backstage,act-insight}';
 
@@ -170,8 +170,10 @@ const Test = () => {
     }
   })
   return [
-    h('span', {}, 'fake!'),
     null,
+    h(primitiveNodeTypes.null, { key: 'nope' }, [
+      h('button', {}, 'Secret Button')
+    ]),
   ];
 }
 

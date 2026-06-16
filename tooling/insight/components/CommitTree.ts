@@ -14,9 +14,14 @@ import treeEndURL from '../assets/icons/tree_end.svg'
 
 import breakpointURL from '../assets/icons/breakpoint.svg'
 import breakpointUnsetURL from '../assets/icons/breakpoint_unset.svg'
+import { IconButton } from "./Button";
+import { InsightController, InsightState, toggleCollapsedCommit } from "../lib/controller";
 
 
 export type CommitTreeProps = {
+  state: InsightState,
+  controller: InsightController,
+
   commits: CommitListEntry[],
   client: DebugClient,
   thread: ThreadReport | null,
@@ -27,6 +32,9 @@ const CHUNK_COMMIT_COUNT = 8;
 const CHUNK_HEIGHT_PX = COMMIT_VIEW_HEIGHT_PX * CHUNK_COMMIT_COUNT;
 
 type CommitRowProps = {
+  state: InsightState,
+  controller: InsightController,
+
   commit: CommitReport,
 
   index: number,
@@ -38,7 +46,7 @@ type CommitRowProps = {
   width: number,
 }
 
-export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, client, index, list }) => {
+export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, client, index, list, state, controller }) => {
   const ancestors = buildAncestorList(index, list);
   const border = getCommitBorder(commit, client.cache,  thread);
   const color =  getCommitColor(commit, client.cache, thread);
@@ -53,6 +61,11 @@ export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, cl
   }
 
   const [focused, setFocused] = useState(false);
+
+  const collapsed = state.filters.collapsed.has(commit.id);
+  const onToggleCollapse = () => {
+    controller.changeFilters(toggleCollapsedCommit(state.filters, commit.id))
+  }
 
   const onMouseEnter = () => {
     setFocused(true)
@@ -99,7 +112,12 @@ export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, cl
       h('div', { className: classes.commitRowPreviewContainer, style: {
         'margin-left': ((distance - 1) * 32) + 'px',
       } }, [
-        h(CommitPreview, { color, commit, onClick, border }),
+        (focused || collapsed) && commit.children.length > 0 && h(IconButton, {
+          icon: collapsed ? 'expand' : 'collapse',
+          onClick: onToggleCollapse,
+          className: classes.commitRowCollapseButton
+        }),
+        h(CommitPreview, { color, commit, onClick, border, attributes: [] }),
         h('div', { className: classes.commitRowControls }, [
           (focused || breakpointSet) && h('button', {
             classList: [classes.commitRowBreakpointToggle, !breakpointSet && classes.off],
@@ -168,7 +186,7 @@ const buildAncestorList = (index: number, list: CommitListEntry[]) => {
   return ancestors;
 }
 
-export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread }) => {
+export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread, state, controller }) => {
   const viewportRef = useRef<HTMLElement | null>(null);
 
   const nextTask = thread && thread.pendingTasks[thread.pendingTasks.length - 1];
@@ -193,6 +211,8 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
         list: commits,
         index: commitIndex,
         thread,
+        state,
+        controller,
       });
     });
   };

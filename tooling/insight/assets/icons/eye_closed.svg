@@ -7,74 +7,17 @@
    viewBox="0 0 18.860001 11.94"
    version="1.1"
    id="svg1"
-   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
-   sodipodi:docname="source.svg"
-   inkscape:export-batch-name=""
-   inkscape:export-batch-path="/home/lukekaalim/Projects/act/tooling/insight/assets/icons"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="true"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="mm"
-     inkscape:zoom="5.6568543"
-     inkscape:cx="-58.071144"
-     inkscape:cy="61.783455"
-     inkscape:window-width="1920"
-     inkscape:window-height="1018"
-     inkscape:window-x="1920"
-     inkscape:window-y="30"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="layer1">
-    <inkscape:page
-       x="-1.7153134e-06"
-       y="1.0357475e-08"
-       width="18.860001"
-       height="11.940001"
-       id="page20"
-       margin="0"
-       bleed="0"
-       inkscape:label="eye_closed" />
-  </sodipodi:namedview>
   <defs
-     id="defs1">
-    <inkscape:path-effect
-       effect="mirror_symmetry"
-       start_point="31.938135,7.2113692"
-       end_point="22.778005,7.2050598"
-       center_point="27.35807,7.2082145"
-       id="path-effect3-5"
-       is_visible="true"
-       lpeversion="1.2"
-       lpesatellites=""
-       mode="free"
-       discard_orig_path="false"
-       fuse_paths="true"
-       oposite_fuse="true"
-       split_items="false"
-       split_open="false"
-       link_styles="false" />
-  </defs>
+     id="defs1" />
   <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-53.544731,11.108414)">
     <path
        style="fill:#d8dee3;fill-opacity:1;stroke-width:0.264583"
        d="m 22.981969,7.2052003 c 0.719459,-0.8803573 2.613334,-2.0669287 4.447971,-2.0669287 1.834461,0 3.573513,1.2636232 4.342199,2.0729833 -0.7698,0.8083004 -2.510591,2.0695267 -4.345051,2.0669995 -1.834635,-0.00253 -3.726873,-1.1917065 -4.445119,-2.0730541 z"
        id="path2-3"
-       sodipodi:nodetypes="csc"
-       inkscape:path-effect="#path-effect3-5"
-       inkscape:original-d="m 22.946229,7.2499183 c 0.690656,-0.8843033 2.61782,-2.1116467 4.483711,-2.1116467 1.86589,0 3.633073,1.3072917 4.380848,2.1141733"
        transform="matrix(1.9056361,0,0,1.9056361,10.674422,-18.64767)" />
     <g
        id="g21"

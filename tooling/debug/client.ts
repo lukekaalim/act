@@ -1,5 +1,5 @@
 import { CommitID } from "@lukekaalim/act-recon";
-import { createDeltaReport, createThreadReport, createTreeReport, DeltaReport, EffectReport, SubmissionReport, ThreadReport, TreeReport } from "./report";
+import { CommitDetailsReport, createCommitDetailsReport, createDeltaReport, createThreadReport, createTreeReport, DeltaReport, EffectReport, SubmissionReport, ThreadReport, TreeReport } from "./report";
 import { DebugCache } from "./cache";
 import { DebugReconciler } from "./reconciler";
 import { createEventEmitter, SubscribeFunction } from "./events";
@@ -94,6 +94,13 @@ export class DirectDebugClient implements DebugClient {
   getDelta() {
     return createDeltaReport(this.reconciler.thread.delta);
   }
+  getDetails(commitId: CommitID): null | CommitDetailsReport {
+    const commit = this.reconciler.tree.commits.get(commitId);
+    if (!commit)
+      return null;
+
+    return createCommitDetailsReport(commit, this.reconciler.tree);
+  }
 
   cache: DebugCache = new DebugCache();
 }
@@ -133,6 +140,7 @@ export type DebugClient = {
   getThread(): ThreadReport,
   getTree(): TreeReport,
   getDelta(): DeltaReport,
+  getDetails(commit: CommitID): null | CommitDetailsReport,
 
   cache: DebugCache,
   breakpoints: Readonly<Breakpoints>,

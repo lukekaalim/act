@@ -7,48 +7,11 @@
    viewBox="0 0 5.8500004 5.99"
    version="1.1"
    id="svg1"
-   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
-   sodipodi:docname="source.svg"
-   inkscape:export-batch-name=""
-   inkscape:export-batch-path="/home/lukekaalim/Projects/act/tooling/insight/assets/icons"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="true"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="mm"
-     inkscape:zoom="5.6568543"
-     inkscape:cx="-58.071144"
-     inkscape:cy="61.783455"
-     inkscape:window-width="1920"
-     inkscape:window-height="1018"
-     inkscape:window-x="1920"
-     inkscape:window-y="30"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="layer1">
-    <inkscape:page
-       x="-2.1175103e-07"
-       y="1.8580861e-06"
-       width="5.8499999"
-       height="5.9900002"
-       id="page8"
-       margin="0"
-       bleed="0"
-       inkscape:label="children" />
-  </sodipodi:namedview>
   <defs
      id="defs1" />
   <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-36.389498,-16.902866)">
     <rect
@@ -62,17 +25,14 @@
     <path
        style="fill:none;fill-opacity:1;stroke:#5d7388;stroke-width:0.365;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:0.365, 0.365;stroke-dashoffset:0;stroke-opacity:1"
        d="m 38.619832,18.228639 v 4.039579"
-       id="path10"
-       sodipodi:nodetypes="cc" />
+       id="path10" />
     <path
        style="fill:none;fill-opacity:1;stroke:#5d7388;stroke-width:0.365;stroke-linejoin:miter;stroke-dasharray:0.365, 0.365;stroke-dashoffset:0;stroke-opacity:1"
        d="m 39.173631,20.604732 h 2.037661"
-       id="path11"
-       sodipodi:nodetypes="cc" />
+       id="path11" />
     <path
        style="fill:none;fill-opacity:1;stroke:#5d7388;stroke-width:0.365;stroke-linejoin:miter;stroke-dasharray:0.365, 0.365;stroke-dashoffset:0;stroke-opacity:1"
        d="m 39.161785,22.061823 h 2.037661"
-       id="path11-6"
-       sodipodi:nodetypes="cc" />
+       id="path11-6" />
   </g>
 </svg>

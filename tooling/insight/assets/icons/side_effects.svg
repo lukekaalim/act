@@ -7,43 +7,8 @@
    viewBox="0 0 11.410001 11.079999"
    version="1.1"
    id="svg1"
-   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
-   sodipodi:docname="source.svg"
-   inkscape:export-batch-name=""
-   inkscape:export-batch-path="/home/lukekaalim/Projects/act/tooling/insight/assets/icons"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="true"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="mm"
-     inkscape:zoom="5.6568543"
-     inkscape:cx="-58.071144"
-     inkscape:cy="61.783455"
-     inkscape:window-width="1920"
-     inkscape:window-height="1018"
-     inkscape:window-x="1920"
-     inkscape:window-y="30"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="layer1">
-    <inkscape:page
-       x="9.4771138e-07"
-       y="3.8191261e-06"
-       width="11.41"
-       height="11.08"
-       id="page18"
-       margin="0"
-       bleed="0"
-       inkscape:label="side_effects" />
-  </sodipodi:namedview>
   <defs
      id="defs1">
     <marker
@@ -52,12 +17,9 @@
        refX="0"
        refY="0"
        orient="auto-start-reverse"
-       inkscape:stockid="Triangle arrow"
        markerWidth="0.40000001"
        markerHeight="0.40000001"
        viewBox="0 0 1 1"
-       inkscape:isstock="true"
-       inkscape:collect="always"
        preserveAspectRatio="xMidYMid">
       <path
          transform="scale(0.5)"
@@ -67,8 +29,6 @@
     </marker>
   </defs>
   <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-18.930344,-25.659024)">
     <path
@@ -78,25 +38,11 @@
     <path
        style="fill:none;fill-opacity:1;stroke:#d66741;stroke-width:1.127;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 22.167968,27.540435 c 0,4.242901 3.906846,0.434477 3.906846,4.911462"
-       id="path21"
-       sodipodi:nodetypes="cc" />
+       id="path21" />
     <path
-       sodipodi:type="star"
        style="fill:#ffa504;fill-opacity:1;stroke:none;stroke-width:0.265316;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path22"
-       inkscape:flatsided="false"
-       sodipodi:sides="4"
-       sodipodi:cx="24.806093"
-       sodipodi:cy="32.743095"
-       sodipodi:r1="2.4320371"
-       sodipodi:r2="1.2160186"
-       sodipodi:arg1="0.52359878"
-       sodipodi:arg2="1.3089969"
-       inkscape:rounded="0"
-       inkscape:randomized="0"
        d="m 26.912299,33.959114 -1.791477,-0.04143 -1.530747,0.931622 0.04143,-1.791477 -0.931622,-1.530747 1.791477,0.04143 1.530748,-0.931623 -0.04143,1.791478 z"
-       inkscape:transform-center-y="0.13263295"
-       transform="matrix(-0.45991503,-0.82240832,0.82240832,-0.45991503,10.833952,67.545152)"
-       inkscape:transform-center-x="-0.42876428" />
+       transform="matrix(-0.45991503,-0.82240832,0.82240832,-0.45991503,10.833952,67.545152)" />
   </g>
 </svg>

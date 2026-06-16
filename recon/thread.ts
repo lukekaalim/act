@@ -189,7 +189,7 @@ export class WorkThread2 {
     if (output.effects)
       this.delta.addEffects(output.effects);
 
-    this.pendingTasks.push(...output.updates);
+    this.pendingTasks.push(...output.updates.toReversed());
   }
   updateCommit(commit: Commit2, element: Element, moved: boolean) {
     const output = this.tree.processElement(element, commit.ref, commit);
@@ -198,7 +198,7 @@ export class WorkThread2 {
     commit.update(element, output.childRefs);
     this.delta.update(oldElement, commit, moved);
 
-    this.pendingTasks.push(...output.updates);
+    this.pendingTasks.push(...output.updates.toReversed());
     if (output.effects)
       this.delta.addEffects(output.effects);
   }
@@ -210,7 +210,7 @@ export class WorkThread2 {
     if (commit.ref.length === 1)
       this.tree.roots.delete(commit.ref.id);
 
-    this.pendingTasks.push(...output.updates);
+    this.pendingTasks.push(...output.updates.toReversed());
     if (output.cleanups)
       this.delta.addEffects(output.cleanups);
   }
@@ -219,7 +219,7 @@ export class WorkThread2 {
       .map(c => this.tree.commits.get(c.id) as Commit2);
 
     const updates = prevChildren.map(prev => WorkTask.visit(prev));  
-    this.pendingTasks.push(...updates);
+    this.pendingTasks.push(...updates.toReversed());
 
     commit.update();
   }

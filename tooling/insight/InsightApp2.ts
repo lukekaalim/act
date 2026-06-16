@@ -11,6 +11,7 @@ import { InspectorPanel } from "./components/InspectorPanel";
 import { PlaybackBar } from "./components/PlaybackBar";
 import { SelectionContext, SelectionTarget, useSelectionManager } from "./lib/selection";
 import { CommitListEntry, createCommitList } from "./lib/list";
+import { useInsightManager } from "./lib/controller";
 
 export type InsightApp2Props = {
   client: DebugClient;
@@ -18,93 +19,45 @@ export type InsightApp2Props = {
 }
 
 export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) => {
-  const [commits, setCommits] = useState<CommitListEntry[]>([]);
-  const [effects, setEffects] = useState<EffectReport[]>([]);
-  const [thread, setThread] = useState<ThreadReport | null>(null);
-
-  const selection = useSelectionManager();
-
-
-  const [activeWindow, setActiveWindow] = useState<'commits' | 'effects' | 'history'>('commits');
-  const [showBreakpointPanel, setShowBreakpointPanel] = useState(true);
-  const [showInspectorPanel, setShowInspectorPanel] = useState(true);
-
-  const [breakpoints, setBreakpoints] = useState(DEFAULT_BREAKPOINTS);
-  const [paused, setPaused] = useState(false);
-
+  const [state, controller] = useInsightManager(client);
 
   useEffect(() => {
-    const skip = (c: CommitReport) => {
-      return c.element.type.type !== 'component'
-      //return c.element.type.type !== 'string' && c.element.type.type !== 'primitive';
-    }
-    const hide = (c: CommitReport) => {
-      return c.element.type.type === 'primitive';
-    }
-    setCommits(createCommitList(client.cache, { skip }));
-    setEffects(client.cache.getEffectList());
-
-    const sync = (thread: ThreadReport) => {
-      setCommits(createCommitList(client.cache, { skip }));
-      setThread(thread)
-    }
-
-    const subs = [
-      client.onThreadSubmit((submission) => sync(submission.thread)),
-      client.onEffectsFinish(() => {
-        setEffects(effects);
-      }),
-      client.onBreak(() => {
-        sync(client.getThread())
-        setPaused(true)
-      }),
-      client.onBreakpointsChange((newBreakpoints) => {
-        setBreakpoints(newBreakpoints)
-      }),
-      client.onFinish(() => {
-        setPaused(false)
-      })
-    ];
-
     onReady();
-    () => {
-      subs.forEach(sub => sub.cancel());
-    }
-  }, [client]);
+  }, [])
 
   const providers = (child: Node) => {
-    return h(SelectionContext.Provider, { value: selection },
+    return h(SelectionContext.Provider, { value: state.selection },
       child
     )
   }
 
   return providers(h('div', { className: classes.insightRoot }, [
     h(ControlBar, {
-      showBreakpointPanel,
-      showInspectorPanel,
-      activeWindow,
+      showBreakpointPanel: state.panels.breakpoints,
+      showInspectorPanel: state.panels.inspector,
+      activeWindow: state.activeWindow,
 
-      onChangeWindow: setActiveWindow,
-      onShowInspectorPanelChange: setShowInspectorPanel,
-      onShowBreakpointPanelChange: setShowBreakpointPanel,
+      onChangeWindow: controller.changeWindow,
+      onShowInspectorPanelChange: controller.setShowInspectorPanel,
+      onShowBreakpointPanelChange: controller.setShowBreakpointPanel,
     }),
     h('div', { className: classes.insightContent }, [
-      showBreakpointPanel && h(BreakpointPanel, {
+      state.panels.breakpoints && h(BreakpointPanel, {
         onBreakpointsChange: (breakpoints) => client.setBreakpoints(breakpoints),
-        breakpoints,
-        paused,
+        breakpoints: state.breakpoints,
+        paused: state.paused,
         cache: client.cache,
 
         onResumePressed: () => client.resume(),
         onStepPressed: () => client.step(),
       }),
       h('div', { className: classes.activeWindow }, [
-        activeWindow === 'commits' && h(CommitTree, { commits, client, thread }),
-        activeWindow === 'effects' && h(EffectTable, { cache: client.cache, effects }),
+        state.activeWindow === 'commits' && h(CommitTree, { commits: state.commits, client, thread: state.thread, state, controller }),
+        state.activeWindow === 'effects' && h(EffectTable, { cache: client.cache, effects: state.effects }),
       ]),
-      showInspectorPanel && h(InspectorPanel, { client, breakpoints }),
+      state.panels.inspector && h(InspectorPanel, { client, breakpoints: state.breakpoints, state, controller }),
     ]),
-    paused && h(PlaybackBar, {
+    state.paused && h(PlaybackBar, {
       onResumeClick: () => client.resume(),
       onStepClick: () => client.step(),
       onReloadClick: () => console.warn('UNIMPLEMETED'),
