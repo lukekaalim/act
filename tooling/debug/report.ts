@@ -216,6 +216,8 @@ export type ThreadReport = {
   id: OpaqueID<"ThreadID">,
   passes: number,
   done: boolean,
+  started: boolean,
+  submitted: boolean,
 };
 
 export type WorkReasonReport = { target: CommitID, element: ElementReport | null };
@@ -237,6 +239,8 @@ export const createThreadReport = (thread: WorkThread2): ThreadReport => {
     id: thread.id,
     passes: thread.passes,
     done: thread.done,
+    started: thread.started,
+    submitted: thread.submitted,
   }
 }
 

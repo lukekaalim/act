@@ -21,6 +21,7 @@ import selection from './selection.svg';
 import side_effects from './side_effects.svg';
 import skip from './skip.svg';
 import step from './step.svg';
+import step_over_children from './step_over_children.svg'
 import tree_column from './tree_column.svg';
 import tree_end from './tree_end.svg';
 import tree_junction from './tree_junction.svg';
@@ -49,6 +50,7 @@ export const icons = {
   side_effects,
   skip,
   step,
+  step_over_children,
   tree_column,
   tree_end,
   tree_junction

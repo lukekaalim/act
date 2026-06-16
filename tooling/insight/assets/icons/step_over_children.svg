@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="5.8500004mm"
+   height="5.9899998mm"
+   viewBox="0 0 5.8500004 5.99"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="marker20"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       markerWidth="0.40000001"
+       markerHeight="0.40000001"
+       viewBox="0 0 1 1"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path20" />
+    </marker>
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-50.872714,-18.201318)">
+    <circle
+       style="fill:#5d7388;fill-opacity:1;stroke-width:0.293366"
+       id="path7-2"
+       cx="52.589622"
+       cy="19.577124"
+       r="1.0245281" />
+    <circle
+       style="fill:none;fill-opacity:1;stroke:#5d7388;stroke-width:0.178757;stroke-linejoin:miter;stroke-dasharray:0.178757, 0.357514;stroke-dashoffset:0;stroke-opacity:1"
+       id="path7-0-2"
+       cx="52.596684"
+       cy="22.512857"
+       r="1.0010481" />
+    <path
+       style="fill:none;stroke:#5d7388;stroke-width:0.309;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker20)"
+       d="m 52.495635,19.592386 h 2.800478 v 3.439583 h -0.898786"
+       id="path29" />
+    <circle
+       style="fill:#ffffff;fill-opacity:1;stroke:#5d7388;stroke-width:0.303;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path7-0-2-3-3"
+       cx="55.275337"
+       cy="20.537638"
+       r="0.57445872" />
+  </g>
+</svg>

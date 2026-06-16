@@ -1,4 +1,4 @@
-import { Component, h, Node, OpaqueID, useEffect, useRef, useState } from "@lukekaalim/act";
+import { Component, h, Node, OpaqueID, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 import { CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectReport, FlattenedCommitReport, ThreadReport } from "@lukekaalim/act-debug";
 
 import classes from './InsightApp.module.css';
@@ -12,6 +12,7 @@ import { PlaybackBar } from "./components/PlaybackBar";
 import { SelectionContext, SelectionTarget, useSelectionManager } from "./lib/selection";
 import { CommitListEntry, createCommitList } from "./lib/list";
 import { useInsightManager } from "./lib/controller";
+import { CommitPreview } from "./TreeViewer";
 
 export type InsightApp2Props = {
   client: DebugClient;
@@ -30,6 +31,31 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
       child
     )
   }
+
+  const breakLocation = useMemo(() => {
+    if (!state.thread)
+      return null;
+
+    if (!state.thread.started && state.breakpoints.threadStart) {
+      return 'Before Thread'
+    }
+
+    const nextTask = state.thread.pendingTasks[state.thread.pendingTasks.length - 1];
+    if (!nextTask) {
+      if (state.thread.done && state.breakpoints.threadSubmit) {
+        return 'Thread Submission'
+      }
+    } else {
+      if (state.breakpoints.commits.has(nextTask.id)) {
+        const commit = client.cache.getCommit(nextTask.id);
+        if (commit)
+          return ['Breakpoint', h(CommitPreview, { commit, onClick() { controller.select({ type: 'commit', id: nextTask.id })} })]
+      }
+    }
+
+
+    return null;
+  }, [state.thread, state.breakpoints])
 
   return providers(h('div', { className: classes.insightRoot }, [
     h(ControlBar, {
@@ -64,7 +90,7 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
       onReloadClick: () => console.warn('UNIMPLEMETED'),
       onToggleBreakpointsEnabled: () => console.warn("UNIMPLEMNTED"),
       breakpointsEnabled: true,
-      currentBreakLocation: null
+      currentBreakLocation: breakLocation
     }),
   ]))
 };
