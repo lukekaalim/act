@@ -89,7 +89,7 @@ export const CommitInspector: Component<CommitInspectorProps> = ({ commit, break
       h(IconButton, { icon: hasBreakpoint ? 'breakpoint' : 'breakpoint_unset', onClick: onToggleBreakpoint }),
       h(IconButton, { icon: 'selection', onClick() {} }),
       h(IconButton, { icon: isCollapsed ? 'expand' : 'collapse', onClick: onToggleCollapse }),
-      h(IconButton, { icon: 'reload', onClick() {} }),
+      h(IconButton, { icon: 'reload', onClick() { client.requestRender(commit.id) } }),
     ]),
     h("details", {}, [
       h('summary', {}, h('strong', {}, 'Children')),

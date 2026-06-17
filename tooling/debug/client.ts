@@ -102,6 +102,15 @@ export class DirectDebugClient implements DebugClient {
     return createCommitDetailsReport(commit, this.reconciler.tree);
   }
 
+  requestFlash(commit: CommitID) {
+    
+  }
+  requestRender(commitId: CommitID) {
+    const commit = this.reconciler.tree.commits.get(commitId);
+    if (commit)
+      this.reconciler.render(commit.ref);
+  }
+
   cache: DebugCache = new DebugCache();
 }
 
@@ -141,6 +150,9 @@ export type DebugClient = {
   getTree(): TreeReport,
   getDelta(): DeltaReport,
   getDetails(commit: CommitID): null | CommitDetailsReport,
+
+  requestFlash(commit: CommitID): void,
+  requestRender(commit: CommitID): void,
 
   cache: DebugCache,
   breakpoints: Readonly<Breakpoints>,

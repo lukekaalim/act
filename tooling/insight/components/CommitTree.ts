@@ -147,7 +147,7 @@ export const getCommitBorder = (commit: CommitReport, cache: DebugCache, thread:
 
   if (thread) {
     if (thread.mustRender.includes(commit.id))
-      return '1px solid rgb(19, 33, 231)';
+      return '2px solid rgb(19, 33, 231)';
     if (thread.pendingTasks.some(c => c.id === commit.id)) {
       return '2px dashed rgb(255, 145, 0)'
     }

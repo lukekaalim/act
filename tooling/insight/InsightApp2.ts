@@ -34,28 +34,30 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
   }
 
   const breakLocation = useMemo(() => {
-    if (!state.thread)
-      return null;
+    const locations: Node[] = [];
 
-    if (!state.thread.started && state.breakpoints.threadStart) {
-      return 'Before Thread'
+    if (!state.thread)
+      return locations;
+
+    if (!state.thread.started) {
+      // OR we are doing effects... who is to say
+      locations.push('Before Thread Start')
+    }
+    if (state.thread.started && state.thread.done && !state.thread.submitted) {
+      locations.push('Before Thread Submission')
     }
 
     const nextTask = state.thread.pendingTasks[state.thread.pendingTasks.length - 1];
-    if (!nextTask) {
-      if (state.thread.done && state.breakpoints.threadSubmit) {
-        return 'Thread Submission'
-      }
-    } else {
+    if (nextTask) {
       if (state.breakpoints.commits.has(nextTask.id)) {
         const commit = client.cache.getCommit(nextTask.id);
-        if (commit)
-          return ['Breakpoint', h(CommitPreview, { commit, onClick() { controller.select({ type: 'commit', id: nextTask.id })} })]
+        if (commit) {
+          locations.push('Breakpoint', h(CommitPreview, { commit, onClick() { controller.select({ type: 'commit', id: nextTask.id })} }))
+        }
       }
     }
 
-
-    return null;
+    return locations;
   }, [state.thread, state.breakpoints])
 
   return providers(h('div', { className: classes.insightRoot }, [
