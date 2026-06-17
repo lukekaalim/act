@@ -55,7 +55,7 @@
   flex: 0 0 300px;
   resize: horizontal;
 
-  overflow: hidden;
+  overflow: auto;
 
   display: flex;
   flex-direction: column;

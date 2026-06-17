@@ -8,6 +8,7 @@ import { useSelection } from "../lib/selection";
 import { CommitPreview } from "../TreeViewer";
 import { Filters, InsightController, InsightState, toggleCollapsedCommit } from "../lib/controller";
 import { CommitAttributeTag } from "../AttributeTag";
+import { getTextForValue } from "../utils";
 
 export type CommitInspectorProps = {
   commit: CommitReport,
@@ -36,6 +37,8 @@ export const CommitInspector: Component<CommitInspectorProps> = ({ commit, break
     controller.changeFilters(toggleCollapsedCommit(state.filters, commit.id))
   }
 
+  const component = details && details.component;
+
   return h('div', { className: classes.commitInspector }, [
     // preview
     h('div', { className: classes.commitInspectorPreviewRow }, 
@@ -54,11 +57,56 @@ export const CommitInspector: Component<CommitInspectorProps> = ({ commit, break
       h(IconButton, { icon: 'selection', onClick() {} }),
       h(IconButton, { icon: isCollapsed ? 'expand' : 'collapse', onClick: onToggleCollapse }),
       h(IconButton, { icon: 'reload', onClick() {} }),
-    ])
+    ]),
     
 
     // info
 
     // state details
+    details && [
+      h('div', {}, [
+        h('button', {}, 'By Order'),
+        h('button', { disabled: true }, 'By Type'),
+      ]),
+
+      h('h4', {}, 'Props'),
+      h('table', {}, 
+        Object.entries(details.props).map(([name, value]) => {
+          return h('tr', {}, [h('td', {}, name), h('td', {}, getTextForValue(value))])
+      })),
+      component && [
+        h('h4', {}, 'State'),
+        h('table', {}, 
+          component.stateValues.map((state) => {
+            return h('tr', {}, [
+              h('td', {}, state.hookIndex),
+              h('td', {}, getTextForValue(state.value))
+            ])
+        })),
+        h('h4', {}, 'Effects'),
+        h('table', {}, 
+          component.deps.map((effect) => {
+            return h('tr', {}, [
+              h('td', {}, effect.hookIndex),
+              h('td', {},
+                component.effects.find(e => e.hookIndex === effect.hookIndex)?.effect || '??'
+              ),
+              effect.deps && effect.deps.map(dep => {
+                return h('td', {}, getTextForValue(dep))
+              }),
+              !effect.deps && h('td', {}, 'null')
+            ])
+        })),
+        h('h4', {}, 'Contexts'),
+        h('table', {}, 
+          component.subscriptions.map((subscription) => {
+            return h('tr', {}, [
+              h('td', {}, subscription.hookIndex),
+              h('td', {}, subscription.context),
+              h('td', {}, subscription.provider),
+            ])
+        })),
+      ]
+    ]
   ])
 }

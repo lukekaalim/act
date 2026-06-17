@@ -1,4 +1,4 @@
-import { Element, ElementID, ElementType, OpaqueID, primitiveNodeTypes, specialNodeTypes } from "@lukekaalim/act";
+import { ContextID, Element, ElementID, ElementType, OpaqueID, primitiveNodeTypes, refSymbol, specialNodeTypes } from "@lukekaalim/act";
 import { Commit2, CommitID, CommitTree2, CommitVersion, ComponentState, Delta, EffectID, EffectTask, WorkReason, WorkTask, WorkThread2 } from "@lukekaalim/act-recon";
 import { getElementName } from "./utils";
 
@@ -12,6 +12,10 @@ export type ValueReport =
   | { type: 'undefined' }
   | { type: 'primitive', value: string | number | boolean | null }
   | { type: 'complex', name: string }
+  | { type: 'function', name: string }
+  | { type: 'array', length: number }
+  | { type: 'ref', current: ValueReport }
+  | { type: 'object', keys: string[] }
 
 export const createValueReport = (value: unknown): ValueReport => {
   switch (typeof value) {
@@ -24,11 +28,21 @@ export const createValueReport = (value: unknown): ValueReport => {
     case 'object':
       if (!value)
         return { type: 'primitive', value };
-      if (value.constructor)
+      if (refSymbol in value && "current" in value) {
+        return { type: "ref", current: createValueReport(value.current) };
+      }
+      if (Array.isArray(value))
+        return { type: 'array', length: value.length }
+      if (value.constructor) {
+        if (value.constructor.name === "Object") {
+          return { type: 'object', keys: Object.keys(value) }
+        }
         return { type: 'complex', name: value.constructor.name }
+      }
+      
       return { type: 'complex', name: '???' }
     case 'function':
-      return { type: 'complex', name: `function(${value.name})` };
+      return { type: 'function', name: value.name };
     case 'symbol':
       return { type: 'complex', name: value.description ? `symbol(${value.description})` : 'symbol' }
     case 'undefined':
@@ -37,7 +51,10 @@ export const createValueReport = (value: unknown): ValueReport => {
 };
 
 export type ComponentStateReport = {
-  stateValues: { hookIndex: number, value: ValueReport }[]
+  stateValues: { hookIndex: number, value: ValueReport }[],
+  deps: { hookIndex: number, deps: null | ValueReport[] }[],
+  subscriptions: { hookIndex: number, context: ContextID, provider: CommitID }[],
+  effects: { hookIndex: number, effect: EffectID }[],
 }
 
 export type CommitDetailsReport = {
@@ -59,8 +76,21 @@ export const createCommitDetailsReport = (commit: Commit2, tree: CommitTree2): C
     stateValues: [...componentState.values.entries()].map(([hookIndex, value]) => ({
       hookIndex,
       value: createValueReport(value),
-    }))
-  } || null;
+    })),
+    deps: [...componentState.deps.entries()].map(([hookIndex, deps]) => ({
+      hookIndex,
+      deps: deps && deps.map(createValueReport)
+    })),
+    subscriptions: [...componentState.providers.entries()].map(([hookIndex, provider]) => ({
+      hookIndex,
+      context: provider?.contextId || '??',
+      provider: provider?.id || '??'
+    })),
+    effects: [...componentState.effects.entries()].map(([hookIndex, effect]) => ({
+      hookIndex,
+      effect
+    })),
+  } as ComponentStateReport || null;
 
   return {
     commit: createCommitReport(commit),

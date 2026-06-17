@@ -81,6 +81,7 @@ export const getTextForValue = (value: ValueReport): string => {
         case 'object':
           return `null`;
         case 'string':
+          return `"${value.value}"`
         case 'boolean':
         case 'number':
           return value.value.toString();
@@ -89,6 +90,14 @@ export const getTextForValue = (value: ValueReport): string => {
       return value.name;
     case 'undefined':
       return `undefined`;
+    case 'function':
+      return `function`;
+    case 'array':
+      return `array[${value.length}]`
+    case 'object':
+      return `{ ${value.keys.join(', ')} }`
+    case 'ref':
+      return `Ref<${getTextForValue(value.current)}>`;
     default:
       return  value;
   }
