@@ -51,18 +51,23 @@
 }
 
 .panel {
-  width: 300px;
-  flex: 0 0 300px;
   padding: 4px;
-  resize: horizontal;
 
   overflow: auto;
 
   display: flex;
   flex-direction: column;
+}
+
+.panelContainer {
+  width: 300px;
+  position: relative;
 
   border-right: 1px solid rgba(110, 110, 110, 0.473);
   border-left: 1px solid rgba(110, 110, 110, 0.473);
+
+  display: flex;
+  flex-direction: column;
 }
 
 .namedBreakpointList {
@@ -309,4 +314,33 @@
 
 .lineageColumn > img {
   height: 20px;
+}
+
+.grabHandle {
+  position: absolute;
+  background: #ddd;
+  border: 1px solid #bdbdbd;
+  border-radius: 6px;
+  cursor: grab;
+
+  padding: 0;
+  user-select: none;
+}
+.grabHandle.left {
+  left: 0;
+  top: 50%;
+  transform: translate(-50%, 50%);
+}
+.grabHandle.right {
+  right: -1px;
+  top: 50%;
+  transform: translate(50%, 50%);
+}
+
+.grabHandle > img {
+  width: 10px;
+  padding: 2px 0px;
+  height: 32px;
+
+  pointer-events: none;
 }

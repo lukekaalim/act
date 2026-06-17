@@ -28,6 +28,7 @@ import step_over_children from './step_over_children.svg'
 import tree_column from './tree_column.svg';
 import tree_end from './tree_end.svg';
 import tree_junction from './tree_junction.svg';
+import vertical_grab_handle from './vertical_grab_handle.svg';
 
 export const icons = {
   ancestor_column,
@@ -58,7 +59,8 @@ export const icons = {
   step_over_children,
   tree_column,
   tree_end,
-  tree_junction
+  tree_junction,
+  vertical_grab_handle
 }
 
 for (const icon of Object.keys(icons) as (keyof typeof icons)[]) {

@@ -57,6 +57,9 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
       }
     }
 
+    if (locations.length === 0)
+      return ['Step']
+
     return locations;
   }, [state.thread, state.breakpoints])
 
