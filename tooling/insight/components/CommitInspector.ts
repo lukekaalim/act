@@ -9,6 +9,8 @@ import { CommitPreview } from "../TreeViewer";
 import { Filters, InsightController, InsightState, toggleCollapsedCommit } from "../lib/controller";
 import { CommitAttributeTag } from "../AttributeTag";
 import { getTextForValue } from "../utils";
+import { getCommitBorder, getCommitColor } from "./CommitTree";
+import { CommitID } from "@lukekaalim/act-recon";
 
 export type CommitInspectorProps = {
   commit: CommitReport,
@@ -37,12 +39,43 @@ export const CommitInspector: Component<CommitInspectorProps> = ({ commit, break
     controller.changeFilters(toggleCollapsedCommit(state.filters, commit.id))
   }
 
+  const ancestors: CommitReport[] = [];
+  let parentId = commit.parent;
+  while (parentId) {
+    const parentCommit = state.client.cache.getCommit(parentId);
+    if (!parentCommit)
+      break;
+    ancestors.push(parentCommit);
+    parentId = parentCommit.parent;
+  }
+  ancestors.reverse();
+
   const component = details && details.component;
 
+  const onCommitClick = (commitId: CommitID) => () => {
+    controller.select({ type: 'commit', id: commitId })
+  }
+
+  const renderAncestor = (ancestor: CommitReport, isLast: boolean) => {
+    const color = getCommitColor(ancestor, state.client.cache, state.thread);
+    const border = getCommitBorder(ancestor, state.client.cache, state.thread);
+
+    return [
+      h(CommitPreview, { commit: ancestor, attributes: [], color, border, onClick: onCommitClick(ancestor.id) }),
+      !isLast && h('img', { src: icons.ancestor_column }),
+    ]
+  }
+  const color = getCommitColor(commit, state.client.cache, state.thread);
+  const border = getCommitBorder(commit, state.client.cache, state.thread);
+
   return h('div', { className: classes.commitInspector }, [
+    h("details", {}, [
+      h('summary', {}, h('strong', {}, 'Lineage')),
+      h('div', { className: classes.lineageColumn }, ancestors.map((a, i) => renderAncestor(a, i === ancestors.length - 1))),
+    ]),
     // preview
     h('div', { className: classes.commitInspectorPreviewRow }, 
-      h(CommitPreview, { commit, attributes: [] })
+      h(CommitPreview, { commit, attributes: [], color, border })
     ),
     h('div', {}, [
       h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
@@ -57,6 +90,18 @@ export const CommitInspector: Component<CommitInspectorProps> = ({ commit, break
       h(IconButton, { icon: 'selection', onClick() {} }),
       h(IconButton, { icon: isCollapsed ? 'expand' : 'collapse', onClick: onToggleCollapse }),
       h(IconButton, { icon: 'reload', onClick() {} }),
+    ]),
+    h("details", {}, [
+      h('summary', {}, h('strong', {}, 'Children')),
+      h('ol', { className: classes.commitList }, commit.children.map(child => {
+        const childCommit = state.client.cache.getCommit(child);
+        if (!childCommit)
+          return null;
+
+        const color = getCommitColor(childCommit, state.client.cache, state.thread);
+        const border = getCommitBorder(childCommit, state.client.cache, state.thread);
+        return h('li', {}, h(CommitPreview, { color, border, commit: childCommit, attributes: [], onClick: onCommitClick(child) }))
+      })),
     ]),
     
 

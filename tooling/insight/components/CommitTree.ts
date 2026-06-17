@@ -17,6 +17,7 @@ import breakpointUnsetURL from '../assets/icons/breakpoint_unset.svg'
 import { IconButton } from "./Button";
 import { InsightController, InsightState, toggleCollapsedCommit } from "../lib/controller";
 import { FiltersPanel } from "./FiltersPanel";
+import { CommitID } from "@lukekaalim/act-recon";
 
 
 export type CommitTreeProps = {
@@ -26,6 +27,9 @@ export type CommitTreeProps = {
   commits: CommitListEntry[],
   client: DebugClient,
   thread: ThreadReport | null,
+
+  scrollTarget: CommitID | null,
+  onScrollTargetComplete(): void,
 }
 
 const COMMIT_VIEW_HEIGHT_PX = 33;
@@ -132,7 +136,7 @@ export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, cl
 }
 
 
-const getCommitBorder = (commit: CommitReport, cache: DebugCache, thread: ThreadReport | null) => {
+export const getCommitBorder = (commit: CommitReport, cache: DebugCache, thread: ThreadReport | null) => {
   const nextTask = thread && thread.pendingTasks[thread.pendingTasks.length - 1];
   if (nextTask && nextTask.id === commit.id)
     return '2px solid rgb(255, 145, 0)';
@@ -152,10 +156,10 @@ const getCommitBorder = (commit: CommitReport, cache: DebugCache, thread: Thread
     }
   }
 
-  return 'none';
+  return '1px solid #b1b1b1';
 }
 
-const getCommitColor = (commit: CommitReport, cache: DebugCache, thread: ThreadReport | null) => {
+export const getCommitColor = (commit: CommitReport, cache: DebugCache, thread: ThreadReport | null) => {
   const state = cache.getCommitState(commit.id);
   switch (state) {
     case 'created':
@@ -187,7 +191,7 @@ const buildAncestorList = (index: number, list: CommitListEntry[]) => {
   return ancestors;
 }
 
-export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread, state, controller }) => {
+export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread, state, controller, scrollTarget, onScrollTargetComplete }) => {
   const viewportRef = useRef<HTMLElement | null>(null);
 
   const nextTask = thread && thread.pendingTasks[thread.pendingTasks.length - 1];
@@ -218,6 +222,7 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
     });
   };
   
+  /*
   useEffect(() => {
     const viewport = viewportRef.current;
     
@@ -237,6 +242,29 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
       behavior: 'smooth'
     });
   }, [nextTask])
+  */
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!scrollTarget || !viewport)
+      return;
+
+    const commit = client.cache.getCommit(scrollTarget);
+    if (!commit)
+      return;
+
+    const rect = viewport.getBoundingClientRect()
+    const index = commits.findIndex(c => c.id === scrollTarget);
+    if (index === -1)
+      return;
+
+    viewport.scrollTo({
+      top: (index * COMMIT_VIEW_HEIGHT_PX) - (rect.height / 2),
+      left: ((commit.distance - 1) * 32) - (rect.width / 2),
+      behavior: 'smooth'
+    });
+    onScrollTargetComplete();
+  }, [scrollTarget, onScrollTargetComplete])
 
   const [showFilter, setShowFilter] = useState(false);
 

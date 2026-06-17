@@ -57,7 +57,8 @@ export type InsightState = {
   panels: {
     inspector: boolean,
     breakpoints: boolean,
-  }
+  },
+  commitScrollTarget: CommitID | null,
 }
 
 export type InsightController = {
@@ -69,6 +70,8 @@ export type InsightController = {
 
   setShowInspectorPanel(showPanel: boolean): void,
   setShowBreakpointPanel(showPanel: boolean): void,
+
+  onConsumeCommitScrollTarget(): void,
 };
 
 export const useInsightManager = (client: DebugClient) => {
@@ -87,6 +90,7 @@ export const useInsightManager = (client: DebugClient) => {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [paused, setPaused] = useState(false);
 
+  const [commitScrollTarget, setScrollTarget] = useState<CommitID | null>(null);
 
   useEffect(() => {
     const skip = (c: CommitReport) => {
@@ -124,8 +128,12 @@ export const useInsightManager = (client: DebugClient) => {
         setEffects(effects);
       }),
       client.onBreak(() => {
-        sync(client.getThread())
+        const thread = client.getThread()
+        sync(thread)
         setPaused(true)
+        const pendingTask = thread.pendingTasks[thread.pendingTasks.length - 1];
+        if (pendingTask)
+          controller.focus({ type: 'commit', id: pendingTask.id });
       }),
       client.onBreakpointsChange((newBreakpoints) => {
         setBreakpoints(newBreakpoints)
@@ -154,8 +162,15 @@ export const useInsightManager = (client: DebugClient) => {
     panels: {
       breakpoints: showBreakpointPanel,
       inspector: showInspectorPanel,
-    }
+    },
+    commitScrollTarget
   };
+  
+  // KLUDGE
+  useEffect(() => {
+    if (selection.target.type === 'commit')
+      controller.focus(selection.target);
+  }, [selection.target])
 
   const controller: InsightController = useMemo(() => ({
     setShowBreakpointPanel,
@@ -164,7 +179,11 @@ export const useInsightManager = (client: DebugClient) => {
       selection.select(newTarget)
     },
     focus(focusTarget) {
-      
+      if (focusTarget.type === 'commit')
+        setScrollTarget(focusTarget.id);
+    },
+    onConsumeCommitScrollTarget() {
+      setScrollTarget(null);
     },
     changeFilters(newFilters) {
       setFilters(newFilters);

@@ -5,6 +5,7 @@ import { CommitPreview } from '../TreeViewer';
 import { useSelection } from '../lib/selection';
 import { CommitInspector } from './CommitInspector';
 import { InsightController, InsightState } from '../lib/controller';
+import { ThreadInspector } from './ThreadInspector';
 
 export type InspectorPanelProps = {
   client: DebugClient,
@@ -20,7 +21,7 @@ export const InspectorPanel: Component<InspectorPanelProps> = ({ client, breakpo
   const commit = target.type === 'commit' && client.cache.getCommit(target.id)
 
   return h('div', { className: classes.panel }, [
-    h('h4', {}, 'Thread'),
+    commit && state.thread && h(ThreadInspector, { thread: state.thread, commit }),
     commit && h(CommitInspector, {
       commit,
       breakpoints,

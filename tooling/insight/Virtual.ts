@@ -75,7 +75,7 @@ export const Virtual1D: Component<VirtualTreeProps> = ({ chunkSize, chunkCount, 
     h('div', { ref: viewportRef, style: { 'overflow': 'auto',  flex: 1 } },
       h('div', { ref: listRef, style: { height: (chunkSize * chunkCount) + 'px', position: 'relative', width: `${width}px` } },
         renderedIndices.map(index =>
-          h('div', { style: { position: 'absolute', top: (index * chunkSize) + 'px', height: chunkSize }},
+          h('div', { key: index, style: { position: 'absolute', top: (index * chunkSize) + 'px', height: chunkSize }},
             renderChunk(index, width)))
     ))
   ];

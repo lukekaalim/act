@@ -13,6 +13,7 @@ import { SelectionContext, SelectionTarget, useSelectionManager } from "./lib/se
 import { CommitListEntry, createCommitList } from "./lib/list";
 import { useInsightManager } from "./lib/controller";
 import { CommitPreview } from "./TreeViewer";
+import { CommitID } from "@lukekaalim/act-recon";
 
 export type InsightApp2Props = {
   client: DebugClient;
@@ -79,7 +80,9 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
         onStepPressed: () => client.step(),
       }),
       h('div', { className: classes.activeWindow }, [
-        state.activeWindow === 'commits' && h(CommitTree, { commits: state.commits, client, thread: state.thread, state, controller }),
+        state.activeWindow === 'commits' && h(CommitTree, { commits: state.commits, client, thread: state.thread, state, controller,
+          scrollTarget: state.commitScrollTarget,
+          onScrollTargetComplete: controller.onConsumeCommitScrollTarget }),
         state.activeWindow === 'effects' && h(EffectTable, { cache: client.cache, effects: state.effects }),
       ]),
       state.panels.inspector && h(InspectorPanel, { client, breakpoints: state.breakpoints, state, controller }),

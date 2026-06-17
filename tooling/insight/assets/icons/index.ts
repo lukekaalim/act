@@ -1,3 +1,6 @@
+import ancestor_column from './ancestor_column.svg';
+import ancestor_skip_row_column from './ancestor_skip_row_column.svg';
+
 import breakpoint_arrow_paused from './breakpoint_arrow_paused.svg';
 import breakpoint_arrow from './breakpoint_arrow.svg';
 import breakpoint_panel from './breakpoint_panel.svg';
@@ -27,6 +30,8 @@ import tree_end from './tree_end.svg';
 import tree_junction from './tree_junction.svg';
 
 export const icons = {
+  ancestor_column,
+  ancestor_skip_row_column,
   breakpoint_arrow_paused,
   breakpoint_arrow,
   breakpoint_panel,
