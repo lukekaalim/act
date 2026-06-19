@@ -1,11 +1,10 @@
-import { CommitID, CommitRef2, CommitTree2, Delta, EffectID, EffectTask, QueueResult, Reconciler2, Scheduler, WorkReason, WorkTask, WorkThread2 } from "@lukekaalim/act-recon";
-import { CommitDetailsReport, createCommitDetailsReport, createDeltaReport, createEffectReport, createSubmissionReport, createThreadReport, createTreeReport, createWorkReasonReport, createWorkTaskReport, DeltaReport, EffectReport, SubmissionReport, ThreadReport, TreeReport, WorkReasonReport, WorkTaskReport } from "./report";
-import { Node } from "@lukekaalim/act";
+import {  CommitTree2, Delta, EffectCleanupState, EffectID, EffectTask, EffectTask2, Reconciler2, Scheduler } from "@lukekaalim/act-recon";
+import { createEffectWorkerReport, createSubmissionReport, EffectReport, EffectWorkerReport, SubmissionReport } from "./report";
+import { EffectConstructor, Node } from "@lukekaalim/act";
 import { Breakpoints, DEFAULT_BREAKPOINTS } from "./breakpoints";
 import { createEventEmitter } from "./events";
 
 export class DebugReconciler extends Reconciler2 {
-  started = false;
   liveEffects: Map<EffectID, EffectTask> = new Map()
 
   paused: boolean = false;
@@ -15,11 +14,12 @@ export class DebugReconciler extends Reconciler2 {
   #events = {
     break: createEventEmitter(),
     submit: createEventEmitter<SubmissionReport>(),
-    effects: createEventEmitter<EffectReport[]>(),
+    effects: createEventEmitter<EffectWorkerReport>(),
     finish: createEventEmitter()
   }
 
   onBreak = this.#events.break.subscribe;
+
   onSubmit = this.#events.submit.subscribe;
   onEffects = this.#events.effects.subscribe;
   onFinish = this.#events.finish.subscribe;
@@ -64,60 +64,29 @@ export class DebugReconciler extends Reconciler2 {
    * @returns 
    */
   shouldBreakOnEffect() {
-    const currentTask = this.currentEffectTask;
-    if (!currentTask)
+    if (!this.effectWorker)
+      return false;
+
+    const currentEffectId = this.effectWorker.nextId;
+    if (!currentEffectId)
       return false
 
-    if (this.breakpoints.effects.has(currentTask.id)) {
+    if (this.breakpoints.effects.has(currentEffectId)) {
       return true;
     }
 
     if (this.breakpoints.effectsStart) {
-      if (this.finishedEffects === 0)
+      if (this.effectWorker.finished === 0)
         return true;
     }
 
     return false;
   }
 
-  activeEffects: Map<EffectID, EffectTask> = new Map();
-
-  runPendingEffects() {
-    for (const effectTask of [...this.pendingCleanups]) {
-      effectTask.func();
-      this.tree.cleanups.delete(effectTask.id)
-      this.pendingCleanups.shift()
-      this.activeEffects.delete(effectTask.id);
-      this.finishedEffects++;
-      if (this.shouldBreakOnEffect()) {
-        this.#events.break.run()
-        this.paused = true;
-        return;
-      }
-    }
-    for (const effectTask of [...this.pendingEffects]) {
-      const cleanup = effectTask.func();
-      if (cleanup) {
-        this.tree.cleanups.set(effectTask.id, cleanup)
-        this.activeEffects.set(effectTask.id, effectTask)
-      }
-      this.pendingEffects.shift()
-      this.finishedEffects++;
-      if (this.shouldBreakOnEffect()) {
-        this.#events.break.run()
-        this.paused = true;
-        return;
-      }
-    }
-
-    this.#events.effects.run([...this.activeEffects.values()].map(task => createEffectReport(task, 'run')))
-    this.finish()
-  }
-
   get workState() {
     if (!this.thread.done)
       return 'thread';
-    if (this.currentEffectTask)
+    if (this.effectWorker)
       return 'effects';
     if (this.thread.done && this.thread.started && !this.thread.submitted)
       return 'submitting';
@@ -134,10 +103,24 @@ export class DebugReconciler extends Reconciler2 {
   workInternal() {
     switch (this.workState) {
       case 'effects':
-        this.runPendingEffects()
+        if (!this.effectWorker)
+          return;
+        this.effectWorker.work()
+        if (this.effectWorker.done) {
+          const report = createEffectWorkerReport(this.effectWorker);
+          this.effectWorker = null;
+
+          this.#events.effects.run(report);
+          this.finish();
+        } else {
+          this.scheduler.requestCallback();
+        }
         return;
       case 'submitting':
+        const report = createSubmissionReport(this.thread)
         this.submitThread();
+
+        this.#events.submit.run(report);
         return;
       case 'thread':
         this.thread.work();
@@ -167,42 +150,97 @@ export class DebugReconciler extends Reconciler2 {
   constructor(scheduler: Scheduler) {
     super(scheduler);
   }
-  
+
   // Effects are now "pausable", so we need
   // to store effects that we didn't get around to
   // actioning yet
-  pendingEffects: EffectTask[] = [];
-  pendingCleanups: EffectTask[] = [];
-  finishedEffects = 0;
+  effectWorker: EffectWorker | null = null;
 
-  get currentEffectTask() {
-    if (this.pendingCleanups.length !== 0)
-      return this.pendingCleanups[0];
-    if (this.pendingEffects.length !== 0)
-      return this.pendingEffects[0];
-
-    return null;
-  }
 
   runEffects(delta: Delta): void {
-    this.pendingCleanups = [...delta.cleanups.values()];
-    this.pendingEffects = [...delta.effects.values()];
-    this.finishedEffects = 0;
-
-    if (this.currentEffectTask) {
-      // (effects are now done in the scheduler)
-      this.scheduler.requestCallback()
-    } else {
-      this.finish()
-    }
-  }
-
-  submitThread(): void {
-    this.started = false;
-
-    this.#events.submit.run(createSubmissionReport(this.thread));
-
-    super.submitThread();
+    this.effectWorker = new EffectWorker(delta, this.tree);
+    this.scheduler.requestCallback();
   }
 }
 
+/**
+ * A Debug-exclusive class that will iteratively run an
+ * effect each call to "work()", for ease of breakpoints.
+ */
+export class EffectWorker {
+  effects: [EffectID, EffectTask2, EffectConstructor][] = [];
+  cleanups: [EffectID, EffectCleanupState][] = [];
+
+  tree: CommitTree2;
+
+  completedEffects = new Set<EffectID>();
+  completedCleanups = new Set<EffectID>();
+  newCleanups = new Map<EffectID, EffectCleanupState>();
+
+  get nextCleanup() {
+    return this.cleanups[this.cleanups.length - 1];
+  }
+  get nextEffect() {
+    return this.effects[this.effects.length - 1];
+  }
+  get nextId() {
+    if (this.nextCleanup)
+      return this.nextCleanup[0]
+    if (this.nextEffect)
+      return this.nextEffect[0]
+    return null;
+  }
+  get done() {
+    return !this.nextCleanup && !this.nextEffect;
+  }
+  get finished() {
+    return this.completedEffects.size + this.completedCleanups.size;
+  }
+
+  constructor (delta: Delta, tree: CommitTree2) {
+    for (const task of delta.effects.values()) {
+      const cleanup = tree.cleanups.get(task.id);
+
+      if (cleanup) {
+        this.cleanups.push([task.id, cleanup]);
+      }
+
+      if (task.effect) {
+        this.effects.push([task.id, task, task.effect]);
+      }
+    }
+    
+    this.tree = tree;
+  }
+
+  work() {
+    if (this.nextCleanup) {
+      const [id, cleanup] = this.nextCleanup;
+      this.cleanups.pop();
+
+      cleanup.func()
+      this.tree.cleanups.delete(id);
+      this.completedCleanups.add(id);
+      
+      return;
+    }
+    if (this.nextEffect) {
+      const [id, task, effect] = this.nextEffect;
+      this.effects.pop();
+
+      const cleanupFunc = effect();
+      this.completedEffects.add(id);
+      console.log(id, task, effect, cleanupFunc);
+      if (cleanupFunc) {
+        const cleanup = {
+          id,
+          ref: task.ref,
+          func: cleanupFunc
+        }
+        this.tree.cleanups.set(id, cleanup);
+        this.newCleanups.set(id, cleanup);
+      }
+      return;
+    }
+  }
+}

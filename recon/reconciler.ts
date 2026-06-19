@@ -5,6 +5,7 @@ import { CommitTree2 } from "./tree";
 import { Scheduler } from "./scheduler";
 import { Delta } from "./delta";
 import { WorkTask } from "./update";
+import { EffectTask2 } from "./state";
 
 /**
  * The Reconciler Event Bus is a structure that contains callbacks
@@ -53,19 +54,24 @@ export class Reconciler2 {
   }
 
   runEffects(delta: Delta) {
-    for (const cleanup of delta.cleanups.values()) {
-      try {
-        cleanup.func();
-      } finally {
-        this.tree.cleanups.delete(cleanup.id);
+    const tasksWithEffects: EffectTask2[] = [];
+    
+    for (const task of delta.effects.values()) {
+      const cleanupState = this.tree.cleanups.get(task.id);
+      if (cleanupState) {
+        cleanupState.func();
+        this.tree.cleanups.delete(task.id);
       }
+      if (task.effect)
+        tasksWithEffects.push(task);
     }
-    for (const effect of delta.effects.values()) {
-      try {
-        const cleanup = effect.func();
-        if (cleanup)
-          this.tree.cleanups.set(effect.id, cleanup);
-      } finally {}
+    for (const task of tasksWithEffects) {
+      if (task.effect) {
+        const cleanup = task.effect();
+        if (cleanup) {
+          this.tree.cleanups.set(task.id, { id: task.id, ref: task.ref, func: cleanup });
+        }
+      }
     }
   }
 

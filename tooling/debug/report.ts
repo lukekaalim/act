@@ -1,6 +1,10 @@
 import { ContextID, Element, ElementID, ElementType, OpaqueID, primitiveNodeTypes, refSymbol, specialNodeTypes } from "@lukekaalim/act";
-import { Commit2, CommitID, CommitTree2, CommitVersion, ComponentState, Delta, EffectID, EffectTask, WorkReason, WorkTask, WorkThread2 } from "@lukekaalim/act-recon";
-import { getElementName } from "./utils";
+import {
+  Commit2, CommitID, CommitTree2, CommitVersion,
+  Delta, EffectCleanupState, EffectID,
+  EffectTask2, WorkReason, WorkTask, WorkThread2
+} from "@lukekaalim/act-recon";
+import { EffectWorker } from "./reconciler";
 
 /**
  * "Reports" are serialized versions of their "native"
@@ -206,9 +210,7 @@ export const createDeltaReport = (delta: Delta): DeltaReport => {
     report.removed.push(createCommitReport(commit));
 
   for (const effect of delta.effects.values())
-    report.effects.push(createEffectReport(effect, 'run'))
-  for (const effect of delta.cleanups.values())
-    report.effects.push(createEffectReport(effect, 'cleanup'))
+    report.effects.push(createEffectTaskReport(effect))
 
   return report;
 }
@@ -277,11 +279,11 @@ export const createThreadReport = (thread: WorkThread2): ThreadReport => {
 export type TreeReport = {
   commits: CommitReport[],
   roots: CommitID[],
-  effects: EffectReport[]
+  cleanups: EffectCleanupReport[]
 }
 
-export const createTreeReport = (tree: CommitTree2, effects: EffectTask[]) => {
-  const report: TreeReport = { commits: [], roots: [], effects: [] };
+export const createTreeReport = (tree: CommitTree2) => {
+  const report: TreeReport = { commits: [], roots: [], cleanups: [] };
 
   for (const commit of tree.commits.values()) {
     report.commits.push(createCommitReport(commit));
@@ -289,56 +291,42 @@ export const createTreeReport = (tree: CommitTree2, effects: EffectTask[]) => {
   for (const root of tree.roots) {
     report.roots.push(root);
   }
-  for (const effect of effects) {
-    report.effects.push(createEffectReport(effect, 'active'))
+  for (const [id, cleanup] of tree.cleanups) {
+    report.cleanups.push({ id, functionName: cleanup.func.name || null, commit: cleanup.ref.id })
   }
 
   return report;
 }
 
-export const updateTreeReport = (tree: TreeReport, delta: DeltaReport) => {
-  const commits = new Map(tree.commits.map(c => [c.id, c]));
-  const roots = new Set(tree.roots);
-  const effects = new Map(tree.effects.map(e => [e.id, e]));
-
-  for (const commit of delta.created.values()) {
-    commits.set(commit.id, commit);
-    if (commit.parent === null)
-      roots.add(commit.id);
-  }
-  for (const commit of delta.updated.values()) {
-    commits.set(commit.id, commit);
-  }
-  for (const commit of delta.removed.values()) {
-    commits.delete(commit.id);
-    if (commit.parent === null)
-      roots.delete(commit.id);
-  }
-  for (const effect of delta.effects)
-    if (effect.state === 'cleanup')
-      effects.delete(effect.id);
-    else
-      effects.set(effect.id, effect);
-
-  tree.roots = [...roots];
-  tree.commits = [...commits.values()]
-  tree.effects = [...effects.values()]
+export type EffectCleanupReport = {
+  id: EffectID,
+  commit: CommitID,
+  functionName: string | null,
 }
+
+export const createEffectCleanupReport = (cleanup: EffectCleanupState): EffectCleanupReport => {
+  return {
+    id: cleanup.id,
+    commit: cleanup.ref.id,
+    functionName: cleanup.func && cleanup.func.name || null,
+  }
+}
+
 
 export type EffectReport = {
   id: EffectID,
   commit: CommitID,
+
+  effect: boolean,
   functionName: string | null,
-  state: 'run' | 'cleanup' | 'active'
 };
 
-export const createEffectReport = (task: EffectTask, state: 'run' | 'cleanup' | 'active'): EffectReport => {
-  //debugger;
+export const createEffectTaskReport = (task: EffectTask2): EffectReport => {
   return {
     id: task.id,
     commit: task.ref.id,
-    functionName: task.func.name || null,
-    state,
+    effect: !!task.effect,
+    functionName: task.effect && task.effect.name,
   }
 }
 
@@ -351,5 +339,20 @@ export const createSubmissionReport = (thread: WorkThread2) => {
   return {
     thread: createThreadReport(thread),
     delta: createDeltaReport(thread.delta)
+  }
+}
+
+export type EffectWorkerReport = {
+  completedCleanups: EffectID[],
+  completedEffects: EffectID[],
+
+  newCleanups: EffectCleanupReport[],
+}
+
+export const createEffectWorkerReport = (effectWorker: EffectWorker): EffectWorkerReport => {
+  return {
+    completedCleanups: [...effectWorker.completedCleanups],
+    completedEffects: [...effectWorker.completedEffects],
+    newCleanups: [...effectWorker.newCleanups.values()].map(createEffectCleanupReport)
   }
 }

@@ -211,8 +211,8 @@ export class WorkThread2 {
       this.tree.roots.delete(commit.ref.id);
 
     this.pendingTasks.push(...output.updates.toReversed());
-    if (output.cleanups)
-      this.delta.addEffects(output.cleanups);
+    if (output.effects)
+      this.delta.addEffects(output.effects);
   }
   skipCommit(commit: Commit2) {
     const prevChildren = commit.children

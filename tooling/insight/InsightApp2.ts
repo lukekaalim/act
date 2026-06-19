@@ -88,7 +88,7 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
         state.activeWindow === 'commits' && h(CommitTree, { commits: state.commits, client, thread: state.thread, state, controller,
           scrollTarget: state.commitScrollTarget,
           onScrollTargetComplete: controller.onConsumeCommitScrollTarget }),
-        state.activeWindow === 'effects' && h(EffectTable, { cache: client.cache, effects: state.effects }),
+        state.activeWindow === 'effects' && h(EffectTable, { state, controller }),
       ]),
       state.panels.inspector && h(InspectorPanel, { client, breakpoints: state.breakpoints, state, controller }),
     ]),

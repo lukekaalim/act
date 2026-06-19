@@ -9,10 +9,14 @@ export type EffectTask = {
   id: EffectID,
   func: EffectConstructor,
 }
-export type EffectCleanupTask = {
-  ref: CommitRef2,
+export type EffectTask2 = {
   id: EffectID,
-  func: EffectCleanup,
+  ref: CommitRef2,
+  /**
+   * when "Effect" is null, the task should
+   * only run any cleanups associated with the effect.
+   */
+  effect: EffectConstructor | null,
 }
 
 export type ComponentState = {

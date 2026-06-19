@@ -9,7 +9,7 @@ import {
 } from "@lukekaalim/act";
 import { Commit2, CommitRef2 } from "./commit";
 import { loadHooks2 } from "./hooks";
-import { BoundaryState, ComponentState, ContextState, EffectTask } from "./state";
+import { BoundaryState, ComponentState, ContextState, EffectID, EffectTask, EffectTask2 } from "./state";
 import { keyedElementEqualityTest2, WorkTask } from "./update";
 import { ChangeReport2 } from "./algorithms";
 import { CommitTree2 } from "./tree";
@@ -40,8 +40,7 @@ export class ElementOutput2 {
    */
   updates: WorkTask[] = []
   
-  effects: null | EffectTask[] = null;
-  cleanups: null | EffectTask[] = null;
+  effects: null | EffectTask2[] = null;
 
   extraTargets: null | CommitRef2[] = null;
 

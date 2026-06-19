@@ -59,8 +59,6 @@ export const createDebugPopup = async (reconciler: DebugReconciler) => {
     }
 
   const client = new DirectDebugClient(reconciler);
-    
-  console.log('Lets make our new window')
 
   return new Promise<void>(onReady => {
     render(

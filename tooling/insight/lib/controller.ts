@@ -1,4 +1,4 @@
-import { Breakpoints, CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectReport, ThreadReport } from "@lukekaalim/act-debug";
+import { Breakpoints, CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectCleanupReport, EffectReport, ThreadReport } from "@lukekaalim/act-debug";
 import { CommitListEntry, createCommitList } from "./list";
 import { SelectionManager, SelectionTarget, useSelectionManager } from "./selection";
 import { CommitID } from "@lukekaalim/act-recon";
@@ -48,6 +48,7 @@ export type InsightState = {
   filters: Filters,
   commits: CommitListEntry[],
   effects: EffectReport[],
+  cleanups: EffectCleanupReport[],
   client: DebugClient,
 
   selection: SelectionManager,
@@ -77,6 +78,7 @@ export type InsightController = {
 export const useInsightManager = (client: DebugClient) => {
   const [commits, setCommits] = useState<CommitListEntry[]>([]);
   const [effects, setEffects] = useState<EffectReport[]>([]);
+  const [cleanups, setCleanups] = useState<EffectCleanupReport[]>([]);
   const [thread, setThread] = useState<ThreadReport | null>(null);
 
   const selection = useSelectionManager();
@@ -115,25 +117,36 @@ export const useInsightManager = (client: DebugClient) => {
       //return c.element.type.type === 'primitive';
     }
     setCommits(createCommitList(client.cache, { skip, hide }));
-    setEffects(client.cache.getEffectList());
-
-    const sync = (thread: ThreadReport) => {
-      setCommits(createCommitList(client.cache, { skip, hide }));
-      setThread(thread)
-    }
+    setThread(thread)
+    setEffects([]);
+    setCleanups(client.cache.getAllCleanups());
 
     const subs = [
-      client.onThreadSubmit((submission) => sync(submission.thread)),
-      client.onEffectsFinish(() => {
-        setEffects(effects);
+      client.onThreadSubmit((submission) => {
+        setCommits(createCommitList(client.cache, { skip, hide }));
+        setThread(submission.thread)
+        setEffects(submission.delta.effects);
       }),
-      client.onBreak(() => {
-        const thread = client.getThread()
-        sync(thread)
+      client.onEffectsFinish((effects) => {
+        // Update our cleanups
+        setCleanups([...client.cache.liveCleanups.values()]);
+      }),
+      client.onBreak(([submission, effects]) => {
+        if (submission) {
+          setCommits(createCommitList(client.cache, { skip, hide }));
+          setThread(submission.thread)
+          setEffects(submission.delta.effects);
+          
+          const pendingTask = submission.thread.pendingTasks[submission.thread.pendingTasks.length - 1];
+          if (pendingTask)
+            controller.focus({ type: 'commit', id: pendingTask.id });
+        }
+        if (effects) {
+          // Update our cleanups
+          setCleanups([...client.cache.liveCleanups.values()]);
+        }
+        
         setPaused(true)
-        const pendingTask = thread.pendingTasks[thread.pendingTasks.length - 1];
-        if (pendingTask)
-          controller.focus({ type: 'commit', id: pendingTask.id });
       }),
       client.onBreakpointsChange((newBreakpoints) => {
         setBreakpoints(newBreakpoints)
@@ -157,6 +170,7 @@ export const useInsightManager = (client: DebugClient) => {
     client,
     commits,
     effects,
+    cleanups,
 
     filters,
     panels: {

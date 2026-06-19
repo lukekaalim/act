@@ -9,6 +9,7 @@ import { Reconciler2 } from "@lukekaalim/act-recon";
  */
 type Options = {
   window?: Window;
+  Reconciler?: typeof Reconciler2,
 }
 
 /**
@@ -22,10 +23,8 @@ type Options = {
  */
 export const render = (node: Node, root: HTMLElement, options: Options = {}) => {
   const scheduler = createDOMScheduler();
-  const reconciler = new Reconciler2(scheduler);
+  const reconciler = new (options.Reconciler || Reconciler2)(scheduler);
   const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(root, options.window));
-
-  console.log('some classic rendering!')
 
   reconciler.bus = space.bus;
   const ref = reconciler.mount(h(HTML, {}, node));

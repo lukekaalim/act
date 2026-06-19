@@ -5,6 +5,12 @@ import { BoundaryState, ComponentState, ContextState, EffectID } from "./state.t
 import { Reconciler2 } from "./reconciler.ts";
 import { last } from "./algorithms.ts";
 
+export type EffectCleanupState = {
+  id: EffectID,
+  ref: CommitRef2,
+  func: EffectCleanup
+}
+
 /**
  * The CommitTree is responsible for keeping track
  * of act's "canon" understanding of the application tree,
@@ -32,7 +38,7 @@ export class CommitTree2 {
   contexts: Map<CommitID, ContextState<unknown>> = new Map();
   boundaries: Map<CommitID, BoundaryState> = new Map();
 
-  cleanups: Map<EffectID, EffectCleanup> = new Map();
+  cleanups: Map<EffectID, EffectCleanupState> = new Map();
 
   commits: Map<CommitID, Commit2> = new Map();
   roots: Set<CommitID> = new Set();
@@ -139,15 +145,12 @@ export class CommitTree2 {
         if (componentState.boundary && componentState.rejection) {
           componentState.boundary.clearThrow(prev.ref);
         }
-        output.cleanups = [];
+        output.effects = [];
         for (const effectId of componentState.effects.values()) {
-          const cleanup = this.cleanups.get(effectId);
-          if (!cleanup)
-            continue;
-          output.cleanups.push({
+          output.effects.push({
             id: effectId,
+            effect: null,
             ref: prev.ref,
-            func: cleanup
           });
         }
         this.components.delete(prev.ref.id);

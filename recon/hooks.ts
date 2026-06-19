@@ -73,24 +73,13 @@ export const loadHooks2 = (
     const depsChanges = calculateDepsChange(prevDeps, deps)
     
     if (depsChanges) {
-      const prevCleanup = reconciler.tree.cleanups.get(effectId);
-      if (prevCleanup) {
-        if (!output.cleanups)
-          output.cleanups = [];
-
-        output.cleanups.push({
-          id: effectId,
-          ref: output.ref,
-          func: prevCleanup
-        })
-      }
       if (!output.effects)
         output.effects = [];
       
       output.effects.push({
         id: effectId,
+        effect,
         ref: output.ref,
-        func: effect
       });
     }
   }

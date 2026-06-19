@@ -1,6 +1,6 @@
 import { Element } from "@lukekaalim/act";
 import { Commit2, CommitID } from "./commit.ts";
-import { EffectID, EffectTask } from "./state.ts";
+import { EffectID, EffectTask, EffectTask2 } from "./state.ts";
 
 /**
  * The Delta class represents an accumulation
@@ -24,8 +24,7 @@ export class Delta {
   changed: Map<CommitID, { prev: Element, next: Commit2, moved: boolean }> = new Map();
   removed: Map<CommitID, Commit2> = new Map();
 
-  effects: Map<EffectID, EffectTask> = new Map();
-  cleanups: Map<EffectID, EffectTask> = new Map();
+  effects: Map<EffectID, EffectTask2> = new Map();
 
   get size() {
     return (
@@ -62,16 +61,9 @@ export class Delta {
     }
   }
 
-  addEffects(tasks: EffectTask[]) {
+  addEffects(tasks: EffectTask2[]) {
     for (const task of tasks) {
       this.effects.set(task.id, task);
-    }
-  }
-
-  addCleanups(tasks: EffectTask[]) {
-    for (const task of tasks) {
-      this.effects.delete(task.id);
-      this.cleanups.set(task.id, task);
     }
   }
 }

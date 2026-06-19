@@ -148,7 +148,10 @@ export const getCommitBorder = (commit: CommitReport, cache: DebugCache, thread:
   if (thread) {
     if (thread.mustRender.includes(commit.id))
       return '2px solid rgb(19, 33, 231)';
-    if (thread.pendingTasks.some(c => c.id === commit.id)) {
+    const pendingTask = thread.pendingTasks.find(c => c.id === commit.id)
+    if (pendingTask) {
+      if (!pendingTask.element)
+        return '2px dashed #f25252ff'
       return '2px dashed rgb(255, 145, 0)'
     }
     if (state !== 'live' && thread.visited.includes(commit.id)) {
@@ -257,10 +260,11 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
     const index = commits.findIndex(c => c.id === scrollTarget);
     if (index === -1)
       return;
+    const entry = commits[index];
 
     viewport.scrollTo({
       top: (index * COMMIT_VIEW_HEIGHT_PX) - (rect.height / 2),
-      left: ((commit.distance - 1) * 32) - (rect.width / 2),
+      left: ((entry.distance - 1) * 32) - (rect.width / 2),
       behavior: 'smooth'
     });
     onScrollTargetComplete();

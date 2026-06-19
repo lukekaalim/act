@@ -13,7 +13,11 @@ export const ThreadInspector: Component<ThreadInspectorProps> = ({ thread, commi
 
   return h('div', { className: classes.threadInspector }, [
     h('div', {}, `Thread#${thread.id}`),
-    !!task && h('div', {}, `Schedule for work.`),
+    !!task && (
+      task.element ? (task.prev ? h('div', {}, `Schedule for update.`)
+      : h('div', {}, `Scheduled for creation`))
+      : h('div', {}, `Scheduled for deletion`)
+    ),
     thread.visited.includes(commit.id) && h('div', {}, `Was visited in this Pass`),
     thread.mustRender.includes(commit.id) && h('div', {}, `Is a Render Target`),
     thread.mustVisit.includes(commit.id) && h('div', {}, `Is a Visit Target`),

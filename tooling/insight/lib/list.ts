@@ -33,7 +33,7 @@ export const createCommitList = (
   type StackEntry = [id: CommitID, parent: number];
   // We push commits into this stack
   // to pop them later in the `while` loop.
-  const stack: StackEntry[] = [...cache.roots.values()].map(id => [id, -1]);
+  const stack: StackEntry[] = [...cache.roots].map(id => [id, -1]);
 
   const all: CommitListEntry[] = [];
   
