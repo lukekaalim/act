@@ -1,11 +1,12 @@
-import { createId, Element, primitiveNodeTypes } from "@lukekaalim/act";
+import { createId, Element, OpaqueID, primitiveNodeTypes } from "@lukekaalim/act";
 import { Commit2, CommitID, CommitRef2 } from "./commit.ts";
 import { Delta } from "./delta.ts";
 import { CommitTree2 } from "./tree.ts";
 import { WorkTask } from "./update.ts";
 import { EffectTask } from "./state.ts";
+import { ReconcilerEventBus } from "./reconciler.ts";
 
-export type WorkReason =
+export type WorkRequest =
   | { type: 'mount', element: Element, ref: CommitRef2 }
   | { type: 'unmount', ref: CommitRef2 }
   | { type: 'target', ref: CommitRef2 }
@@ -15,6 +16,26 @@ export type QueueResult =
   | 'missed'
   | 'existing-target'
   | 'existing-task'
+
+export type ThreadState = {
+  requests: WorkRequest[];
+  missedRequests: WorkRequest[];
+
+  mustRender: Set<CommitID>;
+  mustVisit: Set<CommitID>;
+  pendingTasks: WorkTask[];
+
+  missed: Set<CommitID>;
+  missedUnmount: Set<CommitID>;
+
+  visited: Set<CommitID>;
+
+  started: boolean;
+  submitted: boolean;
+
+  pass: number;
+  id: OpaqueID<"ThreadID">;
+}
 
 /**
  * A temporary data structure that carries the state of a
@@ -31,7 +52,7 @@ export class WorkThread2 {
    * they record the "reason", so you can trace which effects
    * cause/contributed to this thread.
    */
-  reasons: WorkReason[] = [];
+  requests: WorkRequest[] = [];
   /**
    * A Map of every commit that NEEDS to be rendered if you visit them.
    * This is often for commits that explicitly need a re-render because
@@ -65,9 +86,7 @@ export class WorkThread2 {
 
   unmountMissed: Set<CommitID> = new Set();
 
-
-  errorNotifications: Map<CommitID, CommitRef2> = new Map();
-
+  requestsMissed: WorkRequest[] = [];
   /**
    * A list of each commit the thread processed
    */
@@ -78,6 +97,9 @@ export class WorkThread2 {
   id = createId("ThreadID")
   passes = 1;
 
+  /** Have we done any work yet? */
+  started = false;
+  /** Have we submitted our delta to the renderer? */
   submitted = false;
 
   constructor(tree: CommitTree2) {
@@ -85,7 +107,7 @@ export class WorkThread2 {
   }
 
   get done() {
-    return this.pendingTasks.length === 0 && this.missed.size === 0;
+    return this.started && this.pendingTasks.length === 0 && this.missed.size === 0 && this.submitted;
   }
 
   /**
@@ -96,11 +118,16 @@ export class WorkThread2 {
    * if the Thread has already rendered this element (you
    * have to queue it in the next thread)
    */
-  queue(reason: WorkReason): QueueResult {
+  queue(reason: WorkRequest): QueueResult {
+    if (this.submitted) {
+      this.requestsMissed.push(reason);
+      return 'missed';
+    }
+
     // We are very lazy in this function -  we only
     // want to create a new update at the worst possible
     // case
-    this.reasons.push(reason);
+    this.requests.push(reason);
 
     // Mounts are really easy - they never have any history, so
     // we don't need to check for conflicts.
@@ -179,7 +206,7 @@ export class WorkThread2 {
   createCommit(element: Element, ref: CommitRef2) {
     const output = this.tree.processElement(element, ref, null);
         
-    const commit = this.tree.reconciler.pools.commit.acquire(ref, element, output.childRefs);
+    const commit = new Commit2(ref, element, output.childRefs);
 
     this.tree.commits.set(commit.ref.id, commit);
     this.delta.add(commit);
@@ -241,7 +268,6 @@ export class WorkThread2 {
   processTask(task: WorkTask) {
     const { next, prev, ref } = task;
 
-
     if (next && prev) {
       let identicalChange = (
         (next.id === prev.element.id)
@@ -265,15 +291,18 @@ export class WorkThread2 {
     this.visit(task);
   }
 
-  started = false
   work() {
-    this.started = true
     const task = this.pendingTasks.pop();
+
     if (task) {
+      this.started = true;
       this.processTask(task);
-      task.free();
-    } else if (!this.done) {
+    } else if (this.missed.size > 0) {
       this.startNextPass();
+    } else if (!this.submitted) {
+      this.submit();
+    } else {
+      console.info(`Work on thread was requested, but no work was needed`)
     }
   }
 
@@ -308,5 +337,41 @@ export class WorkThread2 {
       this.queue({ type: 'target', ref: commit.ref });
     }
     this.missed.clear();
+  }
+
+  /**
+   * Clear the thread of all work,
+   * except for any missed requests
+   */
+  reset() {
+    const missed = this.requestsMissed;
+
+    this.pendingTasks = [];
+    this.requestsMissed = [];
+
+    this.missed.clear();
+    this.mustRender.clear();
+    this.mustVisit.clear();
+    this.visited.clear();
+    this.delta = new Delta();
+
+    this.id = createId();
+    
+    this.passes = 1;
+
+    this.submitted = false;
+    this.started = false;
+
+    for (const request of missed)
+      this.queue(request);
+  }
+
+  bus = { render(delta: Delta): void {} }
+
+  submit() {
+    this.submitted = true;
+
+    this.bus.render(this.delta);
+    this.tree.runEffects(this.delta.effects);
   }
 }

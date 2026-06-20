@@ -1,7 +1,6 @@
-import { convertNodeToElements, createId, Element, Node, primitiveNodeTypes, specialNodeTypes } from "@lukekaalim/act";
-import { ChangeEqualityTest, ChangeReport2 } from "./algorithms.ts";
-import { Commit2, CommitID, CommitRef2 } from "./commit.ts";
-import { createObjectPool, ObjectPool } from "./pool.ts";
+import { Element, specialNodeTypes } from "@lukekaalim/act";
+import { ChangeEqualityTest } from "./algorithms.ts";
+import { Commit2, CommitRef2 } from "./commit.ts";
 
 /**
  * A request to transform part of a tree specified by
@@ -9,16 +8,6 @@ import { createObjectPool, ObjectPool } from "./pool.ts";
  * request
  */
 export class WorkTask {
-  static pool = createObjectPool<WorkTask, Parameters<typeof this.new>>(
-    (ref, prev, next, moved) => new WorkTask(ref, prev,  next, moved),
-    (task, ref, prev, next, moved = false) => {
-      task.ref = ref;
-      task.prev = prev;
-      task.next = next;
-      task.moved = moved;
-    }
-  )
-
   /**
    * The commit that should evaluate this
    * update (if this commit does not exist,
@@ -45,12 +34,8 @@ export class WorkTask {
     this.moved = moved;
   }
 
-  free() {
-    WorkTask.pool.release(this);
-  }
-
   private static new(ref: CommitRef2, prev: null | Commit2, next: null | Element, moved: boolean = false) {
-    return this.pool.acquire(ref, prev, next, moved)
+    return new WorkTask(ref, prev, next, moved)
   }
 
   static fresh(ref: CommitRef2, next: Element) {

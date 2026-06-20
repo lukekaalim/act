@@ -1,12 +1,5 @@
 import { CommitID, CommitVersion, EffectID } from "@lukekaalim/act-recon";
-import { CommitReport, DeltaReport, EffectCleanupReport, EffectReport, EffectWorkerReport, ElementReport, ThreadReport, TreeReport, WorkTaskReport } from "./report";
-
-export type FlattenedCommitReport = {
-  id: CommitID,
-  task: WorkTaskReport | null,
-  commit: CommitReport,
-  children: CommitID[],
-}
+import { CommitReport, EffectCleanupReport, ElementReport, ThreadReport, TreeReport, WorkTaskReport } from "./report";
 
 /**
  * The DebugCache is a mutable store for accumulating
@@ -29,83 +22,72 @@ export class DebugCache {
    */
   pendingCommits: Map<CommitID, CommitReport> = new Map();
   pendingCommitStates: Map<CommitID, 'created' | 'updated' | 'removed'> = new Map();
+  pendingCommitMounts: Map<CommitID, WorkTaskReport> = new Map();
 
-  /**
-   * Provided by the delta - the set of all effects to be applied
-   */
-  pendingEffects: Map<EffectID, EffectReport> = new Map();
-  /**
-   * The effect worker tells you how many of the delta's effects have been applied.
-   */
-  pendingEffectWorker: EffectWorkerReport | null = null;
+  pendingCleanups: Map<EffectID, EffectCleanupReport> = new Map();
+  pendingCleanupStates: Map<EffectID, 'created' | 'removed'> = new Map();
 
-  mountTasks: Map<CommitID, WorkTaskReport> = new Map();
-
-  allCommits: Set<CommitID> = new Set();
-
-  /**
-   * Loading a tree "resets" a debug cache
-   * @param tree 
-   */
-  loadTree(tree: TreeReport) {
+  init(tree: TreeReport) {
     this.roots = new Set(tree.roots);
     this.liveCommits.clear();
-    this.allCommits.clear();
     this.liveCleanups.clear();
 
     for (const commit of tree.commits) {
       this.liveCommits.set(commit.id, commit);
-      this.allCommits.add(commit.id);
     }
     for (const effect of tree.cleanups) {
       this.liveCleanups.set(effect.id, effect);
     }
   }
 
-  loadDelta(delta: DeltaReport) {
-    this.clearDelta();
-
-    for (const commit of delta.created) {
-      this.allCommits.add(commit.id);
-      this.pendingCommits.set(commit.id, commit);
-      this.pendingCommitStates.set(commit.id, 'created');
-    }
-    for (const commit of delta.updated) {
-      this.allCommits.add(commit.id);
-      this.pendingCommits.set(commit.id, commit);
-      this.pendingCommitStates.set(commit.id, 'updated');
-    }
-    for (const commit of delta.removed) {
-      this.allCommits.add(commit.id);
-      this.pendingCommits.set(commit.id, commit);
-      this.pendingCommitStates.set(commit.id, 'removed');
-    }
-    for (const effect of delta.effects) {
-      this.pendingEffects.set(effect.id, effect);
-    }
-  }
-
-  loadThread(thread: ThreadReport) {
-    this.mountTasks.clear();
-
-    for (const task of thread.pendingTasks) {
-      if (!task.prev) {
-        this.mountTasks.set(task.id, task);
-        console.log('Loading "mount task"', task.id)
-      }
-    }
-  }
-  clearThread() {
-    this.mountTasks.clear();
+  clear() {
+    this.pendingCommits.clear();
+    this.pendingCommitStates.clear();
+    this.pendingCommitMounts.clear();
+    this.pendingCleanups.clear();
+    this.pendingCleanupStates.clear();
   }
 
   /**
-   * Convert any loaded pending commits into the live tree,
-   * representing the "delta" being applied.
-   * 
-   * This does not automatically clear the DeltaReport,
-   * but will update the AllCommits set.
+   * "Loading" a thread stores it's changes temporarily,
+   * allowing you to access the original data as well as what
+   * changes are proposed. Loaded threads can be replaced
+   * by loading another thread. Once a thread is finished,
+   * you can "apply" the thread to save it permanently.
+   * @param thread 
    */
+  load(thread: ThreadReport) {
+    this.clear();
+
+    // Update our commits
+    for (const commit of thread.delta.created) {
+      this.pendingCommits.set(commit.id, commit);
+      this.pendingCommitStates.set(commit.id, 'created');
+    }
+    for (const commit of thread.delta.updated) {
+      this.pendingCommits.set(commit.id, commit);
+      this.pendingCommitStates.set(commit.id, 'updated');
+    }
+    for (const commit of thread.delta.removed) {
+      this.pendingCommits.set(commit.id, commit);
+      this.pendingCommitStates.set(commit.id, 'removed');
+    }
+    // Update our cleanups
+    for (const cleanup of thread.effects.added) {
+      this.pendingCleanups.set(cleanup.id, cleanup);
+      this.pendingCleanupStates.set(cleanup.id, 'created');
+    }
+    for (const cleanup of thread.effects.removed) {
+      this.pendingCleanups.set(cleanup.id, cleanup);
+      this.pendingCleanupStates.set(cleanup.id, 'removed');
+    }
+    // Update our mount tasks
+    for (const task of thread.pendingTasks) {
+      if (task.prev)
+        continue;
+      this.pendingCommitMounts.set(task.id, task)
+    }
+  }
   apply() {
     for (const pending of this.pendingCommits.values()) {
       const state = this.pendingCommitStates.get(pending.id);
@@ -122,51 +104,38 @@ export class DebugCache {
           break;
         case 'removed':
           this.liveCommits.delete(pending.id);
-          this.allCommits.delete(pending.id);
           if (pending.distance === 1) {
             this.roots.delete(pending.id);
           }
           break;
       }
     }
-  }
-
-  loadEffectWorker(effectWorker: EffectWorkerReport) {
-    this.pendingEffectWorker = effectWorker;
-  }
-
-  applyEffects() {
-    if (!this.pendingEffectWorker)
-      return;
-
-    for (const [_, effectReport] of this.pendingEffects) {
-      // First, consider every effect that ran
-      // must have run it's cleanup (if available)
-      this.liveCleanups.delete(effectReport.id);
-    }
-    for (const effectCleanupReport of this.pendingEffectWorker.newCleanups) {
-      this.liveCleanups.set(effectCleanupReport.id, effectCleanupReport);
+    for (const pending of this.pendingCleanups.values()) {
+      const state = this.pendingCleanupStates.get(pending.id)
+      if (!state)
+        continue;
+      switch (state) {
+        case 'created':
+          this.liveCleanups.set(pending.id, pending);
+          break;
+        case 'removed':
+          this.liveCleanups.delete(pending.id);
+          break;
+      }
     }
   }
+
 
   getAllCleanups() {
-    if (!this.pendingEffectWorker)
-      return [...this.liveCleanups.values()];
-
-    return [...new Map([
-      ...this.liveCleanups,
-      ...this.pendingEffectWorker.newCleanups.map(c => [c.id, c] as const)
-    ]).values()]
+    return [...new Map([...this.liveCleanups, ...this.pendingCleanups]).values()]
   }
-
-  clearDelta() {
-    this.pendingCommits.clear();
-    this.pendingCommitStates.clear();
-    this.pendingEffects.clear();
+  
+  getCleanup(id: EffectID) {
+    return this.pendingCleanups.get(id) || this.liveCleanups.get(id) || null;
   }
 
   getCommit(id: CommitID) {
-    const mountTask = this.mountTasks.get(id);
+    const mountTask = this.pendingCommitMounts.get(id);
     if (mountTask) {
       // this commit isn't "real" yet
       // so lets make up shit.
@@ -201,7 +170,7 @@ export class DebugCache {
     return commit;
   }
   getCommitState(id: CommitID) {
-    if (this.mountTasks.has(id))
+    if (this.pendingCommitMounts.has(id))
       return 'mount-task';
 
     return this.pendingCommitStates.get(id) || 'live';

@@ -2,9 +2,10 @@ import { ContextID, Element, ElementID, ElementType, OpaqueID, primitiveNodeType
 import {
   Commit2, CommitID, CommitTree2, CommitVersion,
   Delta, EffectCleanupState, EffectID,
-  EffectTask2, WorkReason, WorkTask, WorkThread2
+  EffectTask2, WorkRequest, WorkTask
 } from "@lukekaalim/act-recon";
-import { EffectWorker } from "./reconciler";
+import { DebugThread } from "./thread";
+import { EffectWorker, ResolvedEffectTask } from "./effectWorker";
 
 /**
  * "Reports" are serialized versions of their "native"
@@ -238,40 +239,52 @@ export const createWorkTaskReport = (task: WorkTask): WorkTaskReport => {
 
 export type ThreadReport = {
   missed: CommitID[],
+
   visited: CommitID[],
   mustVisit: CommitID[],
   mustRender: CommitID[],
 
   pendingTasks: WorkTaskReport[],
-  reasons: WorkReasonReport[],
+  requests: WorkRequestReport[],
+
+  delta: DeltaReport,
+  effects: EffectWorkerReport,
 
   id: OpaqueID<"ThreadID">,
+
   passes: number,
-  done: boolean,
+  
   started: boolean,
   submitted: boolean,
+  paused: boolean,
+  done: boolean,
 };
 
-export type WorkReasonReport = { target: CommitID, element: ElementReport | null };
-export const createWorkReasonReport = (reason: WorkReason): WorkReasonReport => {
+export type WorkRequestReport = { target: CommitID, element: ElementReport | null };
+export const createWorkRequestReport = (reason: WorkRequest): WorkRequestReport => {
   if (reason.type === 'mount')
     return { target: reason.ref.id, element: createElementReport(reason.element) }
   return { target: reason.ref.id, element: null }
 }
 
-export const createThreadReport = (thread: WorkThread2): ThreadReport => {
+export const createThreadReport = (thread: DebugThread): ThreadReport => {
   return {
     visited: [...thread.visited],
     mustVisit: [...thread.mustVisit],
     mustRender: [...thread.mustRender],
     missed: [...thread.missed],
 
+    delta: createDeltaReport(thread.delta),
+
     pendingTasks: thread.pendingTasks.map(createWorkTaskReport),
-    reasons: thread.reasons.map(createWorkReasonReport),
+    requests: thread.requests.map(createWorkRequestReport),
+    effects: createEffectWorkerReport(thread.effects),
+
     id: thread.id,
     passes: thread.passes,
     done: thread.done,
     started: thread.started,
+    paused: thread.paused,
     submitted: thread.submitted,
   }
 }
@@ -298,6 +311,7 @@ export const createTreeReport = (tree: CommitTree2) => {
   return report;
 }
 
+export type EffectVersionID = OpaqueID<"EffectVersionID">;
 export type EffectCleanupReport = {
   id: EffectID,
   commit: CommitID,
@@ -312,7 +326,12 @@ export const createEffectCleanupReport = (cleanup: EffectCleanupState): EffectCl
   }
 }
 
-
+/**
+ * A ScheduledEffectTask requests a request
+ * to run (or teardown) an effect. It does not
+ * take into account the current state of the effect,
+ * whether it needs a cleanup or not.
+ */
 export type EffectReport = {
   id: EffectID,
   commit: CommitID,
@@ -330,29 +349,20 @@ export const createEffectTaskReport = (task: EffectTask2): EffectReport => {
   }
 }
 
-export type SubmissionReport = {
-  thread: ThreadReport,
-  delta: DeltaReport
-}
-
-export const createSubmissionReport = (thread: WorkThread2) => {
-  return {
-    thread: createThreadReport(thread),
-    delta: createDeltaReport(thread.delta)
-  }
-}
-
 export type EffectWorkerReport = {
-  completedCleanups: EffectID[],
-  completedEffects: EffectID[],
+  tasks: ResolvedEffectTask[],
+  taskIndex: number,
 
-  newCleanups: EffectCleanupReport[],
+  added: EffectCleanupReport[],
+  removed: EffectCleanupReport[],
 }
 
 export const createEffectWorkerReport = (effectWorker: EffectWorker): EffectWorkerReport => {
   return {
-    completedCleanups: [...effectWorker.completedCleanups],
-    completedEffects: [...effectWorker.completedEffects],
-    newCleanups: [...effectWorker.newCleanups.values()].map(createEffectCleanupReport)
+    tasks: effectWorker.tasks,
+    taskIndex: effectWorker.taskIndex,
+
+    added: [...effectWorker.added.values()].map(createEffectCleanupReport),
+    removed: [...effectWorker.removed.values()].map(createEffectCleanupReport),
   }
 }

@@ -36,71 +36,25 @@ export class Reconciler2 {
   // in the future - maybe more than one thread?
   thread: WorkThread2;
 
-  pools = {
-    commit: Commit2.pool(),
-  }
-
-  constructor(scheduler: Scheduler) {
+  constructor(scheduler: Scheduler, { WorkThread = WorkThread2 }: { WorkThread?: typeof WorkThread2} = {}) {
     this.scheduler = scheduler;
     this.tree = new CommitTree2(this);
-    this.thread = new WorkThread2(this.tree);
+    this.thread = new WorkThread(this.tree);
+
+    this.thread.bus = {
+      render: (delta) => this.bus.render(delta)
+    }
 
     this.scheduler.setCallbackFunc(() => this.work());
-    this.pools.commit.maxSize = 2048
-  }
-
-  startNewThread() {
-    this.thread = new WorkThread2(this.tree);
-  }
-
-  runEffects(delta: Delta) {
-    const tasksWithEffects: EffectTask2[] = [];
-    
-    for (const task of delta.effects.values()) {
-      const cleanupState = this.tree.cleanups.get(task.id);
-      if (cleanupState) {
-        cleanupState.func();
-        this.tree.cleanups.delete(task.id);
-      }
-      if (task.effect)
-        tasksWithEffects.push(task);
-    }
-    for (const task of tasksWithEffects) {
-      if (task.effect) {
-        const cleanup = task.effect();
-        if (cleanup) {
-          this.tree.cleanups.set(task.id, { id: task.id, ref: task.ref, func: cleanup });
-        }
-      }
-    }
-  }
-
-  submitThread() {
-    const threadToSubmit = this.thread;
-
-    this.startNewThread();
-
-    threadToSubmit.submitted = true;
-
-    // send delta ready
-    this.bus.render(threadToSubmit.delta);
-
-    // run effects
-    this.runEffects(threadToSubmit.delta);
-
-    // memory release
-    for (const remove of threadToSubmit.delta.removed.values())
-      this.pools.commit.release(remove);
   }
 
   work() {
-    if (!this.thread.done) {
-      // do some work
-      this.thread.work();
+    this.thread.work();
+
+    if (this.thread.done) {
+      this.thread.reset();
+    } else {
       this.scheduler.requestCallback();
-    }
-    else {
-      this.submitThread()
     }
   }
 

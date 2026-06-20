@@ -116,43 +116,37 @@ export const useInsightManager = (client: DebugClient) => {
       return false;
       //return c.element.type.type === 'primitive';
     }
+    const thread = client.getThread();
+
+    console.log("INIT");
     setCommits(createCommitList(client.cache, { skip, hide }));
-    setThread(thread)
-    setEffects([]);
+    setThread(thread);
+    setEffects(thread.delta.effects);
     setCleanups(client.cache.getAllCleanups());
+    setPaused(thread.paused);
 
     const subs = [
-      client.onThreadSubmit((submission) => {
+      client.onBreak((thread) => {
         setCommits(createCommitList(client.cache, { skip, hide }));
-        setThread(submission.thread)
-        setEffects(submission.delta.effects);
-      }),
-      client.onEffectsFinish((effects) => {
-        // Update our cleanups
+        setEffects(thread.delta.effects);
         setCleanups([...client.cache.liveCleanups.values()]);
-      }),
-      client.onBreak(([submission, effects]) => {
-        if (submission) {
-          setCommits(createCommitList(client.cache, { skip, hide }));
-          setThread(submission.thread)
-          setEffects(submission.delta.effects);
-          
-          const pendingTask = submission.thread.pendingTasks[submission.thread.pendingTasks.length - 1];
-          if (pendingTask)
-            controller.focus({ type: 'commit', id: pendingTask.id });
-        }
-        if (effects) {
-          // Update our cleanups
-          setCleanups([...client.cache.liveCleanups.values()]);
-        }
+        setThread(thread)
         
+        const pendingTask = thread.pendingTasks[thread.pendingTasks.length - 1];
+        if (pendingTask)
+          controller.focus({ type: 'commit', id: pendingTask.id });
+        
+  
         setPaused(true)
       }),
       client.onBreakpointsChange((newBreakpoints) => {
         setBreakpoints(newBreakpoints)
       }),
-      client.onFinish(() => {
+      client.onFinish((thread) => {
+        setCommits(createCommitList(client.cache, { skip, hide }));
+        setEffects(thread.delta.effects);
         setPaused(false)
+        setThread(thread)
       })
     ];
     () => {

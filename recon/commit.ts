@@ -1,5 +1,4 @@
 import { createId, Element, OpaqueID, specialNodeTypes, SuspendProps } from "@lukekaalim/act";
-import { createObjectPool } from "./pool";
 
 /**
  * A single consistent id representing a commit in the act tree.
@@ -86,16 +85,6 @@ export class CommitRef2 {
 }
 
 export class Commit2 {
-  static pool = () => createObjectPool<Commit2, ConstructorParameters<typeof Commit2>>(
-    function alloc (ref, el, ch) { return new Commit2(ref, el, ch) },
-    function reassign(c, ref, el, ch) {
-      c.ref = ref;
-      c.element = el;
-      c.children = ch;
-      c.version = createId('CommitVersion');
-    }
-  )
-
   ref: CommitRef2;
 
   element: Element;

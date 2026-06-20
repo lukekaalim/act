@@ -9,6 +9,14 @@ export type EffectTask = {
   id: EffectID,
   func: EffectConstructor,
 }
+
+/**
+ * An instruction to perform the declared side effect,
+ * made by the referenced commit. If there are cleanups associated
+ * with this effect in the tree, they should be run first.
+ * 
+ * If the effect produces any cleanups, they should be added to the tree.
+ */
 export type EffectTask2 = {
   id: EffectID,
   ref: CommitRef2,

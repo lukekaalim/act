@@ -1,9 +1,8 @@
-import { ContextID, EffectCleanup, Element, specialNodeTypes } from "@lukekaalim/act";
+import { ContextID, EffectCleanup, EffectConstructor, Element, specialNodeTypes } from "@lukekaalim/act";
 import { Commit2, CommitID, CommitRef2 } from "./commit.ts";
 import { ElementOutput2 } from "./element.ts";
-import { BoundaryState, ComponentState, ContextState, EffectID } from "./state.ts";
+import { BoundaryState, ComponentState, ContextState, EffectID, EffectTask2 } from "./state.ts";
 import { Reconciler2 } from "./reconciler.ts";
-import { last } from "./algorithms.ts";
 
 export type EffectCleanupState = {
   id: EffectID,
@@ -200,5 +199,34 @@ export class CommitTree2 {
 
     return output;
   }
-}
 
+  runEffects(effects: ReadonlyMap<EffectID, EffectTask2>) {
+    // not every task actually has an effect - when
+    // a commit is unmounted with effects it generates
+    // a "teardown" task, which just runs the cleanup
+    const tasksWithEffects: EffectTask2[] = [];
+    
+    // We will do this in two passes - the first
+    // to run all potential "cleanups", which
+    // we don't really know until the last moment
+    // if one exists.
+    for (const task of effects.values()) {
+      const cleanupState = this.cleanups.get(task.id);
+      if (cleanupState) {
+        cleanupState.func();
+        this.cleanups.delete(task.id);
+      }
+      if (task.effect)
+        tasksWithEffects.push(task);
+    }
+
+    // The second pass actually runs the effects
+    for (const task of tasksWithEffects) {
+      // (we already checked in the previous loop)
+      const cleanup = (task.effect as EffectConstructor)();
+      if (cleanup) {
+        this.cleanups.set(task.id, { id: task.id, ref: task.ref, func: cleanup });
+      }
+    }
+  }
+}

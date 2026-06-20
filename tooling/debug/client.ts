@@ -1,5 +1,9 @@
 import { CommitID } from "@lukekaalim/act-recon";
-import { CommitDetailsReport, createCommitDetailsReport, createDeltaReport, createEffectWorkerReport, createSubmissionReport, createThreadReport, createTreeReport, DeltaReport, EffectReport, EffectWorkerReport, SubmissionReport, ThreadReport, TreeReport } from "./report";
+import {
+  CommitDetailsReport, createCommitDetailsReport, createDeltaReport,
+  createEffectWorkerReport, createThreadReport, createTreeReport, DeltaReport,
+  ThreadReport, TreeReport
+} from "./report";
 import { DebugCache } from "./cache";
 import { DebugReconciler } from "./reconciler";
 import { createEventEmitter, SubscribeFunction } from "./events";
@@ -13,59 +17,38 @@ export class DirectDebugClient implements DebugClient {
   constructor(reconciler: DebugReconciler) {
     this.reconciler = reconciler;
 
-    this.cache.loadTree(createTreeReport(this.reconciler.tree));
+    this.cache.init(createTreeReport(this.reconciler.tree));
 
-    this.reconciler.onBreak(() => {
-      if (this.reconciler.effectWorker) {
-        const workerReport = createEffectWorkerReport(this.reconciler.effectWorker);
-        this.cache.loadEffectWorker(workerReport);
-
-        this.#events.break.run([null, workerReport]);
-      } else {
-        const delta = createDeltaReport(this.reconciler.thread.delta);
-        const thread = createThreadReport(this.reconciler.thread);
-        this.cache.loadDelta(delta);
-        this.cache.loadThread(thread);
-
-        this.#events.break.run([{ delta, thread }, null]);
-      }
-    })
-    this.reconciler.onSubmit((submission) => {
-      this.cache.loadDelta(submission.delta);
+    this.reconciler.thread.on.break(() => {
+      const thread = this.getThread()
+      this.cache.load(thread);
+      this.#events.break.run(thread);
+    });
+    this.reconciler.thread.on.finish(() => {
+      const thread = this.getThread()
+      this.cache.load(thread)
       this.cache.apply();
-
-      this.#events.submission.run(submission);
-    })
-    this.reconciler.onEffects(effects => {
-      console.log(effects);
-      this.cache.loadEffectWorker(effects);
-      this.cache.applyEffects();
-      console.log(this.cache.liveCleanups)
-      this.#events.effects.run(effects);
-    })
-    this.reconciler.onFinish(() => {
-      this.#events.finish.run();
-    })
+      this.#events.finish.run(thread);
+    });
   } 
 
   get breakpoints() {
-    return this.reconciler.breakpoints;
+    return this.reconciler.thread.breakpoints;
   };
   reconciler: DebugReconciler;
 
   #events = {
     breakpointsChange: createEventEmitter<Breakpoints>(),
 
-    break: createEventEmitter<[submission: null | SubmissionReport, effects: null | EffectWorkerReport]>(),
-    
-    submission: createEventEmitter<SubmissionReport>(),
-    effects: createEventEmitter<EffectWorkerReport>(),
-
-    finish: createEventEmitter(),
+    break: createEventEmitter<ThreadReport>(),
+    finish: createEventEmitter<ThreadReport>(),
   }
 
   setBreakpoints(nextSettings: Breakpoints) {
-    this.reconciler.breakpoints = nextSettings;
+    if (nextSettings === this.reconciler.thread.breakpoints)
+      return;
+
+    this.reconciler.thread.breakpoints = nextSettings;
     this.#events.breakpointsChange.run(nextSettings);
   }
 
@@ -73,41 +56,47 @@ export class DirectDebugClient implements DebugClient {
     return this.#events.breakpointsChange.subscribe;
   };
   
-  onThreadSubmit = this.#events.submission.subscribe;
   onBreak = this.#events.break.subscribe;
-  onEffectsFinish = this.#events.effects.subscribe;
   onFinish = this.#events.finish.subscribe;
 
   step() {
-    this.reconciler.step();
-
-    const delta = createDeltaReport(this.reconciler.thread.delta);
-    const initialThread = createThreadReport(this.reconciler.thread);
-    this.cache.loadDelta(delta);
-    this.cache.loadThread(initialThread)
-
-    // Only if the reconciler is still paused
-    // (aka we didn't finish a thread)
-    // we let clients know to update
-    if (this.reconciler.paused) {
-      if (this.reconciler.effectWorker) {
-        const workerReport = createEffectWorkerReport(this.reconciler.effectWorker);
-        this.cache.loadEffectWorker(workerReport);
-
-        this.#events.break.run([null, workerReport]);
-      } else {
-        const delta = createDeltaReport(this.reconciler.thread.delta);
-        const thread = createThreadReport(this.reconciler.thread);
-        this.cache.loadDelta(delta);
-        this.cache.loadThread(thread);
-
-        this.#events.break.run([{ delta, thread }, null]);
-      }
+    this.reconciler.thread.forceWork();
+    if (this.reconciler.thread.paused) {
+      // re-run "break" on step
+      const thread = this.getThread()
+      this.cache.load(thread);
+      this.#events.break.run(thread);
     }
+    // this.reconciler.step();
+
+    // const delta = createDeltaReport(this.reconciler.thread.delta);
+    // const initialThread = createThreadReport(this.reconciler.thread);
+    // this.cache.loadDelta(delta);
+    // this.cache.loadThread(initialThread)
+
+    // // Only if the reconciler is still paused
+    // // (aka we didn't finish a thread)
+    // // we let clients know to update
+    // if (this.reconciler.paused) {
+    //   if (this.reconciler.effectWorker) {
+    //     const workerReport = createEffectWorkerReport(this.reconciler.effectWorker);
+    //     this.cache.loadEffectWorker(workerReport);
+
+    //     this.#events.break.run([null, workerReport]);
+    //   } else {
+    //     const delta = createDeltaReport(this.reconciler.thread.delta);
+    //     const thread = createThreadReport(this.reconciler.thread);
+    //     this.cache.loadDelta(delta);
+    //     this.cache.loadThread(thread);
+
+    //     this.#events.break.run([{ delta, thread }, null]);
+    //   }
+    // }
   }
 
   resume() {
-    this.reconciler.resume()
+    this.reconciler.thread.paused = false;
+    this.reconciler.thread.forceWork();
   }
 
   getThread() {
@@ -145,24 +134,9 @@ export type DebugClient = {
    * to notify any UI to update
    */
   onBreakpointsChange: SubscribeFunction<Breakpoints>,
-  /**
-   * This event triggers before a thread is submitted to
-   * the renderer.
-   */
-  onThreadSubmit: SubscribeFunction<SubmissionReport>,
-  /**
-   * This event triggers after all cleanups & effects for a thread
-   * have run
-   */
-  onEffectsFinish: SubscribeFunction<EffectWorkerReport>,
-  /**
-   * This event triggers when a breakpoint is hit. This puts the reconciler
-   * in a "paused" state, where no further work will be done.
-   * 
-   */
-  onBreak: SubscribeFunction<[submission: null | SubmissionReport, effects: null | EffectWorkerReport]>,
-
-  onFinish: SubscribeFunction;
+  
+  onBreak: SubscribeFunction<ThreadReport>;
+  onFinish: SubscribeFunction<ThreadReport>;
 
   /**
    * Calling `step()` will cause the reconciler to perform one "task" (process one commit,

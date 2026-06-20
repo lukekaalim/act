@@ -1,4 +1,4 @@
-import { MagicError } from "@lukekaalim/act";
+export type ChangeEqualityTest<Prev, Next> = (prev: Prev, next: Next, prevIndex: number, nextIndex: number) => boolean;
 
 /**
  * ChangeReport
@@ -55,26 +55,4 @@ export class ChangeReport2 {
 
     return report;
   }
-}
-
-export type ChangeEqualityTest<Prev, Next> = (prev: Prev, next: Next, prevIndex: number, nextIndex: number) => boolean;
-
-export const first = <X, Y>(array: ReadonlyArray<X>, func: (value: X, index: number) => Y | null): Y | null => {
-  for (let i = 0; i < array.length; i++) {
-    const value = array[i];
-    const result = func(value, i);
-    if (result !== null)
-      return result;
-  }
-  return null;
-}
-
-export const last = <X, Y extends {}>(array: ReadonlyArray<X>, func: (value: X, index: number) => Y | null | false | undefined | 0): Y | null => {
-  for (let i = array.length - 1; i > 0; i--) {
-    const value = array[i];
-    const result = func(value, i);
-    if (result)
-      return result;
-  }
-  return null;
 }

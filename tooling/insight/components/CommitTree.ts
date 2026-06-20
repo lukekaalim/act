@@ -1,5 +1,5 @@
 import { Component, h, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
-import { CommitReport, DebugCache, DebugClient, FlattenedCommitReport, ThreadReport } from "@lukekaalim/act-debug";
+import { CommitReport, DebugCache, DebugClient, ThreadReport } from "@lukekaalim/act-debug";
 
 import { CommitPreview } from "../TreeViewer";
 import { Virtual1D } from "../Virtual";

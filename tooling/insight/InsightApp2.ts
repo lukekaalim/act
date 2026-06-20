@@ -1,5 +1,5 @@
 import { Component, h, Node, OpaqueID, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
-import { CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectReport, FlattenedCommitReport, ThreadReport } from "@lukekaalim/act-debug";
+import { CommitReport, DebugClient } from "@lukekaalim/act-debug";
 
 import classes from './InsightApp.module.css';
 

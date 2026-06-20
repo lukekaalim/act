@@ -11,7 +11,6 @@ import {
 import { ComponentState, EffectID, EffectTask } from "./state";
 import { CommitRef2 } from "./commit";
 import { Reconciler2 } from "./reconciler";
-import { last } from "./algorithms";
 import { ElementOutput2 } from "./element";
 
 /**
