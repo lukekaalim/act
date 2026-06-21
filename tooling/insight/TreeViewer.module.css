@@ -15,11 +15,9 @@
 
   border: 2px solid rgba(255, 255, 255, 0);
   white-space: nowrap;
-}
-.elementName:hover {
-  font-weight: bold;
+
   cursor: pointer;
-  border: 2px solid white;
+  font-weight: inherit;
 }
 
 .commit {

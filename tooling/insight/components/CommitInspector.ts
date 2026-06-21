@@ -1,9 +1,9 @@
 import { Component, h, useEffect, useState } from "@lukekaalim/act"
 
 import { icons } from "../assets/icons"
-import { IconButton } from "./Button"
+import { EffectButton, HookButton, IconButton } from "./Button"
 import classes from './index.module.css';
-import { Breakpoints, CommitDetailsReport, CommitReport, DebugClient, toggleCommitBreakpoint } from "@lukekaalim/act-debug";
+import { Breakpoints, CommitDetailsReport, CommitReport, DebugClient, toggleCommitBreakpoint, toggleEffectBreakpoint } from "@lukekaalim/act-debug";
 import { useSelection } from "../lib/selection";
 import { CommitPreview } from "../TreeViewer";
 import { Filters, InsightController, InsightState, toggleCollapsedCommit } from "../lib/controller";
@@ -11,6 +11,7 @@ import { CommitAttributeTag } from "../AttributeTag";
 import { getTextForValue } from "../utils";
 import { getCommitBorder, getCommitColor } from "./CommitTree";
 import { CommitID } from "@lukekaalim/act-recon";
+import { BreakpointToggle } from "./BreakpointToggle";
 
 export type CommitInspectorProps = {
   commit: CommitReport,
@@ -124,29 +125,32 @@ export const CommitInspector: Component<CommitInspectorProps> = ({ commit, break
         h('table', {}, 
           component.stateValues.map((state) => {
             return h('tr', {}, [
-              h('td', {}, state.hookIndex),
+              h('td', {}, h(HookButton, { onClick() {} , hookIndex: state.hookIndex })),
               h('td', {}, getTextForValue(state.value))
             ])
         })),
         h('h4', {}, 'Effects'),
         h('table', {}, 
-          component.deps.map((effect) => {
+          component.effects.map((effectHook) => {
+            const deps = component.deps.find(e => e.hookIndex === effectHook.hookIndex);
             return h('tr', {}, [
-              h('td', {}, effect.hookIndex),
-              h('td', {},
-                component.effects.find(e => e.hookIndex === effect.hookIndex)?.effect || '??'
-              ),
-              effect.deps && effect.deps.map(dep => {
+              h('td', {}, h(HookButton, { onClick() {} , hookIndex: effectHook.hookIndex })),
+              h('td', {}, h('div', { style: { display: 'flex' } }, [
+                h(BreakpointToggle, { onToggle() {
+                  client.setBreakpoints(toggleEffectBreakpoint(breakpoints, effectHook.effect))
+                }, toggled: breakpoints.effects.has(effectHook.effect) }),
+                h(EffectButton, { onClick() {}, effectId: effectHook.effect }),
+              ])),
+              !!deps && !!deps.deps && deps.deps.map(dep => {
                 return h('td', {}, getTextForValue(dep))
               }),
-              !effect.deps && h('td', {}, 'null')
             ])
         })),
         h('h4', {}, 'Contexts'),
         h('table', {}, 
           component.subscriptions.map((subscription) => {
             return h('tr', {}, [
-              h('td', {}, subscription.hookIndex),
+              h('td', {}, h(HookButton, { onClick() {} , hookIndex: subscription.hookIndex })),
               h('td', {}, subscription.context),
               h('td', {}, subscription.provider),
             ])

@@ -47,6 +47,7 @@ export class DebugThread extends WorkThread2 {
 
     const breakPositions = evaluateBreakpoints(this.breakpoints, this);
     if (breakPositions.length > 0) {
+      console.log('Pause');
       this.paused = true;
       this.#events.break.run();
       return;
@@ -62,7 +63,7 @@ export class DebugThread extends WorkThread2 {
       super.work();
     }
     if (this.done) {
-      console.log('Finish')
+      console.log('Finish');
       this.paused = false;
       this.#events.finish.run();
     }

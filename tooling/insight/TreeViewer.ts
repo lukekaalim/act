@@ -36,6 +36,7 @@ export type CommitPreviewProps = {
 
   color?: string,
   border?: string,
+  className?: string,
 
   depth?: number,
 
@@ -50,6 +51,7 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
   color,
   border = 'none',
   onClick,
+  className,
 }) => {
   const background = `hsl(${(depth * 22.3) % 360}deg, 50%, 80%)`;
   const text = getTextForElementType(commit.element);
@@ -57,7 +59,7 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
   const lineColor = `hsl(${stringHash(commit.id.toString()) % 360}, 100%, 20%)`
 
 
-  return hs('div', { className: classes.commit, style: { position: 'relative' }, id: `commit:${commit.id}` }, [
+  return hs('div', { classList: [classes.commit, className], style: { position: 'relative' }, id: `commit:${commit.id}` }, [
 
     hs('div', { className: [classes.elementBar].join(' '), style: { 'position': 'relative' } }, [
       hs('button', { onClick, className: classes.elementName, style: { background: elementBackground, border } },

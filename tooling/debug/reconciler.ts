@@ -12,5 +12,16 @@ export class DebugReconciler extends Reconciler2 {
       render: (delta) => this.bus.render(delta)
     }
   }
+
+  work(): void {
+    this.thread.work();
+
+    if (this.thread.done) {
+      this.thread.reset();
+    } else {
+      if (!this.thread.paused)
+        this.scheduler.requestCallback();
+    }
+  }
 }
 

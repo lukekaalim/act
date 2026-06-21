@@ -57,6 +57,15 @@ export const toggleCommitBreakpoint = (breakpoints: Breakpoints, commitId: Commi
   }
   return nextBreakpoints;
 }
+export const toggleEffectBreakpoint = (breakpoints: Breakpoints, effectId: EffectID): Breakpoints => {
+  const nextBreakpoints = { ...breakpoints, effects: new Set(breakpoints.effects) };
+  if (nextBreakpoints.effects.has(effectId)) {
+    nextBreakpoints.effects.delete(effectId)
+  } else {
+    nextBreakpoints.effects.add(effectId)
+  }
+  return nextBreakpoints;
+}
 
 export type BreakPosition =
   | { type: 'named', name: 'before-first-commit' | 'before-pass' | 'before-submit' | 'before-first-effect' | 'before-last-effect' }

@@ -10,11 +10,14 @@ import bug from './bug.svg';
 import children from './children.svg';
 import collapse from './collapse.svg';
 import commit_tree from './commit_tree.svg';
+import commit from './commit.svg';
 import expand from './expand.svg';
 import eye from './eye.svg';
+import effect from './effect.svg';
 import filter from './filter.svg';
 import graph from './graph.svg';
 import history_list from './history_list.svg';
+import hook from './hook.svg';
 import inspector_panel from './inspector_panel.svg';
 import magnifying_glass from './magnifying_glass.svg';
 import pause from './pause.svg';
@@ -28,6 +31,7 @@ import step_over_children from './step_over_children.svg'
 import tree_column from './tree_column.svg';
 import tree_end from './tree_end.svg';
 import tree_junction from './tree_junction.svg';
+import thread from './thread.svg';
 import vertical_grab_handle from './vertical_grab_handle.svg';
 
 export const icons = {
@@ -42,11 +46,14 @@ export const icons = {
   children,
   collapse,
   commit_tree,
+  commit,
   expand,
   eye,
+  effect,
   filter,
   graph,
   history_list,
+  hook,
   inspector_panel,
   magnifying_glass,
   pause,
@@ -60,6 +67,7 @@ export const icons = {
   tree_column,
   tree_end,
   tree_junction,
+  thread,
   vertical_grab_handle
 }
 

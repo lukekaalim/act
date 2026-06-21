@@ -1,11 +1,12 @@
 import { Component, h, useState } from "@lukekaalim/act";
-import { Breakpoints, DebugCache } from "@lukekaalim/act-debug";
+import { Breakpoints, DebugCache, toggleEffectBreakpoint } from "@lukekaalim/act-debug";
 
 import classes from './index.module.css';
 import { CommitPreview } from "../TreeViewer";
 import { IconButton } from "./Button";
 import { InsightController } from "../lib/controller";
 import { icons } from "../assets/icons";
+import { BreakpointToggle } from "./BreakpointToggle";
 
 export type BreakpointPanelProps = {
   controller: InsightController,
@@ -29,6 +30,7 @@ export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, 
   }
 
   const commitBreakpoints = [...breakpoints.commits.values()];
+  const effectBreakpoints = [...breakpoints.effects.values()];
 
   const [width, setWidth] = useState(300);
   const [dragging, setDragging] = useState(false);
@@ -70,17 +72,31 @@ export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, 
         ]),
       ]),
       commitBreakpoints.length > 0 && [
-        h('h4', {}, 'Collapsed Commits'),
+        h('h4', {}, 'Commits Breakpoints'),
         h('ul', { className: classes.commitList }, commitBreakpoints.map(commitId => {
           const commit = cache.getCommit(commitId);
           if (!commit)
             return null;
-          return h('li', {}, [h(IconButton, { icon: 'breakpoint', title: 'Clear Breakpoint', onClick() {}, className: classes.commitRowBreakpointToggle }), h(CommitPreview, { commit, onClick: () => {
-            controller.select({ type: 'commit', id: commitId })
-          } })])
+          return h('li', {}, [
+            h(IconButton, { icon: 'breakpoint', title: 'Clear Breakpoint', onClick() {}, className: classes.commitRowBreakpointToggle }),
+            h(CommitPreview, { commit, onClick: () => {
+              controller.select({ type: 'commit', id: commitId })
+            } })
+          ])
         }))
       ],
-      h('h4', {}, 'Effect Breakpoints'),
+      effectBreakpoints.length > 0 && [
+        h('h4', {}, 'Effect Breakpoints'),
+        h('ul', { className: classes.effectList }, effectBreakpoints.map(effectId => {
+
+          return h('li', {}, [
+            h(BreakpointToggle, { toggled: true, onToggle(toggled) {
+              onBreakpointsChange(toggleEffectBreakpoint(breakpoints, effectId))
+            }, }),
+            h('div', {}, effectId)
+          ])
+        }))
+      ],
     ])
   ]);
 }

@@ -40,7 +40,7 @@
        d="m 22.167968,27.540435 c 0,4.242901 3.906846,0.434477 3.906846,4.911462"
        id="path21" />
     <path
-       style="fill:#ffa504;fill-opacity:1;stroke:none;stroke-width:0.265316;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:#ffa504;fill-opacity:1;stroke:#c83d1d;stroke-width:0.265316;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path22"
        d="m 26.912299,33.959114 -1.791477,-0.04143 -1.530747,0.931622 0.04143,-1.791477 -0.931622,-1.530747 1.791477,0.04143 1.530748,-0.931623 -0.04143,1.791478 z"
        transform="matrix(-0.45991503,-0.82240832,0.82240832,-0.45991503,10.833952,67.545152)" />

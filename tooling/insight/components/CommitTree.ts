@@ -53,8 +53,6 @@ type CommitRowProps = {
 
 export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, client, index, list, state, controller }) => {
   const ancestors = buildAncestorList(index, list);
-  const border = getCommitBorder(commit, client.cache,  thread);
-  const color =  getCommitColor(commit, client.cache, thread);
 
   const entry = list[index]
   const distance = entry.distance;
@@ -78,6 +76,11 @@ export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, cl
   const onMouseLeave = () => {
     setFocused(false)
   }
+
+  const selected = selection.target.type === 'commit' && selection.target.id === commit.id;
+
+  const border = getCommitBorder(commit, client.cache,  thread);
+  const color =  getCommitColor(commit, client.cache, thread);
 
   const breakpointSet = client.breakpoints.commits.has(commit.id)
   const onClickBreakpointToggle = () => {
@@ -122,7 +125,7 @@ export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, cl
           onClick: onToggleCollapse,
           className: classes.commitRowCollapseButton
         }),
-        h(CommitPreview, { color, commit, onClick, border, attributes: [] }),
+        h(CommitPreview, { color, commit, onClick, border, attributes: [], className: selected && classes.selected || undefined }),
         h('div', { className: classes.commitRowControls }, [
           (focused || breakpointSet) && h('button', {
             classList: [classes.commitRowBreakpointToggle, !breakpointSet && classes.off],

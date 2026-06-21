@@ -61,42 +61,21 @@ export class DirectDebugClient implements DebugClient {
 
   step() {
     this.reconciler.thread.forceWork();
+    if (this.reconciler.thread.done) {
+      this.reconciler.thread.reset();
+    }
     if (this.reconciler.thread.paused) {
       // re-run "break" on step
       const thread = this.getThread()
       this.cache.load(thread);
       this.#events.break.run(thread);
     }
-    // this.reconciler.step();
-
-    // const delta = createDeltaReport(this.reconciler.thread.delta);
-    // const initialThread = createThreadReport(this.reconciler.thread);
-    // this.cache.loadDelta(delta);
-    // this.cache.loadThread(initialThread)
-
-    // // Only if the reconciler is still paused
-    // // (aka we didn't finish a thread)
-    // // we let clients know to update
-    // if (this.reconciler.paused) {
-    //   if (this.reconciler.effectWorker) {
-    //     const workerReport = createEffectWorkerReport(this.reconciler.effectWorker);
-    //     this.cache.loadEffectWorker(workerReport);
-
-    //     this.#events.break.run([null, workerReport]);
-    //   } else {
-    //     const delta = createDeltaReport(this.reconciler.thread.delta);
-    //     const thread = createThreadReport(this.reconciler.thread);
-    //     this.cache.loadDelta(delta);
-    //     this.cache.loadThread(thread);
-
-    //     this.#events.break.run([{ delta, thread }, null]);
-    //   }
-    // }
   }
 
   resume() {
     this.reconciler.thread.paused = false;
     this.reconciler.thread.forceWork();
+    this.reconciler.scheduler.requestCallback();
   }
 
   getThread() {

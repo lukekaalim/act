@@ -118,7 +118,6 @@ export const useInsightManager = (client: DebugClient) => {
     }
     const thread = client.getThread();
 
-    console.log("INIT");
     setCommits(createCommitList(client.cache, { skip, hide }));
     setThread(thread);
     setEffects(thread.delta.effects);
@@ -136,7 +135,6 @@ export const useInsightManager = (client: DebugClient) => {
         if (pendingTask)
           controller.focus({ type: 'commit', id: pendingTask.id });
         
-  
         setPaused(true)
       }),
       client.onBreakpointsChange((newBreakpoints) => {
@@ -187,8 +185,12 @@ export const useInsightManager = (client: DebugClient) => {
       selection.select(newTarget)
     },
     focus(focusTarget) {
-      if (focusTarget.type === 'commit')
-        setScrollTarget(focusTarget.id);
+      switch (focusTarget.type) {
+        case 'commit':
+          setActiveWindow('commits')
+          setScrollTarget(focusTarget.id);
+          break;
+      }
     },
     onConsumeCommitScrollTarget() {
       setScrollTarget(null);
