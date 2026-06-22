@@ -1,5 +1,16 @@
 # @lukekaalim/act-recon
 
+## 4.0.0
+
+### Major Changes
+
+- Improve debugger support
+
+### Patch Changes
+
+- Updated dependencies
+  - @lukekaalim/act@4.2.0
+
 ## 3.1.0
 
 ### Minor Changes

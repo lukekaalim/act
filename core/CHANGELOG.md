@@ -1,5 +1,11 @@
 # @lukekaalim/act
 
+## 4.2.0
+
+### Minor Changes
+
+- Improve debugger support
+
 ## 4.1.0
 
 ### Minor Changes

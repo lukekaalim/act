@@ -1,5 +1,13 @@
 # @lukekaalim/act-backstage
 
+## 3.1.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @lukekaalim/act-recon@4.0.0
+  - @lukekaalim/act@4.2.0
+
 ## 3.1.0
 
 ### Minor Changes

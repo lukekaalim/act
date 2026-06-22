@@ -1,5 +1,15 @@
 # @lukekaalim/act-three
 
+## 7.0.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @lukekaalim/act-recon@4.0.0
+  - @lukekaalim/act@4.2.0
+  - @lukekaalim/act-web@5.1.0
+  - @lukekaalim/act-backstage@3.1.1
+
 ## 7.0.1
 
 ### Patch Changes

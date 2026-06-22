@@ -1,5 +1,18 @@
 # @lukekaalim/act-web
 
+## 5.1.0
+
+### Minor Changes
+
+- Improve debugger support
+
+### Patch Changes
+
+- Updated dependencies
+  - @lukekaalim/act-recon@4.0.0
+  - @lukekaalim/act@4.2.0
+  - @lukekaalim/act-backstage@3.1.1
+
 ## 5.0.0
 
 ### Major Changes

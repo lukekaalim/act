@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-web",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "type": "module",
   "main": "mod.ts",
   "exports": {
@@ -8,9 +8,9 @@
     "./node": "./nodejs/index.ts"
   },
   "dependencies": {
-    "@lukekaalim/act": "^4.1.0",
-    "@lukekaalim/act-backstage": "^3.1.0",
-    "@lukekaalim/act-recon": "^3.1.0",
+    "@lukekaalim/act": "^4.2.0",
+    "@lukekaalim/act-backstage": "^3.1.1",
+    "@lukekaalim/act-recon": "^4.0.0",
     "@types/hast": "^3.0.4",
     "hast-util-to-html": "^9.0.5",
     "hastscript": "^9.0.1",

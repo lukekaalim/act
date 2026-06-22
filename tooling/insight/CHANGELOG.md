@@ -1,5 +1,19 @@
 # @lukekaalim/act-insight
 
+## 2.0.0
+
+### Major Changes
+
+- Improve debugger support
+
+### Patch Changes
+
+- Updated dependencies
+  - @lukekaalim/act-recon@4.0.0
+  - @lukekaalim/act-debug@2.0.0
+  - @lukekaalim/act@4.2.0
+  - @lukekaalim/act-web@5.1.0
+
 ## 1.1.0
 
 ### Minor Changes
