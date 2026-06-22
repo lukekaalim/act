@@ -22,7 +22,7 @@ export const createWebNodeBuilder = (
         switch (tag) {
           case act.primitiveNodeTypes.string:
           case act.primitiveNodeTypes.number:
-            return window.document.createTextNode("<empty text>");
+            return window.document.createTextNode((element.props.value as any).toString());
           default:
             return null;
         }
