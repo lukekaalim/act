@@ -17,7 +17,6 @@ export const renderDEV = (node: Node, builders: NodeBuilder<any, any>[], { mode 
   
   reconciler.bus = {
     render(delta) {
-      console.log('Render captured')
       for (const space of spaces)
         space.create(delta);
       for (const space of spaces)

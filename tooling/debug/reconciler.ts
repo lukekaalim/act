@@ -16,12 +16,11 @@ export class DebugReconciler extends Reconciler2 {
   work(): void {
     this.thread.work();
 
-    if (this.thread.done) {
+    if (this.thread.done) 
       this.thread.reset();
-    } else {
-      if (!this.thread.paused)
-        this.scheduler.requestCallback();
-    }
+
+    if (this.thread.hasWork && !this.thread.paused)
+      this.scheduler.requestCallback();
   }
 }
 

@@ -67,48 +67,54 @@ export const toggleEffectBreakpoint = (breakpoints: Breakpoints, effectId: Effec
   return nextBreakpoints;
 }
 
+export type BreakPosition2 = {
+  commit: null | CommitID,
+  effect: null | EffectID,
+  named: null | 'before-first-commit' | 'before-pass' | 'before-submit' | 'before-first-effect' | 'before-last-effect' | 'step'
+}
+
 export type BreakPosition =
   | { type: 'named', name: 'before-first-commit' | 'before-pass' | 'before-submit' | 'before-first-effect' | 'before-last-effect' }
   | { type: 'effect', effect: EffectID, isCleanup: boolean }
   | { type: 'commit', commit: CommitID }
 
-export const evaluateBreakpoints = (breakpoints: Breakpoints, thread: DebugThread): BreakPosition[] => {
-  const positions: BreakPosition[] = [];
+export const evaluateBreakpoints = (breakpoints: Breakpoints, thread: DebugThread): BreakPosition2 => {
+  const position: BreakPosition2 = { commit: null, effect: null, named: null }
 
   switch (thread.state) {
     case 'commit':
       if (!thread.started && breakpoints.threadStart) {
-        positions.push({ type: 'named', name: 'before-first-commit' })
+        position.named = 'before-first-commit'
       }
       const task = thread.pendingTasks[thread.pendingTasks.length - 1];
       if (task && breakpoints.commits.has(task.ref.id)) {
-        positions.push({ type: 'commit', commit: task.ref.id })
+        position.commit = task.ref.id;
       }
       break;
     case 'commit-pass':
       if (breakpoints.threadPass) {
-        positions.push({ type: 'named', name: 'before-pass' })
+        position.named = 'before-pass';
       }
       break;
     case 'effect':
       if (thread.effects.taskIndex === 0 && breakpoints.effectsStart) {
-        positions.push({ type: 'named', name: 'before-first-effect' })
+        position.named = 'before-first-effect';
       }
       if (thread.effects.taskIndex === thread.effects.tasks.length - 1 && breakpoints.effectsEnd) {
-        positions.push({ type: 'named', name: 'before-last-effect' })
+        position.named = 'before-last-effect';
       }
       if (thread.effects.task && breakpoints.effects.has(thread.effects.task.id)) {
-        positions.push({ type: 'effect', effect: thread.effects.task.id, isCleanup: thread.effects.task.type === 'cleanup' })
+        position.effect = thread.effects.task.id;
       }
       break;
     case 'submit':
       if (breakpoints.threadSubmit) {
-        positions.push({ type: 'named', name: 'before-submit' })
+        position.named = 'before-submit';
       }
       break;
     case 'idle':
       break;
   }
 
-  return positions;
+  return position;
 }

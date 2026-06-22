@@ -7,7 +7,7 @@ import {
 import { DebugCache } from "./cache";
 import { DebugReconciler } from "./reconciler";
 import { createEventEmitter, SubscribeFunction } from "./events";
-import { Breakpoints } from "./breakpoints";
+import { Breakpoints, BreakPosition2 } from "./breakpoints";
 
 /**
  * This debug client connects directly to the underlying
@@ -19,10 +19,10 @@ export class DirectDebugClient implements DebugClient {
 
     this.cache.init(createTreeReport(this.reconciler.tree));
 
-    this.reconciler.thread.on.break(() => {
+    this.reconciler.thread.on.break((position) => {
       const thread = this.getThread()
       this.cache.load(thread);
-      this.#events.break.run(thread);
+      this.#events.break.run([thread, position]);
     });
     this.reconciler.thread.on.finish(() => {
       const thread = this.getThread()
@@ -40,7 +40,7 @@ export class DirectDebugClient implements DebugClient {
   #events = {
     breakpointsChange: createEventEmitter<Breakpoints>(),
 
-    break: createEventEmitter<ThreadReport>(),
+    break: createEventEmitter<[ThreadReport, BreakPosition2]>(),
     finish: createEventEmitter<ThreadReport>(),
   }
 
@@ -68,7 +68,7 @@ export class DirectDebugClient implements DebugClient {
       // re-run "break" on step
       const thread = this.getThread()
       this.cache.load(thread);
-      this.#events.break.run(thread);
+      this.#events.break.run([thread, { effect: null, commit: null, named: 'step' }]);
     }
   }
 
@@ -114,7 +114,7 @@ export type DebugClient = {
    */
   onBreakpointsChange: SubscribeFunction<Breakpoints>,
   
-  onBreak: SubscribeFunction<ThreadReport>;
+  onBreak: SubscribeFunction<[ThreadReport, BreakPosition2]>;
   onFinish: SubscribeFunction<ThreadReport>;
 
   /**

@@ -107,7 +107,10 @@ export class WorkThread2 {
   }
 
   get done() {
-    return this.started && this.pendingTasks.length === 0 && this.missed.size === 0 && this.submitted;
+    return this.started && !this.hasWork;
+  }
+  get hasWork() {
+    return this.pendingTasks.length > 0 || this.missed.size > 0 || (this.started && !this.submitted);
   }
 
   /**
@@ -299,7 +302,7 @@ export class WorkThread2 {
       this.processTask(task);
     } else if (this.missed.size > 0) {
       this.startNextPass();
-    } else if (!this.submitted) {
+    } else if (this.started && !this.submitted) {
       this.submit();
     } else {
       console.info(`Work on thread was requested, but no work was needed`)
@@ -346,6 +349,7 @@ export class WorkThread2 {
   reset() {
     const missed = this.requestsMissed;
 
+    this.requests = [];
     this.pendingTasks = [];
     this.requestsMissed = [];
 

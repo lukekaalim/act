@@ -47,6 +47,8 @@ export class EffectWorker {
   }
 
   loadDelta(delta: Delta) {
+    this.clear();
+    
     this.taskIndex = 0;
     const cleanups: EffectCleanupTask[] = [];
     const constructors: EffectConstructorTask[] = [];

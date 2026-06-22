@@ -13,7 +13,7 @@ export type EffectTableProps = {
 }
 
 export const EffectTable: Component<EffectTableProps> = ({ state, controller }) => {
-  return [
+  return h('div', { className: classes.effectTable }, [
     h('h4', { className: classes.effectCleanupHeading }, "Live Cleanups"),
     h('table', { className: classes.effectCleanupTable }, [
       h('thead', {}, [
@@ -60,6 +60,7 @@ export const EffectTable: Component<EffectTableProps> = ({ state, controller }) 
       h('table', { className: classes.effectCleanupTable }, [
         h('thead', {}, [
           h('tr', {}, [
+            h('th', {}, ''),
             h('th', {}, 'EffectID'),
             h('th', {}, 'Cleanup'),
             h('th', {}, 'Run'),
@@ -106,14 +107,19 @@ export const EffectTable: Component<EffectTableProps> = ({ state, controller }) 
           }
 
           return h('tr', {}, [
+            h('td', {}, [
+              h(BreakpointToggle, { toggled: state.breakpoints.effects.has(effect.id), onToggle() {
+                state.client.setBreakpoints(toggleEffectBreakpoint(state.breakpoints, effect.id))
+              }, }),
+            ]),
             h('td', {}, h(EffectButton, { effectId: effect.id, onClick() {} })),
             renderCleanupAndRun(),
-            h('td', {}, h(CommitButton, { onClick() {}, commitId: commit.id })),
+            h('td', {}, h(CommitButton, { onClick() { controller.select({ type: 'commit', id: commit.id }) }, commitId: commit.id })),
             h('td', {}, effect.functionName || 'Anonymous'),
             h('td', {}, (!effect.effect).toString()),
           ])
         }))
       ]),
     ]
-  ];
+  ]);
 }

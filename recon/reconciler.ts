@@ -51,11 +51,11 @@ export class Reconciler2 {
   work() {
     this.thread.work();
 
-    if (this.thread.done) {
+    if (this.thread.done) 
       this.thread.reset();
-    } else {
+
+    if (this.thread.hasWork)
       this.scheduler.requestCallback();
-    }
   }
 
   mount(node: Node): CommitRef2 {

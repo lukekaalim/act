@@ -71,7 +71,7 @@ export const rehydrate = (
       roots.push(ref);
     }
 
-    const commit = reconciler.pools.commit.acquire(ref,
+    const commit = new Commit2(ref,
       element,
       children
     );

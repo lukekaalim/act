@@ -18,6 +18,7 @@ import { IconButton } from "./Button";
 import { InsightController, InsightState, toggleCollapsedCommit } from "../lib/controller";
 import { FiltersPanel } from "./FiltersPanel";
 import { CommitID } from "@lukekaalim/act-recon";
+import { icons } from "../assets/icons";
 
 
 export type CommitTreeProps = {
@@ -92,6 +93,8 @@ export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, cl
     }
     client.setBreakpoints(next);
   }
+
+  const hasEffect = thread && thread.delta.effects.some(effect => effect.commit === commit.id);
   
   return [
     h('div', { onMouseEnter, onMouseLeave, className: classes.commitRow }, [
@@ -127,12 +130,14 @@ export const CommitRow: Component<CommitRowProps> = ({ width, thread, commit, cl
         }),
         h(CommitPreview, { color, commit, onClick, border, attributes: [], className: selected && classes.selected || undefined }),
         h('div', { className: classes.commitRowControls }, [
-          (focused || breakpointSet) && h('button', {
+          (focused || breakpointSet) ? h('button', {
             classList: [classes.commitRowBreakpointToggle, !breakpointSet && classes.off],
             onClick: onClickBreakpointToggle
           },
-            h('img', { src: breakpointSet ? breakpointURL : breakpointUnsetURL, title: 'Set Breakpoint' }))
-        ])
+          h('img', { src: breakpointSet ? breakpointURL : breakpointUnsetURL, title: 'Set Breakpoint' }))
+          : h('div', { style: { width: '22px' } }),
+          hasEffect && h('img', { src: icons.effect, height: 16 }),
+        ]),
       ])
     ]),
   ];

@@ -14,6 +14,7 @@ import { CommitListEntry, createCommitList } from "./lib/list";
 import { useInsightManager } from "./lib/controller";
 import { CommitPreview } from "./TreeViewer";
 import { CommitID } from "@lukekaalim/act-recon";
+import { EffectButton } from "./components/Button";
 
 export type InsightApp2Props = {
   client: DebugClient;
@@ -33,35 +34,11 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
     )
   }
 
-  const breakLocation = useMemo(() => {
-    const locations: Node[] = [];
-
-    if (!state.thread)
-      return locations;
-
-    if (!state.thread.started) {
-      // OR we are doing effects... who is to say
-      locations.push('Before Thread Start')
-    }
-    if (state.thread.started && state.thread.done && !state.thread.submitted) {
-      locations.push('Before Thread Submission')
-    }
-
-    const nextTask = state.thread.pendingTasks[state.thread.pendingTasks.length - 1];
-    if (nextTask) {
-      if (state.breakpoints.commits.has(nextTask.id)) {
-        const commit = client.cache.getCommit(nextTask.id);
-        if (commit) {
-          locations.push('Breakpoint', h(CommitPreview, { commit, onClick() { controller.select({ type: 'commit', id: nextTask.id })} }))
-        }
-      }
-    }
-
-    if (locations.length === 0)
-      return ['Step']
-
-    return locations;
-  }, [state.thread, state.breakpoints])
+  const breakLocation = state.breakPosition && h('div', {}, [
+    state.breakPosition.commit && h('div', {}, h(CommitPreview, { commit: state.client.cache.getCommitOrThrow(state.breakPosition.commit ) })),
+    state.breakPosition.effect && h('div', {}, h(EffectButton, { onClick() {}, effectId: state.breakPosition.effect })),
+    state.breakPosition.named && h('div', {}, `@${state.breakPosition.named}`),
+  ])
 
   return providers(h('div', { className: classes.insightRoot }, [
     h(ControlBar, {
@@ -80,6 +57,7 @@ export const InsightApp2: Component<InsightApp2Props> = ({ client, onReady }) =>
         breakpoints: state.breakpoints,
         paused: state.paused,
         cache: client.cache,
+        state,
 
         onResumePressed: () => client.resume(),
         onStepPressed: () => client.step(),

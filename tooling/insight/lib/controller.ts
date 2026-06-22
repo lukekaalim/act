@@ -1,4 +1,4 @@
-import { Breakpoints, CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectCleanupReport, EffectReport, ThreadReport } from "@lukekaalim/act-debug";
+import { Breakpoints, BreakPosition2, CommitReport, DebugClient, DEFAULT_BREAKPOINTS, EffectCleanupReport, EffectReport, ThreadReport } from "@lukekaalim/act-debug";
 import { CommitListEntry, createCommitList } from "./list";
 import { SelectionManager, SelectionTarget, useSelectionManager } from "./selection";
 import { CommitID } from "@lukekaalim/act-recon";
@@ -42,6 +42,7 @@ export const toggleCollapsedCommit = (filters: Filters, collapseToggledCommit: C
 
 export type InsightState = {
   paused: boolean,
+  breakPosition: BreakPosition2 | null,
 
   breakpoints: Breakpoints,
   thread: ThreadReport | null,
@@ -94,6 +95,8 @@ export const useInsightManager = (client: DebugClient) => {
 
   const [commitScrollTarget, setScrollTarget] = useState<CommitID | null>(null);
 
+  const [breakPosition, setBreakPosition] = useState<BreakPosition2 | null>(null);
+
   useEffect(() => {
     const skip = (c: CommitReport) => {
       if (filters.skipPrimitives && (c.element.type.type === 'primitive' || c.element.type.type === 'array'))
@@ -125,15 +128,19 @@ export const useInsightManager = (client: DebugClient) => {
     setPaused(thread.paused);
 
     const subs = [
-      client.onBreak((thread) => {
+      client.onBreak(([thread, position]) => {
         setCommits(createCommitList(client.cache, { skip, hide }));
         setEffects(thread.delta.effects);
         setCleanups([...client.cache.liveCleanups.values()]);
         setThread(thread)
+        setBreakPosition(position);
         
         const pendingTask = thread.pendingTasks[thread.pendingTasks.length - 1];
+        const pendingEffect = thread.effects.tasks[thread.effects.taskIndex];
         if (pendingTask)
           controller.focus({ type: 'commit', id: pendingTask.id });
+        else if (pendingEffect)
+          controller.focus({ type: 'effect', id: pendingEffect.id });
         
         setPaused(true)
       }),
@@ -143,8 +150,9 @@ export const useInsightManager = (client: DebugClient) => {
       client.onFinish((thread) => {
         setCommits(createCommitList(client.cache, { skip, hide }));
         setEffects(thread.delta.effects);
-        setPaused(false)
-        setThread(thread)
+        setPaused(false);
+        setThread(thread);
+        setBreakPosition(null);
       })
     ];
     () => {
@@ -154,6 +162,8 @@ export const useInsightManager = (client: DebugClient) => {
 
   const state: InsightState = {
     paused,
+    breakPosition,
+
     thread,
     breakpoints,
     selection,
@@ -189,6 +199,9 @@ export const useInsightManager = (client: DebugClient) => {
         case 'commit':
           setActiveWindow('commits')
           setScrollTarget(focusTarget.id);
+          break;
+        case 'effect':
+          setActiveWindow('effects')
           break;
       }
     },

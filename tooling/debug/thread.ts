@@ -1,7 +1,7 @@
 import { CommitTree2, WorkThread2 } from "@lukekaalim/act-recon";
 import { EffectWorker } from "./effectWorker";
 import { createEventEmitter } from "./events";
-import { Breakpoints, BreakPosition, DEFAULT_BREAKPOINTS, evaluateBreakpoints } from "./breakpoints";
+import { Breakpoints, BreakPosition2, DEFAULT_BREAKPOINTS, evaluateBreakpoints } from "./breakpoints";
 
 export class DebugThread extends WorkThread2 {
   effects: EffectWorker;
@@ -10,7 +10,7 @@ export class DebugThread extends WorkThread2 {
   breakpoints: Breakpoints = DEFAULT_BREAKPOINTS;
 
   #events = {
-    break: createEventEmitter(),
+    break: createEventEmitter<BreakPosition2>(),
     finish: createEventEmitter()
   }
 
@@ -23,9 +23,13 @@ export class DebugThread extends WorkThread2 {
     super(tree);
     this.effects = new EffectWorker(tree);
   }
-  
+
   get done() {
     return super.done && this.effects.done;
+  }
+  
+  get hasWork() {
+    return super.hasWork || !this.effects.done;
   }
 
   get state() {
@@ -45,11 +49,10 @@ export class DebugThread extends WorkThread2 {
     if (this.paused)
       return;
 
-    const breakPositions = evaluateBreakpoints(this.breakpoints, this);
-    if (breakPositions.length > 0) {
-      console.log('Pause');
+    const position = evaluateBreakpoints(this.breakpoints, this);
+    if (position.commit || position.effect || position.named) {
       this.paused = true;
-      this.#events.break.run();
+      this.#events.break.run(position);
       return;
     }
 
@@ -63,7 +66,6 @@ export class DebugThread extends WorkThread2 {
       super.work();
     }
     if (this.done) {
-      console.log('Finish');
       this.paused = false;
       this.#events.finish.run();
     }
@@ -74,5 +76,11 @@ export class DebugThread extends WorkThread2 {
 
     this.bus.render(this.delta);
     this.effects.loadDelta(this.delta);
+  }
+
+  reset(): void {
+    super.reset();
+    this.effects.clear();
+    this.paused = false;
   }
 }

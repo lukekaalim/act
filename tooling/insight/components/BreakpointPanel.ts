@@ -3,25 +3,25 @@ import { Breakpoints, DebugCache, toggleEffectBreakpoint } from "@lukekaalim/act
 
 import classes from './index.module.css';
 import { CommitPreview } from "../TreeViewer";
-import { IconButton } from "./Button";
-import { InsightController } from "../lib/controller";
+import { EffectButton, HookButton, IconButton } from "./Button";
+import { InsightController, InsightState } from "../lib/controller";
 import { icons } from "../assets/icons";
 import { BreakpointToggle } from "./BreakpointToggle";
 
 export type BreakpointPanelProps = {
+  state: InsightState,
   controller: InsightController,
   cache: DebugCache,
 
   breakpoints: Readonly<Breakpoints>,
-  paused: boolean,
 
   onBreakpointsChange(breakpoints: Breakpoints): void,
   onStepPressed(): void,
   onResumePressed(): void,
 }
 
-export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, paused, onBreakpointsChange, cache, controller }) => {
-  type Toggles = "threadStart" | "threadPass" | "effectsStart" | "threadSubmit"
+export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, state, onBreakpointsChange, cache, controller }) => {
+  type Toggles = "threadStart" | "threadPass" | "effectsStart" | "threadSubmit" | 'effectsEnd'
 
   const setBreakpointToggle = (toggle: Toggles) => (event: InputEvent) => {
     const input = event.target as HTMLInputElement;
@@ -48,27 +48,36 @@ export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, 
     setDragging(false);
     (event.target as HTMLButtonElement).releasePointerCapture(event.pointerId);
   }
+  // 'before-first-commit' | 'before-pass' | 'before-submit' | 'before-first-effect' | 'before-last-effect' 
+
+  const start = state.thread && state.paused && !state.thread.started;
+  const submit = state.thread && state.paused && !state.thread.submitted && state.thread.pendingTasks.length === 0 && state.thread.missed.length === 0;
+  const pass = state.thread && state.paused && !state.thread.submitted && state.thread.pendingTasks.length === 0 && state.thread.missed.length !== 0;
 
   return h('div', { className: classes.panelContainer, style: { width: `${width}px` } }, [
     h('button', { classList: [classes.grabHandle, classes.right], onPointerDown, onPointerMove, onPointerUp }, h('img', { src: icons.vertical_grab_handle })),
     h('div', { classList: [classes.panel] }, [
       h('h4', {}, 'Breakpoint Controls'),
       h('div', { className: classes.namedBreakpointList }, [
-        h('label', {}, [
+        h('label', { className: start ? classes.hit : '' }, [
           h('input', { type: 'checkbox', checked: breakpoints.threadStart, onInput: setBreakpointToggle('threadStart') }),
-          h('span', {}, 'Before Thread'),
+          h('span', {}, 'Before First Commit'),
         ]),
-        h('label', {}, [
+        h('label', { className: pass ? classes.hit : '' }, [
           h('input', { type: 'checkbox', checked: breakpoints.threadPass, onInput: setBreakpointToggle('threadPass') }),
-          h('span', {}, 'On Pass'),
+          h('span', {}, 'On Before New Thread Pass'),
+        ]),
+        h('label', { className: submit ? classes.hit : '' }, [
+          h('input', { type: 'checkbox', checked: breakpoints.threadSubmit, onInput: setBreakpointToggle('threadSubmit') }),
+          h('span', {}, 'On Submit to Renderer'),
         ]),
         h('label', {}, [
           h('input', { type: 'checkbox', checked: breakpoints.effectsStart, onInput: setBreakpointToggle('effectsStart') }),
-          h('span', {}, 'On Effects'),
+          h('span', {}, 'On First Effect'),
         ]),
         h('label', {}, [
-          h('input', { type: 'checkbox', checked: breakpoints.threadSubmit, onInput: setBreakpointToggle('threadSubmit') }),
-          h('span', {}, 'After Thread'),
+          h('input', { type: 'checkbox', checked: breakpoints.effectsEnd, onInput: setBreakpointToggle('effectsEnd') }),
+          h('span', {}, 'On Last Effect'),
         ]),
       ]),
       commitBreakpoints.length > 0 && [
@@ -88,12 +97,11 @@ export const BreakpointPanel: Component<BreakpointPanelProps> = ({ breakpoints, 
       effectBreakpoints.length > 0 && [
         h('h4', {}, 'Effect Breakpoints'),
         h('ul', { className: classes.effectList }, effectBreakpoints.map(effectId => {
-
           return h('li', {}, [
             h(BreakpointToggle, { toggled: true, onToggle(toggled) {
               onBreakpointsChange(toggleEffectBreakpoint(breakpoints, effectId))
             }, }),
-            h('div', {}, effectId)
+            h(EffectButton, { onClick() {}, effectId }),
           ])
         }))
       ],

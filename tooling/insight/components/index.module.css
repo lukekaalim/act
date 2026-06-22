@@ -75,6 +75,10 @@
   flex-direction: column;
 }
 
+.hit {
+  background: red;
+}
+
 .playbackBar {
   position: absolute;
   bottom: 120px;
@@ -159,6 +163,7 @@
 .commitRowControls {
   display: inline-flex;
   height: 33px;
+  align-items: center;
 }
 
 .commitRowBreakpointToggle {
@@ -250,6 +255,11 @@
 
   margin: 8px;
 }
+.effectTable {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
 
 .selected {
   font-weight: bold;
@@ -276,7 +286,7 @@
   flex-direction: column;
 }
 
-.commitList {
+.commitList, .effectList {
   padding: 0;
   margin: 4px;
   gap: 4px;
@@ -286,7 +296,7 @@
   list-style: none;
 }
 
-.commitList > li {
+.commitList > li, .effectList > li {
   display: flex;
 }
 

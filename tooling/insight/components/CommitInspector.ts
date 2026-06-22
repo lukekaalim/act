@@ -132,8 +132,11 @@ export const CommitInspector: Component<CommitInspectorProps> = ({ commit, break
         h('h4', {}, 'Effects'),
         h('table', {}, 
           component.effects.map((effectHook) => {
-            const deps = component.deps.find(e => e.hookIndex === effectHook.hookIndex);
-            return h('tr', {}, [
+            const queuedForUpdate = state.thread && state.thread.delta.effects.some(e => e.id === effectHook.effect);
+            const cleanupTask = state.thread && state.thread.effects.tasks.findIndex(t => t.id === effectHook.effect && t.type === 'cleanup')
+            const constructorTask = state.thread && state.thread.effects.tasks.findIndex(t => t.id === effectHook.effect && t.type === 'constructor')
+
+            return h('tr', { style: { background: queuedForUpdate ? '#a7ceff' : 'none' } }, [
               h('td', {}, h(HookButton, { onClick() {} , hookIndex: effectHook.hookIndex })),
               h('td', {}, h('div', { style: { display: 'flex' } }, [
                 h(BreakpointToggle, { onToggle() {
@@ -141,9 +144,6 @@ export const CommitInspector: Component<CommitInspectorProps> = ({ commit, break
                 }, toggled: breakpoints.effects.has(effectHook.effect) }),
                 h(EffectButton, { onClick() {}, effectId: effectHook.effect }),
               ])),
-              !!deps && !!deps.deps && deps.deps.map(dep => {
-                return h('td', {}, getTextForValue(dep))
-              }),
             ])
         })),
         h('h4', {}, 'Contexts'),
