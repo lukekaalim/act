@@ -1,6 +1,6 @@
 {
   "name": "@lukekaalim/act-web",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "type": "module",
   "main": "mod.ts",
   "exports": {

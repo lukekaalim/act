@@ -1,12 +1,12 @@
 {
   "name": "@lukekaalim/act-insight",
   "main": "index.ts",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "scripts": {},
   "dependencies": {
     "@lukekaalim/act": "*",
     "@lukekaalim/act-recon": "4.0.0",
-    "@lukekaalim/act-web": "5.1.0",
+    "@lukekaalim/act-web": "5.1.1",
     "@lukekaalim/act-debug": "2.0.0",
     "@sindresorhus/string-hash": "^2.0.0",
     "@types/firefox-webext-browser": "^120.0.4",

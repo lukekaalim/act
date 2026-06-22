@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 5.1.1
+
+### Patch Changes
+
+- 114c53f: Fix issue with adding/remove ref props from Web elements
+
 ## 5.1.0
 
 ### Minor Changes
