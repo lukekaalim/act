@@ -1,15 +1,15 @@
 {
   "name": "@lukekaalim/act-three",
   "main": "mod.ts",
-  "version": "7.0.2",
+  "version": "7.1.0",
   "dependencies": {
-    "@types/three": ">= 0.171.0",
-    "@lukekaalim/act-web": "^5.1.0",
     "@lukekaalim/act": "^4.2.0",
+    "@lukekaalim/act-backstage": "^3.1.1",
     "@lukekaalim/act-recon": "^4.0.0",
-    "@lukekaalim/act-backstage": "^3.1.1"
+    "@lukekaalim/act-web": "^5.1.0",
+    "@types/three": ">= 0.185.0"
   },
   "peerDependencies": {
-    "three": ">= 0.171.0"
+    "three": ">= 0.185.0"
   }
 }
