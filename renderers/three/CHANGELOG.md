@@ -1,5 +1,11 @@
 # @lukekaalim/act-three
 
+## 7.1.2
+
+### Patch Changes
+
+- Fix missing package.json updates from last patch
+
 ## 7.1.1
 
 ### Patch Changes

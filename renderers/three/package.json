@@ -1,7 +1,8 @@
 {
   "name": "@lukekaalim/act-three",
-  "main": "mod.ts",
-  "version": "7.1.1",
+  "main": "index.ts",
+  "type": "module",
+  "version": "7.1.2",
   "dependencies": {
     "@lukekaalim/act": "^4.2.0",
     "@lukekaalim/act-backstage": "^3.1.1",
