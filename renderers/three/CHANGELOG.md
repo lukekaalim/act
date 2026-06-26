@@ -1,5 +1,11 @@
 # @lukekaalim/act-three
 
+## 7.1.1
+
+### Patch Changes
+
+- Fixed act-three not being delcared a module, update main export to "index.ts" from "mod.ts"
+
 ## 7.1.0
 
 ### Minor Changes
