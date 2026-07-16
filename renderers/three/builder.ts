@@ -9,7 +9,9 @@ export const createThreeJSBuilder = (rootObject: Object3D | null = null): NodeBu
   roots: new Set(['threejs']),
 
   create(element) {
-    return registry.create(element);
+    if (typeof element.type === 'string')
+      return registry.create(element);
+    return null;
   },
   update(el, next, prev) {
     registry.update(el, next, prev);
