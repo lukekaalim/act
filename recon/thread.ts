@@ -17,7 +17,7 @@ export type QueueResult =
   | 'existing-target'
   | 'existing-task'
 
-export type ThreadState = {
+export type CommitWorkerState = {
   requests: WorkRequest[];
   missedRequests: WorkRequest[];
 
@@ -37,15 +37,28 @@ export type ThreadState = {
   id: OpaqueID<"ThreadID">;
 }
 
-/**
- * A temporary data structure that carries the state of a
- * work-in-progress update to the tree.
- *
- * An update to the tree is designed to be broken up - the scheduler
- * will continually call the "work" function many times.
- */
-export class WorkThread2 {
+export class CommitWorker {
   tree: CommitTree2;
+
+  state: CommitWorkerState = {
+    requests: [],
+    missedRequests: [],
+
+    mustRender: new Set(),
+    mustVisit: new Set(),
+    pendingTasks: [],
+
+    missed: new Set(),
+    missedUnmount: new Set(),
+
+    visited: new Set(),
+    
+    started: false,
+    submitted: false,
+
+    pass: 0,
+    id: createId('ThreadID')
+  };
 
   /**
    * Each time an external system adds an update to the current thread,

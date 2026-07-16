@@ -1,8 +1,8 @@
 import { ContextID, EffectCleanup, EffectConstructor, Element, specialNodeTypes } from "@lukekaalim/act";
-import { Commit2, CommitID, CommitRef2 } from "./commit.ts";
 import { ElementOutput2 } from "./element.ts";
 import { BoundaryState, ComponentState, ContextState, EffectID, EffectTask2 } from "./state.ts";
 import { Reconciler2 } from "./reconciler.ts";
+import { Commit, CommitID } from "./commit.ts";
 
 export type EffectCleanupState = {
   id: EffectID,
@@ -30,21 +30,15 @@ export type EffectCleanupState = {
  * Don't forget - commits are mutable! Once you get a reference
  * to a commit, you always have the latest copy of it.
  */
-export class CommitTree2 {
-  reconciler: Reconciler2;
-
+export class CommitTree {
   components: Map<CommitID, ComponentState> = new Map();
   contexts: Map<CommitID, ContextState<unknown>> = new Map();
   boundaries: Map<CommitID, BoundaryState> = new Map();
 
   cleanups: Map<EffectID, EffectCleanupState> = new Map();
 
-  commits: Map<CommitID, Commit2> = new Map();
+  commits: Map<CommitID, Commit> = new Map();
   roots: Set<CommitID> = new Set();
-
-  constructor(reconciler: Reconciler2) {
-    this.reconciler = reconciler;
-  }
 
   getOrCreateComponentState(ref: CommitRef2) {
     let state = this.components.get(ref.id);
