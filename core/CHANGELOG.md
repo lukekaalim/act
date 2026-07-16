@@ -1,5 +1,11 @@
 # @lukekaalim/act
 
+## 4.3.0
+
+### Minor Changes
+
+- bf3138f: Added PrimitiveRegistry for dynamically adding more elements to act-three, implemented in backstage
+
 ## 4.2.0
 
 ### Minor Changes

@@ -1,5 +1,18 @@
 # @lukekaalim/act-three
 
+## 8.0.0
+
+### Major Changes
+
+- bf3138f: Added PrimitiveRegistry for dynamically adding more elements to act-three, implemented in backstage
+
+### Patch Changes
+
+- Updated dependencies [bf3138f]
+  - @lukekaalim/act-backstage@3.2.0
+  - @lukekaalim/act-web@5.2.0
+  - @lukekaalim/act@4.3.0
+
 ## 7.1.2
 
 ### Patch Changes
