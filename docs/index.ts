@@ -6,6 +6,8 @@ import { toHtml } from 'hast-util-to-html';
 import { createDOMScheduler, createHASTBuilder, createWebNodeBuilder, hs, HTML, render } from '@lukekaalim/act-web';
 import { Boundary, Component, h, primitiveNodeTypes, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
+import * as three from 'three';
+
 //import all from 'typedoc:@lukekaalim/{act,act-recon,act-web,act-three,act-backstage,act-insight}';
 
 
@@ -35,6 +37,7 @@ import { RenderSpace2 } from '@lukekaalim/act-backstage';
 import { assertRefs } from '@lukekaalim/act-graphit';
 
 import { CommitPreview, createDebugPopup, renderDEV, TreeViewer } from '@lukekaalim/act-insight';
+import { a3, createThreeJSBuilder, registry, setProps, ThreeJSRoot } from '../renderers/three';
 
 const doc = createDocApp([TypeDocPlugin]);
 
@@ -163,19 +166,40 @@ doc.demos.add('core.rendering', () => {
 })
 
 const Test = () => {
+  const ref = useRef<three.Scene | null>(null);
+
   useEffect(function myEffect() {
+    console.log('REF', ref.current)
     console.log('up')
     return () => {
       console.log('down')
     }
   })
+
   return [
     null,
     h(primitiveNodeTypes.null, { key: 'nope' }, [
-      h('button', {}, 'Secret Button')
+      h('button', {}, 'Secret Button'),
+      h(ThreeJSRoot, {}, [
+        h(a3.scene, { name: 'My scene :D' }, [
+          h(a3.perspectiveCamera, {}),
+          h(a3.mesh, { geometry: new three.BoxGeometry(), material: new three.MeshBasicMaterial({ color: 'red' }) }),
+          h(a3.Box3Helper, { ref, box: new three.Box3(new three.Vector3(999), new three.Vector3(666)) })
+        ])
+      ])
     ]),
   ];
 }
+
+
+declare module "@lukekaalim/act-three" {
+  interface ExtendedPrimitives {
+    Box3Helper: { box: three.Box3 }
+  }
+}
+registry.registerPrimitive('Box3Helper', ({ box }) => new three.Box3Helper(box), (helper, { box }) => {
+  helper.box.copy(box);
+})
 
 const app =  h('div', {}, [
   h(Test),
@@ -185,6 +209,9 @@ const app =  h('div', {}, [
   } }, 'Open Debugger')
   ])
 
-const { ref, reconciler } = renderDEV(h(HTML, {}, app), [createWebNodeBuilder(document.body)])
+const { ref, reconciler } = renderDEV(h(HTML, {}, app), [
+  createWebNodeBuilder(document.body),
+  createThreeJSBuilder()
+])
 
 //render(app, document.body);

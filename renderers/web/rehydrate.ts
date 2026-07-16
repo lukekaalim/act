@@ -2,7 +2,6 @@ import { createId, Element, ElementType, h, primitiveNodeTypes, specialNodeTypes
 import { Commit2, CommitID, CommitRef2, Reconciler2 } from "@lukekaalim/act-recon";
 import { deserializeSSRPayload, RehydratableComponent, SSRContext, SSRPayload, ssrStringToSymbolMap } from "./ssr";
 import { RenderSpace2 } from "@lukekaalim/act-backstage";
-import { recon } from "../three/deps";
 
 
 export const rehydrate = (
