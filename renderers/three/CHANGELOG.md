@@ -1,5 +1,11 @@
 # @lukekaalim/act-three
 
+## 8.0.1
+
+### Patch Changes
+
+- 4168a3d: Lie about the ReadOnly nature of a Ref passes to an element to avoid obscure type issues
+
 ## 8.0.0
 
 ### Major Changes
