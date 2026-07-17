@@ -1,5 +1,12 @@
 # @lukekaalim/act-recon
 
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [2ed02cf]
+  - @lukekaalim/act@5.0.0
+
 ## 4.0.0
 
 ### Major Changes

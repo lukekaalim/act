@@ -1,5 +1,22 @@
 # @lukekaalim/act-web
 
+## 6.0.0
+
+### Major Changes
+
+- 2ed02cf: Breaking! Change how useRef works, no longer compatible with React-style.
+
+  New API has `.get` and `.set` properties in order to better type ReadOnlyRef and WriteOnlyRef.
+
+  Add primitive registry to web, remove old element API and replace with "html" and "svg" element maps
+
+### Patch Changes
+
+- Updated dependencies [2ed02cf]
+  - @lukekaalim/act@5.0.0
+  - @lukekaalim/act-recon@4.0.1
+  - @lukekaalim/act-backstage@3.2.1
+
 ## 5.2.0
 
 ### Minor Changes

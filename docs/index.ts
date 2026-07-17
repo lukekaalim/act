@@ -3,7 +3,7 @@ import { TypeDocPlugin } from '@lukekaalim/grimoire-ts';
 import { Root } from 'hast';
 import { toHtml } from 'hast-util-to-html';
 
-import { createDOMScheduler, createHASTBuilder, createWebNodeBuilder, hs, HTML, render } from '@lukekaalim/act-web';
+import { createDOMScheduler, createHASTBuilder, createWebNodeBuilder, HTML, render, html } from '@lukekaalim/act-web';
 import { Boundary, Component, h, primitiveNodeTypes, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
 import * as three from 'three';
@@ -21,16 +21,16 @@ import reconLifecycleMd from '../recon/docs/lifecycle_of_an_update.md?parse';
 import blogFunOptimization from './blogs/fun_optimization.md?parse';
 
 
-import recon from 'typedoc:../recon/mod.ts';
-import core from 'typedoc:../core/mod.ts';
+// import recon from 'typedoc:../recon/mod.ts';
+// import core from 'typedoc:../core/mod.ts';
 
 import rendererWebMd from '../renderers/web/README.md?parse';
-import rendererWeb from 'typedoc:../renderers/web/mod.ts';
+// import rendererWeb from 'typedoc:../renderers/web/mod.ts';
 
 import rendererBackstageMd from '../renderers/backstage/README.md?parse';
-import rendererBackstage from 'typedoc:../renderers/backstage/mod.ts';
+// import rendererBackstage from 'typedoc:../renderers/backstage/mod.ts';
 
-import debug from 'typedoc:../tooling/debug/index.ts';
+// import debug from 'typedoc:../tooling/debug/index.ts';
 
 import { Reconciler2 } from '@lukekaalim/act-recon';
 import { RenderSpace2 } from '@lukekaalim/act-backstage';
@@ -41,13 +41,13 @@ import { a3, createThreeJSBuilder, registry, setProps, ThreeJSRoot } from '../re
 
 const doc = createDocApp([TypeDocPlugin]);
 
-doc.typedoc.addProjectJSON('@lukekaalim/act-recon', recon);
-doc.typedoc.addProjectJSON('@lukekaalim/act', core);
+// doc.typedoc.addProjectJSON('@lukekaalim/act-recon', recon);
+// doc.typedoc.addProjectJSON('@lukekaalim/act', core);
 
-doc.typedoc.addProjectJSON('@lukekaalim/act-web', rendererWeb);
-doc.typedoc.addProjectJSON('@lukekaalim/act-backstage', rendererBackstage);
+// doc.typedoc.addProjectJSON('@lukekaalim/act-web', rendererWeb);
+// doc.typedoc.addProjectJSON('@lukekaalim/act-backstage', rendererBackstage);
 
-doc.typedoc.addProjectJSON('@lukekaalim/act-debug', debug);
+// doc.typedoc.addProjectJSON('@lukekaalim/act-debug', debug);
 
 //doc.article.add('readme', rootReadmeMd, '/')
 doc.article.addRawRoot('readme', rootReadmeMd, '/')
@@ -166,10 +166,10 @@ doc.demos.add('core.rendering', () => {
 })
 
 const Test = () => {
-  const ref = useRef<three.Scene | null>(null);
+  const ref = useRef<three.Points | null>(null);
 
   useEffect(function myEffect() {
-    console.log('REF', ref.current)
+    console.log('REF', ref.get())
     console.log('up')
     return () => {
       console.log('down')
@@ -183,8 +183,8 @@ const Test = () => {
       h(ThreeJSRoot, {}, [
         h(a3.scene, { name: 'My scene :D' }, [
           h(a3.perspectiveCamera, {}),
-          h(a3.mesh, { geometry: new three.BoxGeometry(), material: new three.MeshBasicMaterial({ color: 'red' }) }),
-          h(a3.Box3Helper, { ref, box: new three.Box3(new three.Vector3(999), new three.Vector3(666)) })
+          h(a3.points, { ref, geometry: new three.BoxGeometry(), material: new three.MeshBasicMaterial({ color: 'red' }) }),
+          h(a3.Box3Helper, { box: new three.Box3(new three.Vector3(999), new three.Vector3(666)) })
         ])
       ])
     ]),
@@ -204,7 +204,7 @@ registry.registerPrimitive('Box3Helper', ({ box }) => new three.Box3Helper(box),
 const app =  h('div', {}, [
   h(Test),
   h(BoneTheme, { doc }),
-  h('button', { style: { position: 'fixed', right: '24px', bottom: '24px'}, onClick() {
+  h(html.button, { style: { position: 'fixed', right: '24px', bottom: '24px' }, onClick() {
     createDebugPopup(reconciler);
   } }, 'Open Debugger')
   ])
