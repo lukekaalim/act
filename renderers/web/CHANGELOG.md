@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 6.0.1
+
+### Patch Changes
+
+- 0f734f5: Fix issue with web refs not being applied at all
+
 ## 6.0.0
 
 ### Major Changes

@@ -256,7 +256,7 @@ export const CommitTree: Component<CommitTreeProps> = ({ commits, client, thread
   */
 
   useEffect(() => {
-    const viewport = viewportRef.current;
+    const viewport = viewportRef.get();
     if (!scrollTarget || !viewport)
       return;
 
