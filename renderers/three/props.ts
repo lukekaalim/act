@@ -37,12 +37,14 @@ export const setProps = (object: three.Object3D, props: PropsFromClass<three.Obj
     object.userData = props.userData;
 
   if (props.ref)
-    props.ref.current = object;
+    (props.ref as any).current = object;
   
   if (object instanceof three.Mesh || object instanceof three.Points || object instanceof three.Line) {
     const meshProps = props as PropsFromClass<three.Mesh | three.Points | three.Line>;
-    object.geometry = meshProps.geometry;
-    object.material = meshProps.material;
+    if (meshProps.geometry)
+      object.geometry = meshProps.geometry;
+    if (meshProps.material)
+      object.material = meshProps.material;
   }
 
   if (object instanceof three.PerspectiveCamera) {

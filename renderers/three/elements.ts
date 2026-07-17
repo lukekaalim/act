@@ -156,7 +156,6 @@ registry
       setProps(object, props as PropsFromClass<three.Object3D>);
       return object;
     }
-    console.warn(`I WONT MAKE ${type}`)
     return null;
   })
   .addGlobalUpdateHandler((type, object, next, prev) => {

@@ -1,5 +1,11 @@
 # @lukekaalim/act-three
 
+## 8.0.2
+
+### Patch Changes
+
+- 36412c6: Fix issue with threejs builder trying to build non-primirive elements
+
 ## 8.0.1
 
 ### Patch Changes
