@@ -1,5 +1,5 @@
 import * as three from "three";
-import { ReadonlyRef, Ref } from "@lukekaalim/act";
+import { WriteOnlyRef } from "@lukekaalim/act";
 import { createPrimitiveRegistry } from "@lukekaalim/act-backstage";
 import { setProps } from "./props";
 
@@ -31,7 +31,7 @@ export type PropsFromClass<T extends three.Object3D> = {
   //onAdded?: (self: T) => void,
   //onRemoved?: (self: T) => void,
 
-  ref?: ReadonlyRef<null | T>
+  ref?: T extends three.Points<any, any, any> ? WriteOnlyRef<three.Points<any, any, any>> : WriteOnlyRef<T>,
 }
   & (T extends three.Mesh | three.Points | three.Line ? DrawableProps : {})
   & (T extends three.Sprite ? SpriteProps : {})

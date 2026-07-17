@@ -1,4 +1,5 @@
 import * as act from '@lukekaalim/act';
+import { String } from 'ts-toolbelt';
 
 declare global {
   interface Window {

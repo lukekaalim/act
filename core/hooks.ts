@@ -81,27 +81,42 @@ export const useContext = <T>(context: Context<T>): T => {
   return hookImplementation.useContext(context);
 };
 
-export type Ref<in out T> = {
-  current: T;
-};
-export type ReadonlyRef<out T> = {
-  readonly current: T;
-};
-
 export const refSymbol = Symbol();
 export const memoSymbol = Symbol();
 
+export class Ref<T> implements ReadOnlyRef<T>, WriteOnlyRef<T> {
+  #value: T;
+  [refSymbol] = true
+
+  constructor(value: T) {
+    this.#value = value;
+  }
+
+  get() {
+    return this.#value
+  }
+  set(value: T) {
+    this.#value = value;
+  }
+}
+export type ReadOnlyRef<out T> = {
+  get(): T;
+}
+export type WriteOnlyRef<in T> = {
+  set(value: T): void;
+}
+
 export const useRef = <T>(initialValue: ValueOrCalculator<T>): Ref<T> => {
-  const [ref] = useState(() => ({ current: calculateValue(initialValue), [refSymbol]: true }));
+  const [ref] = useState(() => new Ref(calculateValue(initialValue)));
   return ref;
 };
 export const useMemo = <T>(calculate: () => T, deps: Deps): T => {
   const prevDeps = useRef(deps);
   const valueRef = useRef(calculate);
 
-  if (calculateDepsChange(prevDeps.current, deps)) {
-    prevDeps.current = deps;
-    valueRef.current = calculate();
+  if (calculateDepsChange(prevDeps.get(), deps)) {
+    prevDeps.set(deps);
+    valueRef.set(calculate());
   }
-  return valueRef.current;
+  return valueRef.get();
 };

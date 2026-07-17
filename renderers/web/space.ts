@@ -2,6 +2,7 @@ import * as act from '@lukekaalim/act';
 
 import { setProps } from './props.ts';
 import { NodeBuilder } from '@lukekaalim/act-backstage';
+import { htmlRegistry, svgRegistry } from './element.ts';
 
 export const HTML: act.Component = ({ children }) => act.h(act.renderNodeType, { type: 'web:html' }, children);
 export const SVG: act.Component = ({ children }) => act.h(act.renderNodeType, { type: 'web:svg' }, children);
@@ -29,10 +30,18 @@ export const createWebNodeBuilder = (
       }
       case 'string': {
         switch (rootType) {
-          case 'web:html':
+          case 'web:html': {
+            const prim = htmlRegistry.create(element);
+            if (prim)
+              return prim;
             return window.document.createElementNS('http://www.w3.org/1999/xhtml', tag);
-          case 'web:svg':
+          }
+          case 'web:svg': {
+            const prim = svgRegistry.create(element);
+            if (prim)
+              return prim;
             return window.document.createElementNS('http://www.w3.org/2000/svg', tag);
+          }
         }
       }
       default:

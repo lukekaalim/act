@@ -162,10 +162,10 @@ export const ssr = {
     }, deps)
 
     useEffect(() => {
-      if (!firstRun.current || ssrData.mode === 'server')
+      if (!firstRun.get() || ssrData.mode === 'server')
         return effect();
 
-      firstRun.current = false;
+      firstRun.set(false);
 
       // for the very first run on a client, check against
       // the server props to see if we need to re-render

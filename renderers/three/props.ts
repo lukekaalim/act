@@ -37,7 +37,7 @@ export const setProps = (object: three.Object3D, props: PropsFromClass<three.Obj
     object.userData = props.userData;
 
   if (props.ref)
-    (props.ref as any).current = object;
+    props.ref.set(object);
   
   if (object instanceof three.Mesh || object instanceof three.Points || object instanceof three.Line) {
     const meshProps = props as PropsFromClass<three.Mesh | three.Points | three.Line>;
