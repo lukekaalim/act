@@ -1,5 +1,11 @@
 # @lukekaalim/act-three
 
+## 8.0.3
+
+### Patch Changes
+
+- 0378003: Fix issue with act-three always settings geometry and materials to props, even if left to undefined (resulting in geo/mats being set to undefined even if they exist)
+
 ## 8.0.2
 
 ### Patch Changes
