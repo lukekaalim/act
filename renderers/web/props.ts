@@ -42,10 +42,8 @@ export const setSVGElementProps = (
     }
     switch (name) {
       case 'ref':
-        if (prev)
-          (prev as any).current = null;
         if (next)
-          (next as any).current = node;
+          (next as act.WriteOnlyRef<SVGElement>).set(node)
         return true;
       case 'style':
         return (setStyleProp(node.style, next as any, prev as any), true);
@@ -76,10 +74,8 @@ export const setHTMLElementProps = (
     }
     switch (name) {
       case 'ref':
-        if (prev)
-          (prev as any).current = null;
         if (next)
-          (next as any).current = node;
+          (next as act.WriteOnlyRef<HTMLElement>).set(node)
         return true;
       case 'style':
         return (setStyleProp(node.style, next as any, prev as any), true);

@@ -31,6 +31,7 @@ export type PropsFromClass<T extends three.Object3D> = {
   //onAdded?: (self: T) => void,
   //onRemoved?: (self: T) => void,
 
+  // Crude fix for Points, which has a fucked generic
   ref?: T extends three.Points<any, any, any> ? WriteOnlyRef<three.Points<any, any, any>> : WriteOnlyRef<T>,
 }
   & (T extends three.Mesh | three.Points | three.Line ? DrawableProps : {})
