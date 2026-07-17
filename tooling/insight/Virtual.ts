@@ -1,4 +1,4 @@
-import { Component, h, Node, ReadonlyRef, useEffect, useRef, useState } from "@lukekaalim/act";
+import { Component, h, Node, ReadOnlyRef, useEffect, useRef, useState } from "@lukekaalim/act";
 import { debounce } from 'lodash-es';
 
 export type VirtualTreeItem = {
@@ -12,7 +12,7 @@ export type VirtualTreeProps = {
 
   renderChunk(index: number, width: number): Node,
 
-  viewportRef?: ReadonlyRef<HTMLElement | null>,
+  viewportRef?: ReadOnlyRef<HTMLElement | null>,
 }
 
 export const Virtual1D: Component<VirtualTreeProps> = ({ chunkSize, chunkCount, renderChunk, viewportRef: propViewportRef }) => {
@@ -25,10 +25,10 @@ export const Virtual1D: Component<VirtualTreeProps> = ({ chunkSize, chunkCount, 
   const listRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!viewportRef.current)
+    const viewport = viewportRef.get();
+    if (!viewport)
       return;
 
-    const viewport = viewportRef.current;
 
     const setViewport = () => {
       const rect = viewport.getBoundingClientRect();
@@ -58,8 +58,8 @@ export const Virtual1D: Component<VirtualTreeProps> = ({ chunkSize, chunkCount, 
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
-    const list = listRef.current;
-    const viewport = viewportRef.current;
+    const list = listRef.get();
+    const viewport = viewportRef.get();
     if (!list || !viewport)
       return;
     const rect = viewport.getBoundingClientRect();

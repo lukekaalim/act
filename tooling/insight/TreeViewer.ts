@@ -1,5 +1,4 @@
 import { Component, h, Node } from "@lukekaalim/act";
-import { hs } from "@lukekaalim/act-web";
 import stringHash from '@sindresorhus/string-hash';
 
 import classes from './TreeViewer.module.css';
@@ -59,17 +58,17 @@ export const CommitPreview: Component<CommitPreviewProps> = ({
   const lineColor = `hsl(${stringHash(commit.id.toString()) % 360}, 100%, 20%)`
 
 
-  return hs('div', { classList: [classes.commit, className], style: { position: 'relative' }, id: `commit:${commit.id}` }, [
+  return h('div', { classList: [classes.commit, className], style: { position: 'relative' }, id: `commit:${commit.id}` }, [
 
-    hs('div', { className: [classes.elementBar].join(' '), style: { 'position': 'relative' } }, [
-      hs('button', { onClick, className: classes.elementName, style: { background: elementBackground, border } },
+    h('div', { className: [classes.elementBar].join(' '), style: { 'position': 'relative' } }, [
+      h('button', { onClick, className: classes.elementName, style: { background: elementBackground, border } },
         text),
       //h(CommitAttributeTag, { name: 'Id', value: commit.id.toString() }),
       attributes.map(([name, value]) => h(CommitAttributeTag, { name, value }))
       //h(CommitAttributeTag, { name: 'Version', value: commit.version.toString() }),
     ]),
 
-    !!renderCommit && hs('ol', { className: classes.commitList }, commit.children.map(childId => h('li', { key: childId, style: { position: 'relative' } }, [
+    !!renderCommit && h('ol', { className: classes.commitList }, commit.children.map(childId => h('li', { key: childId, style: { position: 'relative' } }, [
       renderCommit(childId),
       h('div', { style: {
         top: 0,
