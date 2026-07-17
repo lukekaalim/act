@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 6.1.0
+
+### Minor Changes
+
+- 1b7eec1: Allow kebab and camel case inline CSS propreties
+
 ## 6.0.1
 
 ### Patch Changes
