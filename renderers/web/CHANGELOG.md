@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 6.2.0
+
+### Minor Changes
+
+- 3488b7b: Add onContextMenu, and add extensible Event Name interface for user-space HTML event definition
+
 ## 6.1.0
 
 ### Minor Changes
