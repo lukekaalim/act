@@ -137,6 +137,7 @@ export const svg = svgRegistry.elements;
 
 type EventMap = {
   onClick: "click",
+  onContextMenu: "contextmenu"
 
   onMouseEnter: "mouseenter",
   onMouseMove: "mousemove",
@@ -154,4 +155,6 @@ type EventMap = {
 
   onInput: "input",
   onChange: "change",
-}
+} & ExtendedEventNames;
+
+export interface ExtendedEventNames {}
