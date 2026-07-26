@@ -10,7 +10,7 @@ export type NodeBuilder<TNode, TRoot = string | symbol> = {
   roots: Set<TRoot>,
 
   create: (element: Element, root: TRoot, ref: CommitRef2) => null | TNode,
-  destroy?: (el: TNode) => unknown, 
+  destroy?: (el: TNode, prev: Element) => unknown, 
 
   linkRoot?: (child: TNode) => unknown,
   unlinkRoot?: (child: TNode) => unknown,

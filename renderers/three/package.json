@@ -7,7 +7,7 @@
     "@lukekaalim/act": "^5.0.0",
     "@lukekaalim/act-backstage": "^3.2.1",
     "@lukekaalim/act-recon": "^4.0.1",
-    "@lukekaalim/act-web": "^6.0.0",
+    "@lukekaalim/act-web": "^6.2.0",
     "@types/three": ">= 0.185.0"
   },
   "peerDependencies": {

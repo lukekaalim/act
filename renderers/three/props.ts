@@ -46,6 +46,12 @@ export const setProps = (object: three.Object3D, props: PropsFromClass<three.Obj
     if (meshProps.material)
       object.material = meshProps.material;
   }
+  if (object instanceof three.Sprite) {
+    const spriteProps = props as PropsFromClass<three.Sprite>;
+    if (spriteProps.material)
+      // A little bit of cheating here ;)
+      object.material = spriteProps.material as three.SpriteMaterial;
+  }
 
   if (object instanceof three.PerspectiveCamera) {
     const perspectiveCameraProps = props as PropsFromClass<three.PerspectiveCamera>;

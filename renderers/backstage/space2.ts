@@ -244,7 +244,7 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
         if (unlinkRoot && !parent.commit)
           unlinkRoot(node)
         if (destroy)
-          destroy(node);
+          destroy(node, prev.element);
       }
     }
 

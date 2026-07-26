@@ -1,7 +1,7 @@
 import { NodeBuilder } from "@lukekaalim/act-backstage";
 import { Object3D } from "three";
 import { registry } from "./elements";
-import { Component, h, specialNodeTypes } from "@lukekaalim/act";
+import { Component, h, specialNodeTypes, WriteOnlyRef } from "@lukekaalim/act";
 
 export const ThreeJSRoot: Component = ({ children }) => h(specialNodeTypes.render, { type: 'threejs' }, children);
 
@@ -22,8 +22,11 @@ export const createThreeJSBuilder = (rootObject: Object3D | null = null): NodeBu
   link(el, parent) {
     parent && parent.add(el)
   },
-  destroy(el) {
-    if (el.parent)
-      el.removeFromParent()
+  destroy(obj, el) {
+    if (obj.parent)
+      obj.removeFromParent()
+    if (el.props.ref) {
+      (el.props.ref as WriteOnlyRef<null>).set(null);
+    }
   },
 })
