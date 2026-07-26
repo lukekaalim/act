@@ -1,5 +1,17 @@
 # @lukekaalim/act-three
 
+## 8.2.0
+
+### Minor Changes
+
+- 41b49aa: Upgraded NodeBuilder to pass element during destruction, fixed Sprites not being assigned materials in act-three, and act-three objects will set ref to null on destruction
+
+### Patch Changes
+
+- Updated dependencies [41b49aa]
+  - @lukekaalim/act-backstage@4.0.0
+  - @lukekaalim/act-web@6.2.1
+
 ## 8.1.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @lukekaalim/act-web
 
+## 6.2.1
+
+### Patch Changes
+
+- Updated dependencies [41b49aa]
+  - @lukekaalim/act-backstage@4.0.0
+
 ## 6.2.0
 
 ### Minor Changes

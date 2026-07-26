@@ -1,5 +1,11 @@
 # @lukekaalim/act-backstage
 
+## 4.0.0
+
+### Major Changes
+
+- 41b49aa: Upgraded NodeBuilder to pass element during destruction, fixed Sprites not being assigned materials in act-three, and act-three objects will set ref to null on destruction
+
 ## 3.2.1
 
 ### Patch Changes
