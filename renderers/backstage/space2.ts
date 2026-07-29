@@ -224,7 +224,7 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
           }
         }
       }
-      for (const next of deltas.fresh.values()) {
+      for (const next of [...deltas.fresh.values()].reverse()) {
         const node = this.nodeByCommit.get(next.ref.id);
         if (node)
           update(node, next.element, null, next.ref);
