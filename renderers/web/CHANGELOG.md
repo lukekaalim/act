@@ -1,5 +1,13 @@
 # @lukekaalim/act-web
 
+## 6.2.2
+
+### Patch Changes
+
+- 9a4f523: Fix HTML elements being named wrong (options->option,image->img)
+- Updated dependencies [9a4f523]
+  - @lukekaalim/act-backstage@4.1.0
+
 ## 6.2.1
 
 ### Patch Changes

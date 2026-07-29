@@ -1,5 +1,11 @@
 # @lukekaalim/act-backstage
 
+## 4.1.0
+
+### Minor Changes
+
+- 9a4f523: Nodes are created root-to-leaf, but are given their props in opposite order
+
 ## 4.0.0
 
 ### Major Changes
