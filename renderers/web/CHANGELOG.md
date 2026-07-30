@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 6.3.0
+
+### Minor Changes
+
+- a76dfee: Add more HTML elements to the builtin primitive list, convert the classMap to a value to pass directly to the register
+
 ## 6.2.2
 
 ### Patch Changes
