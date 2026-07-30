@@ -1,5 +1,5 @@
-import { createDocApp, BoneTheme } from '@lukekaalim/grimoire';
-import { TypeDocPlugin } from '@lukekaalim/grimoire-ts';
+import { createDocApp, BoneTheme, ArticlePage } from '@lukekaalim/grimoire';
+//import { TypeDocPlugin } from '@lukekaalim/grimoire-ts';
 import { Root } from 'hast';
 import { toHtml } from 'hast-util-to-html';
 
@@ -39,7 +39,7 @@ import { assertRefs } from '@lukekaalim/act-graphit';
 import { CommitPreview, createDebugPopup, renderDEV, TreeViewer } from '@lukekaalim/act-insight';
 import { a3, createThreeJSBuilder, registry, setProps, ThreeJSRoot } from '../renderers/three';
 
-const doc = createDocApp([TypeDocPlugin]);
+const doc = createDocApp([]);
 
 // doc.typedoc.addProjectJSON('@lukekaalim/act-recon', recon);
 // doc.typedoc.addProjectJSON('@lukekaalim/act', core);
@@ -51,6 +51,8 @@ const doc = createDocApp([TypeDocPlugin]);
 
 //doc.article.add('readme', rootReadmeMd, '/')
 doc.article.addRawRoot('readme', rootReadmeMd, '/')
+
+doc.route.add('/', h(ArticlePage, { articleKey: 'readme' }))
 
 doc.article.addRawRoot('core.readme', coreReadmeMd, '/Core')
 doc.article.addRawRoot('recon.readme', reconReadmeMd, '/Reconciler')
@@ -178,6 +180,9 @@ const Test = () => {
 
   return [
     null,
+    h(html.input, { type: 'file', onInput() {
+      console.log(this.files)
+    } }),
     h(primitiveNodeTypes.null, { key: 'nope' }, [
       h('button', {}, 'Secret Button'),
       h(ThreeJSRoot, {}, [

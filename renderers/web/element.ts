@@ -1,11 +1,12 @@
 import * as act from '@lukekaalim/act';
 import { createPrimitiveRegistry } from '@lukekaalim/act-backstage';
-import { Object } from 'ts-toolbelt';
+import * as Toolbelt from 'ts-toolbelt';
+import { Instance } from 'ts-toolbelt/out/Class/Instance';
 
 export interface ExtendedHTMLPrimitives {}
 export interface ExtendedSVGPrimitives {}
 
-type HTMLClasses = {
+const HTMLClasses = {
   div: HTMLDivElement,
   span: HTMLSpanElement,
   main: HTMLElement,
@@ -19,12 +20,17 @@ type HTMLClasses = {
   body: HTMLBodyElement,
   head: HTMLHeadElement,
   meta: HTMLMetaElement,
+  link: HTMLLinkElement,
+  pre: HTMLPreElement,
+  code: HTMLElement,
+  area: HTMLAreaElement,
 
   ol: HTMLOListElement,
   li: HTMLLIElement,
   ul: HTMLUListElement,
   menu: HTMLMenuElement,
   nav: HTMLOListElement,
+  br: HTMLBRElement,
 
   form: HTMLFormElement,
   input: HTMLInputElement,
@@ -35,6 +41,11 @@ type HTMLClasses = {
   option: HTMLOptionElement,
   progress: HTMLProgressElement,
   time: HTMLTimeElement,
+  output: HTMLOutputElement,
+  textarea: HTMLTextAreaElement,
+  data: HTMLDataElement,
+  datalist: HTMLDataListElement,
+  dialog: HTMLDialogElement,
 
   table: HTMLTableElement,
   tbody: HTMLTableSectionElement,
@@ -45,6 +56,8 @@ type HTMLClasses = {
   td: HTMLTableCellElement,
 
   a: HTMLAnchorElement,
+  legend: HTMLLegendElement,
+  quote: HTMLQuoteElement,
 
   map: HTMLMapElement,
 
@@ -54,7 +67,10 @@ type HTMLClasses = {
   canvas: HTMLCanvasElement,
   iframe: HTMLIFrameElement,
   source: HTMLSourceElement,
+  track: HTMLTrackElement,
+  picture: HTMLPictureElement,
 };
+export type HTMLClasses = { [name in keyof typeof HTMLClasses]: Instance<(typeof HTMLClasses)[name]> };
 type SVGClasses = {
   svg: SVGSVGElement,
   rect: SVGRectElement,
@@ -63,6 +79,8 @@ type SVGClasses = {
   text: SVGTextElement,
   g: SVGGElement,
 }
+
+
 type BuiltinHTMLPrimitives = { [Key in keyof HTMLClasses]: PropsFromClass<HTMLClasses[Key]> } & {
   [act.primitiveNodeTypes.string]: { value: string },
   [act.primitiveNodeTypes.number]: { value: number },
@@ -91,7 +109,7 @@ type SVGElementProps<T extends SVGElement> = {
 type WritableProps<T extends {}> = {
   [
     Key
-      in Exclude<Object.WritableKeys<T>, 'style' | 'classList'>
+      in Exclude<Toolbelt.Object.WritableKeys<T>, 'style' | 'classList'>
       as (T[Key] extends string | number | boolean ? Key : never)
   ]?: T[Key]
 };
@@ -109,23 +127,7 @@ export type PropsFromClass<T extends HTMLElement | SVGElement | Text> = {
   & EventHandlers<T>
 
 export const htmlRegistry = createPrimitiveRegistry<AllHTMLPrimitives, HTMLElement | Text>()
-  .registerUnhandledPrimitives([
-    'a', 'audio', 'article',
-    'body', 'button',
-    'canvas',
-    'div', 'form',
-    'head',
-    'i', 'iframe', 'img',
-    'label', 'li', 'main',
-    'map', 'menu', 'meta', 'meter',
-    'nav',
-    'ol', 'option',
-    'p', 'progress',
-    'section', 'select', 'source', 'span', 'strong',
-    'title', 'time', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'th', 'td',
-    'ul',
-    'video',
-  ]);
+  .registerUnhandledPrimitives([...Object.keys(HTMLClasses) as (keyof HTMLClasses)[]]);
 
 export const svgRegistry = createPrimitiveRegistry<AllSVGPrimitives, SVGElement>()
   .registerUnhandledPrimitives([

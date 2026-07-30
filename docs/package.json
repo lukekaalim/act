@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@lukekaalim/act": "^5.0.0",
-    "@lukekaalim/act-curve": "^4.0.0",
-    "@lukekaalim/grimoire": "^2.0.1",
-    "@lukekaalim/grimoire-ts": "^0.0.0"
+    "@lukekaalim/act-curve": "^4.1.1",
+    "@lukekaalim/grimoire": "^3.0.2",
+    "@lukekaalim/grimoire-ts": "^2.1.2"
   }
 }
