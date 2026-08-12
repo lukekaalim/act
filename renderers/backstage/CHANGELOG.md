@@ -1,5 +1,11 @@
 # @lukekaalim/act-backstage
 
+## 5.0.0
+
+### Major Changes
+
+- bd1062a: Added new RenderRoot arguments to various RenderSpace methods, so builders can customise root handling per RenderRoot props
+
 ## 4.1.0
 
 ### Minor Changes

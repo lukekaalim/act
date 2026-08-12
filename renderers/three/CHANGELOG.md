@@ -1,5 +1,17 @@
 # @lukekaalim/act-three
 
+## 8.3.0
+
+### Minor Changes
+
+- bd1062a: Added new RenderRoot arguments to various RenderSpace methods, so builders can customise root handling per RenderRoot props
+
+### Patch Changes
+
+- Updated dependencies [bd1062a]
+  - @lukekaalim/act-backstage@5.0.0
+  - @lukekaalim/act-web@6.4.0
+
 ## 8.2.0
 
 ### Minor Changes

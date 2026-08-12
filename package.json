@@ -14,11 +14,14 @@
     "testw": "tsx --test --watch"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.7",
+    "@changesets/cli": "^3.0.0",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.10.1",
     "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "vite": "^8.0.16"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }
