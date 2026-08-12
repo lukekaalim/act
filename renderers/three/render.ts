@@ -13,7 +13,7 @@ export const render = (node: Node, root: HTMLElement, options: Options = {}) => 
   const scheduler = createDOMScheduler();
   const reconciler = new Reconciler2(scheduler);
 
-  const webSpace = new RenderSpace2(reconciler.tree, createWebNodeBuilder(root));
+  const webSpace = new RenderSpace2(reconciler.tree, createWebNodeBuilder());
   const threeSpace = new RenderSpace2(reconciler.tree, createThreeJSBuilder());
 
   reconciler.bus = {
@@ -25,13 +25,13 @@ export const render = (node: Node, root: HTMLElement, options: Options = {}) => 
       threeSpace.update(delta);
     },
   }
-  reconciler.mount(h(HTML, {}, node));
+  reconciler.mount(h(HTML, { attach: root }, node));
 }
 
 export const renderToObject = (node: Node, root: Object3D) => {
   const scheduler = createDOMScheduler();
   const reconciler = new Reconciler2(scheduler);
-  const threeSpace = new RenderSpace2(reconciler.tree, createThreeJSBuilder(root));
+  const threeSpace = new RenderSpace2(reconciler.tree, createThreeJSBuilder());
 
   reconciler.bus = threeSpace.bus;
 
