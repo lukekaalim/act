@@ -3,7 +3,7 @@ import { createDocApp, BoneTheme, ArticlePage } from '@lukekaalim/grimoire';
 import { Root } from 'hast';
 import { toHtml } from 'hast-util-to-html';
 
-import { createDOMScheduler, createHASTBuilder, createWebNodeBuilder, HTML, render, html } from '@lukekaalim/act-web';
+import { createDOMScheduler, createHASTBuilder, createWebNodeBuilder, HTML, render, html, SVG, svg } from '@lukekaalim/act-web';
 import { Boundary, Component, h, primitiveNodeTypes, renderNodeType, specialNodeTypes, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
 import * as three from 'three';
@@ -189,8 +189,14 @@ const Test = () => {
         h(a3.scene, { name: 'My scene :D' }, [
           h(a3.perspectiveCamera, {}),
           h(a3.points, { ref, geometry: new three.BoxGeometry(), material: new three.MeshBasicMaterial({ color: 'red' }) }),
-          h(a3.Box3Helper, { box: new three.Box3(new three.Vector3(999), new three.Vector3(666)) })
-        ])
+          h(a3.Box3Helper, { box: new three.Box3(new three.Vector3(999), new three.Vector3(666)) }),
+          h(ThreeJSRoot, {}, [
+            h(a3.mesh)
+          ]),
+        ]),
+        h(HTML, {}, [
+          h('h1', {}, `LETS TAKE A LOOK AT YE`)
+        ]),
       ])
     ]),
   ];
@@ -206,16 +212,50 @@ registry.registerPrimitive('Box3Helper', ({ box }) => new three.Box3Helper(box),
   helper.box.copy(box);
 })
 
-const app =  h('div', {}, [
+const WindowPortal = () => {
+  const [windowDocument, setWindowDocument] = useState<null | Document>(null);
+
+  useEffect(() => {
+    console.log('A')
+
+    const newWindow = window.open('', "WindowPortal", "popup");
+    if (!newWindow)
+      throw new Error(`Unable to make/find new window!`);
+    
+    for (const child of [...newWindow.document.body.childNodes])
+      child.remove();
+
+    setWindowDocument(newWindow.document);
+  }, [])
+
+  if (!windowDocument)
+    return null;
+
+  const [greeting, setGreeting] = useState('Hello!');
+
+  return [
+    h(html.input, { type: 'text', value: greeting, onInput() { console.log('input'); setGreeting(this.value); } }),
+    h(HTML, { document: windowDocument, attach: windowDocument.head }, [
+      h('title', {}, "WAOW WAOW")
+    ]),
+    h(HTML, { document: windowDocument, attach: windowDocument.body }, [
+      h('h1', {}, greeting)
+    ])
+  ]
+}
+
+const app =  h('main', {}, [
   h(Test),
-  h(BoneTheme, { doc }),
+  //h(BoneTheme, { doc }),
+  h(WindowPortal),
+  h(SVG, {}, h(svg.svg, {}, h(svg.text, { style: { fill: 'black' }, y: '25px' }, 'WHOAH DADDY'))),
   h(html.button, { style: { position: 'fixed', right: '24px', bottom: '24px' }, onClick() {
     createDebugPopup(reconciler);
   } }, 'Open Debugger')
   ])
 
-const { ref, reconciler } = renderDEV(h(HTML, {}, app), [
-  createWebNodeBuilder(document.body),
+const { ref, reconciler } = renderDEV(h(HTML, { attach: document.body }, app), [
+  createWebNodeBuilder(),
   createThreeJSBuilder()
 ])
 

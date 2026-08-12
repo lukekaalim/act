@@ -20,17 +20,23 @@ type ParentSearchResult<TNode> = {
 /**
  * The RenderSpace class
  */
-export class RenderSpace2<TNode, TRoot extends string | symbol> {
+export class RenderSpace2<TNode, TRootProps extends { type: string | symbol }> {
   /** The CommitTree this render space is connected to */
   tree: CommitTree2;
 
-  /** A reverse map to look up Commits given just the node they represent */
+  /**
+   * The core map of a CommitID to a Node. Not every commit has a node:
+   *  - Components dont have nodes
+   *  - Unsupported primitives dont have nodes
+   *  - Foreign (i.e. handled by another renderspace) commits dont have a node here
+   * */
   nodeByCommit: Map<CommitID, TNode> = new Map();
   /** A reverse map to look up Commits given just the node they represent */
   commitByNode: Map<TNode, Commit2> = new Map();
 
   /** For a given CommitID, find it's closest "real" parent (a ancestor with a non-null TNode) */
-  parentByNode: Map<CommitID, Commit2> = new Map();
+  //parentByNode: Map<CommitID, Commit2> = new Map();
+  // (unused)
 
   /**
    * A set of all special Root element IDs in the tree.
@@ -38,10 +44,16 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
    * to render, based on it's closest Root.
    */
   roots: Map<CommitID, Commit2> = new Map();
-  bus: ReconcilerEventBus;
-  builder: NodeBuilder<TNode, TRoot>;
 
-  constructor(tree: CommitTree2, builder: NodeBuilder<TNode, TRoot>) {
+  /**
+   * Every created node get assigned to a Root commit
+   */
+  rootByCommit: Map<CommitID, Commit2> = new Map();
+
+  bus: ReconcilerEventBus;
+  builder: NodeBuilder<TNode, TRootProps>;
+
+  constructor(tree: CommitTree2, builder: NodeBuilder<TNode, TRootProps>) {
     this.tree = tree;
     this.bus = {
       render: (delta) => {
@@ -62,6 +74,12 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       return [];
     if (commit.element.type === primitiveNodeTypes.null)
       return [];
+
+    if (this.builder.isRootLinkable && this.builder.roots.has(commit.element.props.type as string | symbol)) {
+      if (this.builder.isRootLinkable(commit.element.props as TRootProps)) {
+        return []
+      }
+    }
     // suspended nodes don't count as children
     if (ignoreSuspended && commit.isSuspended())
       return [];
@@ -85,13 +103,30 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       if (ancestor.id !== ref.id) {
         const commit = this.tree.commits.get(ancestor.id) || null;
 
-        // Early exit out of parent lookup if someone on the path is null;
-        if (commit && commit.element.type === primitiveNodeTypes.null)
-          return { commit, node: null, attachable: false };
+        if (commit) {
+          // Early exit out of parent lookup if someone on the path is null;
+          if (commit.element.type === primitiveNodeTypes.null)
+            return { commit, node: null, attachable: false };
 
-        // maybe a bad idea... we'll see
-        if (commit && commit.isSuspended())
-          attachable = false;
+          // maybe a bad idea... we'll see
+          if (commit.isSuspended())
+            attachable = false;
+
+          // if this node is a RenderRoot
+          if (this.roots.has(commit.ref.id)) {
+            // if it is a root owned by this space
+            if (this.builder.isRootLinkable && this.builder.roots.has(commit.element.props.type as string | symbol)) {
+              if (this.builder.isRootLinkable(commit.element.props as TRootProps)) {
+                // This RenderRoot is linkable, so should try to attach to it via linkRoot
+                return { commit: null, node: null, attachable: true };
+              }
+              // marked as not linkable, so we Passthrough to check the parents!
+            } else {
+              // if it a foreign root (or has no linkable implementation), quit out
+              return { commit: null, node: null, attachable: false };
+            }
+          }
+        }
 
         const node = this.nodeByCommit.get(ancestor.id);
         // If you find an element with a node
@@ -101,14 +136,17 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       ancestor = ancestor.parent;
     }
 
-    // this element has no "node" parents - it is probably a "root" commit
-    return { commit: null, node: null, attachable };
+    // this element has no root... how hopeless
+    return { commit: null, node: null, attachable: false };
   }
 
   findRoot(ref: CommitRef2) {
     let ancestor: CommitRef2 | null = ref;
 
     while (ancestor) {
+      const ancestorsRoot = this.rootByCommit.get(ancestor.id);
+      if (ancestorsRoot)
+        return ancestorsRoot;
       const root = this.roots.get(ancestor.id);
       if (root)
         return root;
@@ -134,14 +172,15 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       const root = this.findRoot(next.ref);
       if (!root)
         continue;
+      this.rootByCommit.set(next.ref.id, root);
 
-      const rootType = root.element.props['type'] as TRoot;
+      const rootProps = root.element.props as { type: string | symbol };
 
       // test to see if this element
       // belongs to this 
-      if (this.builder.roots.has(rootType) ) {
+      if (this.builder.roots.has(rootProps.type)) {
         // Try to create a <T> for every new commit
-        const node = this.builder.create(next.element, rootType, next.ref);
+        const node = this.builder.create(next.element, rootProps as TRootProps, next.ref);
         // Not all commits have a corresponding node
         if (node) {
           this.newNodes.add([next, node]);
@@ -177,8 +216,11 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
             link(node, result.node);
         }
 
-        if (linkRoot && !result.commit && result.attachable)
-          linkRoot(node);
+        if (linkRoot && !result.commit && !result.node && result.attachable) {
+          const root = this.rootByCommit.get(next.ref.id);
+          if (root)
+            linkRoot(node, root.element.props as TRootProps);
+        }
       }
     }
 
@@ -211,10 +253,12 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
         }
 
         const node = this.nodeByCommit.get(next.ref.id);
-        if (!node)
+        const root = this.rootByCommit.get(next.ref.id);
+        if (!node || !root)
           continue;
 
-        update(node, next.element, prev, next.ref);
+
+        update(node, next.element, prev, next.ref, root.element.props as TRootProps);
 
         if (moved) {
           const result = this.findParent(next.ref);
@@ -226,8 +270,9 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
       }
       for (const next of [...deltas.fresh.values()].reverse()) {
         const node = this.nodeByCommit.get(next.ref.id);
-        if (node)
-          update(node, next.element, null, next.ref);
+        const root = this.rootByCommit.get(next.ref.id) as Commit2;
+        if (node && root)
+          update(node, next.element, null, next.ref, root.element.props as TRootProps);
       }
     }
     for (const prev of deltas.removed.values()) {
@@ -241,8 +286,11 @@ export class RenderSpace2<TNode, TRoot extends string | symbol> {
         this.commitByNode.delete(node);
         if (unlink && parent.node)
           unlink(node, parent.node);
-        if (unlinkRoot && !parent.commit)
-          unlinkRoot(node)
+        if (unlinkRoot && !parent.commit) {
+          const root = this.rootByCommit.get(prev.ref.id);
+          if (root)
+            unlinkRoot(node, root.element.props as TRootProps)
+        }
         if (destroy)
           destroy(node, prev.element);
       }

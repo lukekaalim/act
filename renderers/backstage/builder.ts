@@ -6,19 +6,31 @@ import { CommitRef2 } from "@lukekaalim/act-recon";
  * that can be provided to a RenderSpace
  * in order to produce a fully-featured renderer.
  */
-export type NodeBuilder<TNode, TRoot = string | symbol> = {
-  roots: Set<TRoot>,
+export type NodeBuilder<TNode, TRootProps extends { type: string | symbol }> = {
+  roots: Set<TRootProps["type"]>,
 
-  create: (element: Element, root: TRoot, ref: CommitRef2) => null | TNode,
+  create: (element: Element, root: TRootProps, ref: CommitRef2) => null | TNode,
   destroy?: (el: TNode, prev: Element) => unknown, 
 
-  linkRoot?: (child: TNode) => unknown,
-  unlinkRoot?: (child: TNode) => unknown,
+  /**
+   * If the root is "not" linkable, then children will continue
+   * searching upwards for a linkable node, potentially hitting
+   * a foreign RenderRoot and quitting their search.
+   * 
+   * If not provided, a Root is never linkable.
+   * 
+   * @param root 
+   * @returns 
+   */
+  isRootLinkable?: (root: TRootProps) => unknown,
+  linkRoot?: (child: TNode, root: TRootProps) => unknown,
+  unlinkRoot?: (child: TNode, root: TRootProps) => unknown,
+
   link?: (child: TNode, parent: TNode) => unknown,
   unlink?: (child: TNode, parent: TNode) => unknown,
 
   sort?: (el: TNode, children: readonly TNode[]) => unknown,
-  update?: (el: TNode, next: Element, prev: null | Element, ref: CommitRef2) => unknown,
+  update?: (el: TNode, next: Element, prev: null | Element, ref: CommitRef2, root: TRootProps) => unknown,
 
   suspend?: (el: TNode, parent: TNode) => void,
   unsuspend?: (el: TNode, parent: TNode) => void,

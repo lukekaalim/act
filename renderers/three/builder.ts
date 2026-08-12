@@ -3,9 +3,11 @@ import { Object3D } from "three";
 import { registry } from "./elements";
 import { Component, h, specialNodeTypes, WriteOnlyRef } from "@lukekaalim/act";
 
-export const ThreeJSRoot: Component = ({ children }) => h(specialNodeTypes.render, { type: 'threejs' }, children);
+export const ThreeJSRoot: Component<{
+  parent?: Object3D,
+}> = ({ children, parent = null }) => h(specialNodeTypes.render, { type: 'threejs', parent }, children);
 
-export const createThreeJSBuilder = (rootObject: Object3D | null = null): NodeBuilder<Object3D, 'threejs'> => ({
+export const createThreeJSBuilder = (): NodeBuilder<Object3D, { type: 'threejs', parent: Object3D | null }> => ({
   roots: new Set(['threejs']),
 
   create(element) {
@@ -16,9 +18,6 @@ export const createThreeJSBuilder = (rootObject: Object3D | null = null): NodeBu
   update(el, next, prev) {
     registry.update(el, next, prev);
   },
-  linkRoot: rootObject && ((child) => {
-    rootObject.add(child);
-  }) || undefined,
   link(el, parent) {
     parent && parent.add(el)
   },

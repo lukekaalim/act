@@ -4,18 +4,28 @@ import { setProps } from './props.ts';
 import { NodeBuilder } from '@lukekaalim/act-backstage';
 import { htmlRegistry, svgRegistry } from './element.ts';
 
-export const HTML: act.Component = ({ children }) => act.h(act.renderNodeType, { type: 'web:html' }, children);
-export const SVG: act.Component = ({ children }) => act.h(act.renderNodeType, { type: 'web:svg' }, children);
+const GLOBAL_WINDOW = window;
 
-const defaultWindow = (globalThis.window);
+export const HTML: act.Component<{
+  window?: typeof window,
+  attach?: Element
+}> = ({ children, window = GLOBAL_WINDOW, attach = null }) => {
+  return act.h(act.renderNodeType, { type: 'web:html', window, attach }, children);
+}
+export const SVG: act.Component<{
+  window?: typeof window,
+  attach?: Element,
+}> = ({ children, window = GLOBAL_WINDOW, attach = null }) => {
+  return act.h(act.renderNodeType, { type: 'web:svg', window, attach }, children);
+}
 
-export const createWebNodeBuilder = (
-  root: HTMLElement,
-  window: Window = defaultWindow
-): NodeBuilder<HTMLElement | SVGElement | Text, 'web:html' | 'web:svg'> => ({
+export type WebRootProps = { type: 'web:html' | 'web:svg', window: Window, attach: null | Element };
+export type WebNode = HTMLElement | SVGElement | Text;
+
+export const createWebNodeBuilder = (): NodeBuilder<WebNode, WebRootProps> => ({
   roots: new Set(['web:html', 'web:svg'] as const),
 
-  create(element, rootType) {
+  create(element, { type: rootType, window: { document } }) {
     const tag = element.type;
     
     switch (typeof tag) {
@@ -23,7 +33,7 @@ export const createWebNodeBuilder = (
         switch (tag) {
           case act.primitiveNodeTypes.string:
           case act.primitiveNodeTypes.number:
-            return window.document.createTextNode((element.props.value as any).toString());
+            return document.createTextNode((element.props.value as any).toString());
           default:
             return null;
         }
@@ -34,13 +44,13 @@ export const createWebNodeBuilder = (
             const prim = htmlRegistry.create(element);
             if (prim)
               return prim;
-            return window.document.createElementNS('http://www.w3.org/1999/xhtml', tag);
+            return document.createElementNS('http://www.w3.org/1999/xhtml', tag);
           }
           case 'web:svg': {
             const prim = svgRegistry.create(element);
             if (prim)
               return prim;
-            return window.document.createElementNS('http://www.w3.org/2000/svg', tag);
+            return document.createElementNS('http://www.w3.org/2000/svg', tag);
           }
         }
       }
@@ -48,14 +58,17 @@ export const createWebNodeBuilder = (
         return null;
     }
   },
-  update(el, next, prev) {
+  update(el, next, prev, _, { window }) {
     setProps(window, el, next, prev);
+  },
+  isRootLinkable(root) {
+    return !!root.attach;
   },
   link(el, parent) {
     parent.appendChild(el);
   },
-  linkRoot(child) {
-    root.appendChild(child);
+  linkRoot(child, root) {
+    root.attach!.appendChild(child);
   },
   unlink(el, parent) {
     if (el.parentNode === parent)

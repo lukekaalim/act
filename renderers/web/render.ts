@@ -24,10 +24,10 @@ type Options = {
 export const render = (node: Node, root: HTMLElement, options: Options = {}) => {
   const scheduler = createDOMScheduler();
   const reconciler = new (options.Reconciler || Reconciler2)(scheduler);
-  const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder(root, options.window));
+  const space = new RenderSpace2(reconciler.tree, createWebNodeBuilder());
 
   reconciler.bus = space.bus;
-  const ref = reconciler.mount(h(HTML, {}, node));
+  const ref = reconciler.mount(h(HTML, { document: options.window?.document, attach: root }, node));
 
   return {reconciler, space,ref};
 }
