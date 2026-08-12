@@ -1,5 +1,11 @@
 # @lukekaalim/act-three
 
+## 8.3.1
+
+### Patch Changes
+
+- 363c7c2: Fix act-three default render function actually attaching window output to anything
+
 ## 8.3.0
 
 ### Minor Changes
