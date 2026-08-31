@@ -17,6 +17,13 @@ const HTMLClasses = {
   strong: HTMLElement,
   title: HTMLTitleElement,
 
+  h1: HTMLHeadingElement,
+  h2: HTMLHeadingElement,
+  h3: HTMLHeadingElement,
+  h4: HTMLHeadingElement,
+  h5: HTMLHeadingElement,
+  h6: HTMLHeadingElement,
+
   body: HTMLBodyElement,
   head: HTMLHeadElement,
   meta: HTMLMetaElement,
