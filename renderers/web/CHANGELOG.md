@@ -1,5 +1,11 @@
 # @lukekaalim/act-web
 
+## 6.5.0
+
+### Minor Changes
+
+- 9b0ac9d: Added h1-h6 elements to registry
+
 ## 6.4.0
 
 ### Minor Changes
