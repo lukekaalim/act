@@ -1,5 +1,12 @@
 # @lukekaalim/act-insight
 
+## 2.0.12
+
+### Patch Changes
+
+- Updated dependencies [bb0d3ad]
+  - @lukekaalim/act-web@6.6.0
+
 ## 2.0.11
 
 ### Patch Changes
