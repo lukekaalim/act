@@ -121,7 +121,7 @@ type WritableProps<T extends {}> = {
   ]?: T[Key]
 };
 type EventHandlers<T> = {
-  [Key in keyof EventMap]?: (this: T, event: GlobalEventHandlersEventMap[EventMap[Key]] & { currentTarget: T }) => unknown
+  [Key in keyof EventMap]?: (this: T, event: DocumentEventMap[EventMap[Key]] & { currentTarget: T }) => unknown
 }
 
 
@@ -146,21 +146,52 @@ export const svg = svgRegistry.elements;
 
 type EventMap = {
   onClick: "click",
+  onDblClick: "dblclick",
   onContextMenu: "contextmenu"
 
   onMouseEnter: "mouseenter",
   onMouseMove: "mousemove",
   onMouseLeave: "mouseleave",
+  onScroll: 'scroll',
+  onScrollEnd: 'scrollend',
+  onWheel: 'wheel',
 
   onPointerEnter: "pointerenter",
   onPointerMove: "pointermove",
   onPointerLeave: "pointerleave",
+
+  onDragStart: "dragstart",
+  onDragEnd: "dragend",
+  onDrag: "drag",
+  onDragEnter: "dragenter",
+  onDragLeave: "dragleave",
+  onDragOver: "dragover",
+  onDrop: "drop",
+
+  onTouchCancel: 'touchcancel',
+  onTouchEnd: 'touchend',
+  onTouchMove: 'touchmove',
+  onTouchStart: 'touchstart',
+
+
+  onToggle: "toggle",
+  onLoad: "load",
+  onSelect: "select",
+  onCancel: "cancel",
+
+  onSelectionChange: "selectionchange",
+
+  onCopy: "copy",
+  onCut: "cut",
+  onPaste: "paste",
 
   onKeyDown: "keydown",
   onKeyUp: "keyup",
 
   onFocus: "focus",
   onBlur: 'blur',
+  onFullScreenChange: "fullscreenchange",
+  onFullScreenError: "fullscreenerror",
 
   onInput: "input",
   onChange: "change",
