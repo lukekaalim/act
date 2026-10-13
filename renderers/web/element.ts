@@ -6,7 +6,7 @@ import { Instance } from 'ts-toolbelt/out/Class/Instance';
 export interface ExtendedHTMLPrimitives {}
 export interface ExtendedSVGPrimitives {}
 
-const HTMLClasses = {
+type HTMLClasses = {
   div: HTMLDivElement,
   span: HTMLSpanElement,
   main: HTMLElement,
@@ -77,7 +77,6 @@ const HTMLClasses = {
   track: HTMLTrackElement,
   picture: HTMLPictureElement,
 };
-export type HTMLClasses = { [name in keyof typeof HTMLClasses]: Instance<(typeof HTMLClasses)[name]> };
 type SVGClasses = {
   svg: SVGSVGElement,
   rect: SVGRectElement,
@@ -86,7 +85,6 @@ type SVGClasses = {
   text: SVGTextElement,
   g: SVGGElement,
 }
-
 
 type BuiltinHTMLPrimitives = { [Key in keyof HTMLClasses]: PropsFromClass<HTMLClasses[Key]> } & {
   [act.primitiveNodeTypes.string]: { value: string },
@@ -134,7 +132,64 @@ export type PropsFromClass<T extends HTMLElement | SVGElement | Text> = {
   & EventHandlers<T>
 
 export const htmlRegistry = createPrimitiveRegistry<AllHTMLPrimitives, HTMLElement | Text>()
-  .registerUnhandledPrimitives([...Object.keys(HTMLClasses) as (keyof HTMLClasses)[]]);
+  .registerUnhandledPrimitives([
+    'a',
+    'area',
+    'article',
+    'audio',
+    'body',
+    'br',
+    'button',
+    'canvas',
+    'code',
+    'data',
+    'datalist',
+    'dialog',
+    'div',
+    'form',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'head',
+    'i',
+    'iframe',
+    'img',
+    'input',
+    'label',
+    'legend',
+    'li',
+    'link',
+    'main',
+    'map',
+    'menu',
+    'meta',
+    'meter',
+    'nav',
+    'ol',
+    'option',
+    'output',
+    'p',
+    'picture',
+    'pre',
+    'progress',
+    'quote',
+    'section',
+    'select',
+    'source',
+    'span',
+    'strong',
+    'table',
+    'tbody',
+    'td',
+    'textarea',
+    'tfoot',
+    'th',
+    'thead',
+    'time',
+    'title',
+    'tr',
+    'track',
+    'ul',
+    'video',
+  ]);
 
 export const svgRegistry = createPrimitiveRegistry<AllSVGPrimitives, SVGElement>()
   .registerUnhandledPrimitives([
@@ -195,6 +250,7 @@ type EventMap = {
 
   onInput: "input",
   onChange: "change",
+  onSubmit: "submit"
 } & ExtendedEventNames;
 
 export interface ExtendedEventNames {}

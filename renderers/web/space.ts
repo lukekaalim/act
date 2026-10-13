@@ -4,7 +4,7 @@ import { setProps } from './props.ts';
 import { NodeBuilder } from '@lukekaalim/act-backstage';
 import { htmlRegistry, svgRegistry } from './element.ts';
 
-const GLOBAL_WINDOW = window;
+const GLOBAL_WINDOW = globalThis.window;
 
 export const HTML: act.Component<{
   window?: typeof window,
