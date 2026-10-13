@@ -1,5 +1,15 @@
 # @lukekaalim/act-web
 
+## 6.7.0
+
+### Minor Changes
+
+- 2091e50: Added "onSubmit" event handler types
+
+### Patch Changes
+
+- 2091e50: Fixed implicit dependency on web environment (not intended) with window & HTMLElement class references
+
 ## 6.6.0
 
 ### Minor Changes
